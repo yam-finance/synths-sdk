@@ -355,12 +355,12 @@ export class AssetMethods {
         contractEmpCall = await contractEmp.methods.rawTotalPositionCollateral().call();
         empTVL = new BigNumber(contractEmpCall).dividedBy(baseAsset);
         empTVL = empTVL.multipliedBy(asset.collateral == "WETH" ? ethPrice : 1).toNumber();
-        empTVL = formatter.format(empTVL.toFixed());
+        empTVL = formatter.format(empTVL.toFixed()).toString();
         return empTVL;
       }
     } catch (e) {
       console.error("error", e);
-      return 0;
+      return "0";
     }
   };
 
