@@ -1,0 +1,51 @@
+{
+  "name": "degenerative-sdk",
+  "version": "1.0.0",
+  "description": "Degenerative SDK",
+  "main": "index.ts",
+  "scripts": {
+    "watch": "tsc-watch --onSuccess \"node dist/index.js\"",
+    "build": "tsc",
+    "test": "jest --watchAll"
+  },
+  "keywords": [
+    "yam",
+    "degenerative",
+    "uma",
+    "finance",
+    "synthetics",
+    "assets",
+    "protocol"
+  ],
+  "author": "e",
+  "license": "MIT",
+  "jest": {
+    "globals": {
+      "ts-jest": {
+        "tsconfig": "jest.config.json"
+      }
+    }
+  },
+  "dependencies": {
+    "@ethersproject/providers": "^5.1.0",
+    "@ethersproject/units": "^5.1.0",
+    "@studydefi/money-legos": "^2.4.2",
+    "dotenv": "^8.2.0",
+    "ethers": "^5.1.0",
+    "moment": "^2.29.1",
+    "node-fetch": "^2.6.1",
+    "request": "^2.88.2",
+    "tsc-watch": "^4.2.9",
+    "typescript": "^4.2.4",
+    "web3": "^1.3.5",
+    "web3-core": "^1.3.5",
+    "web3-utils": "^1.3.5"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.22",
+    "@types/node-fetch": "^2.5.10",
+    "@types/request": "^2.48.5",
+    "jest": "^26.6.3",
+    "ts-jest": "^26.5.4"
+  }
+}
