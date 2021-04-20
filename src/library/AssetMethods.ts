@@ -544,17 +544,30 @@ export class AssetMethods {
   * @param {string} userAddress User address
   * @public
   */
-  getPositions = async (userAddress: string) => {
-    // TODO loop for all assets getting every position of the user account
-    // 
-    // const emp = (asset.emp.new ? await this.getEmp(asset) : await this.getEmpV1(asset));
-    // try {
-    //   const pos = await emp.methods.positions(this.options.account).call();
-    //   return pos;
-    // } catch (e) {
-    // console.debug(`Could not get position of ${asset.emp.address} for user ${this.options.account}`);
-    // }
-    return;
+  getPositions = async () => {
+    /* @ts-ignore */
+    const assetsObject = Assets[this.options.network];
+    let posObject = {};
+
+    try {
+      for (let assets in assetsObject) {
+        let assetDetails = assetsObject[assets];
+        for (let asset in assetDetails) {
+          const emp = (assetDetails[asset].emp.new ? await this.getEmp(assetDetails[asset]) : await this.getEmpV1(assetDetails[asset]));
+          const pos = await emp.methods.positions(this.options.account).call();
+
+          /* @ts-ignore */
+          posObject[assetDetails[asset].token.address] = pos.tokensOutstanding['rawValue'];
+        }
+      }
+
+      // console.log(posObject);
+
+      return posObject;
+    } catch (e) {
+      // console.debug(`Could not get positions of ${emp} for user ${userAddress}`);
+      return 0;
+    }
   };
 
   // TODO getPositionCR
