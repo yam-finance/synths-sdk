@@ -98,40 +98,60 @@
   "kovan": {
     "ugas": [
       {
-        "name": "June",
-        "cycle": "JUN",
+        "name": "December",
+        "cycle": "DEC",
         "year": "21",
         "collateral": "WETH",
         "token": {
-          "address": "0x0000000000000000000000000000000000000000",
+          "address": "0x5A5Fe09310BBE12E98fb7415A0f76F6BE453638F",
           "decimals": 18
         },
         "emp": {
-          "address": "0x0000000000000000000000000000000000000000",
+          "address": "0x8E632ee4f46C7DC444a0fA19c8af65f6FC030458",
           "new": true
         },
         "pool": {
-          "address": "0x0000000000000000000000000000000000000000"
+          "address": "0x8cf2123ec57bbd05709cbde9024d90d3ab46d4c7"
         },
         "expired": null
       }
     ],
-    "ustonks": [
+    "uvolbtc": [
       {
-        "name": "June",
-        "cycle": "JUN",
+        "name": "December",
+        "cycle": "DEC",
         "year": "21",
         "collateral": "USDC",
         "token": {
-          "address": "0x0000000000000000000000000000000000000000",
+          "address": "0x1Ef69bc8c569094F7eaFb88BB8021DdA30614b7e",
           "decimals": 6
         },
         "emp": {
-          "address": "0x0000000000000000000000000000000000000000",
+          "address": "0x7BD3e1A41EA086206423Ec5cDF04fccb264a7D01",
           "new": true
         },
         "pool": {
-          "address": "0x0000000000000000000000000000000000000000"
+          "address": "0xb4556914684e50F3d4491d7C8d338304e7e40387"
+        },
+        "expired": null
+      }
+    ],
+    "yamdollar": [
+      {
+        "name": "December",
+        "cycle": "DEC",
+        "year": "21",
+        "collateral": "USDC",
+        "token": {
+          "address": "0xdD26d67D855abFa3D8517A04fEfec834EB06ce6D",
+          "decimals": 6
+        },
+        "emp": {
+          "address": "0x188f136F7b92268A596F7b3EDDfc2B527D010F3e",
+          "new": true
+        },
+        "pool": {
+          "address": "0xa56b0c3cc9cc98873f07587f9b2ecdcfa33ad629"
         },
         "expired": null
       }
