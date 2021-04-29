@@ -92,6 +92,24 @@
           "address": "0xedf187890af846bd59f560827ebd2091c49b75df"
         },
         "expired": null
+      },
+      {
+        "name": "June",
+        "cycle": "JUN",
+        "year": "21",
+        "collateral": "USDC",
+        "token": {
+          "address": "0x20f8d43672cfd78c471972c737134b5dcb700dd8",
+          "decimals": 6
+        },
+        "emp": {
+          "address": "0xb1a3e5a8d642534840bfc50c6417f9566e716cc7",
+          "new": true
+        },
+        "pool": {
+          "address": "0x360acfeb5c1548bad3583c559a646d803077236d"
+        },
+        "expired": null
       }
     ]
   },
