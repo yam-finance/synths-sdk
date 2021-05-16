@@ -33,10 +33,9 @@ export class Asset {
     return await this.methods.getPosition(this.asset);
   };
 
-  // TODO getPositions
-  // getPositions = async (userAddress: string) => {
-  //   return await this.methods.getPositions(userAddress);
-  // };
+  getPositions = async () => {
+    return await this.methods.getPositions();
+  };
 
   // TODO getPositionCR
   // getPositionCR = async () => {

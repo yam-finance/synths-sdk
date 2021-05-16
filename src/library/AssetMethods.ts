@@ -355,12 +355,12 @@ export class AssetMethods {
         contractEmpCall = await contractEmp.methods.rawTotalPositionCollateral().call();
         empTVL = new BigNumber(contractEmpCall).dividedBy(baseAsset);
         empTVL = empTVL.multipliedBy(asset.collateral == "WETH" ? ethPrice : 1).toNumber();
-        empTVL = formatter.format(empTVL.toFixed());
+        empTVL = formatter.format(empTVL.toFixed()).toString();
         return empTVL;
       }
     } catch (e) {
       console.error("error", e);
-      return 0;
+      return "0";
     }
   };
 
@@ -544,17 +544,30 @@ export class AssetMethods {
   * @param {string} userAddress User address
   * @public
   */
-  getPositions = async (userAddress: string) => {
-    // TODO loop for all assets getting every position of the user account
-    // 
-    // const emp = (asset.emp.new ? await this.getEmp(asset) : await this.getEmpV1(asset));
-    // try {
-    //   const pos = await emp.methods.positions(this.options.account).call();
-    //   return pos;
-    // } catch (e) {
-    // console.debug(`Could not get position of ${asset.emp.address} for user ${this.options.account}`);
-    // }
-    return;
+  getPositions = async () => {
+    /* @ts-ignore */
+    const assetsObject = Assets[this.options.network];
+    let posObject = {};
+
+    try {
+      for (let assets in assetsObject) {
+        let assetDetails = assetsObject[assets];
+        for (let asset in assetDetails) {
+          const emp = (assetDetails[asset].emp.new ? await this.getEmp(assetDetails[asset]) : await this.getEmpV1(assetDetails[asset]));
+          const pos = await emp.methods.positions(this.options.account).call();
+
+          /* @ts-ignore */
+          posObject[assetDetails[asset].token.address] = pos.tokensOutstanding['rawValue'];
+        }
+      }
+
+      // console.log(posObject);
+
+      return posObject;
+    } catch (e) {
+      // console.debug(`Could not get positions of ${emp} for user ${userAddress}`);
+      return 0;
+    }
   };
 
   // TODO getPositionCR

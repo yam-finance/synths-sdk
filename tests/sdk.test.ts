@@ -56,9 +56,9 @@ describe('General function testing', () => {
     expect(typeof getTVL).toBe("string");
   });
 
-  // it("getGCR must return a string", async () => {
-  //   const getGCR = await SDK.methods.getGCR(Assets[network]["ugas"][0]);
-  //   expect(typeof getGCR).toBe("string");
-  // });
+  it("getPositions must return an object", async () => {
+    const pos = await SDK.methods.getPositions();
+    expect(typeof pos).toBe("object");
+  });
 
 });
