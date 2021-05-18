@@ -18,7 +18,7 @@
           "address": "0x25fb29d865c1356f9e95d621f21366d3a5db6bb0",
           "location": "uniswap"
         },
-        "expired": null
+        "expired": true
       },
       {
         "name": "February",
@@ -37,7 +37,7 @@
           "address": "0x4a8a2ea3718964ed0551a3191c30e49ea38a5ade",
           "location": "uniswap"
         },
-        "expired": null
+        "expired": true
       },
       {
         "name": "March",
@@ -56,7 +56,7 @@
           "address": "0x683ea972ffa19b7bad6d6be0440e0a8465dba71c",
           "location": "uniswap"
         },
-        "expired": null
+        "expired": true
       },
       {
         "name": "June",
@@ -96,7 +96,7 @@
           "address": "0xedf187890af846bd59f560827ebd2091c49b75df",
           "location": "uniswap"
         },
-        "expired": null
+        "expired": true
       },
       {
         "name": "June",
