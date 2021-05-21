@@ -538,10 +538,8 @@ export class AssetMethods {
     }
   };
 
-  // TODO getPositions
   /**
   * Fetch all the positions of an address
-  * @param {string} userAddress User address
   * @public
   */
   getPositions = async () => {
@@ -587,7 +585,19 @@ export class AssetMethods {
   * @public
   */
   getGCR = async (asset: AssetModel) => {
-    // return 0;
+    const empState = (asset ? await this.getEmpState(asset) : "bad");
+
+    if (empState != "bad") {
+      return
+    };
+
+    try {
+      console.debug(empState.expirationTimestamp);
+    } catch (e) {
+      return 0;
+    }
+
+    return {};
   };
 
   /**
