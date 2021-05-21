@@ -37,10 +37,9 @@ export class Asset {
     return await this.methods.getPositions();
   };
 
-  // TODO getPositionCR
-  // getPositionCR = async () => {
-  //   return await this.methods.getPositionCR(this.asset);
-  // };
+  getPositionCR = async () => {
+    return await this.methods.getPositionCR(this.asset);
+  };
 
   getGCR = async () => {
     return await this.methods.getGCR(this.asset);

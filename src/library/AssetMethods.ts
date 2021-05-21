@@ -568,14 +568,30 @@ export class AssetMethods {
     }
   };
 
-  // TODO getPositionCR
   /**
   * Get the current user asset position collateral ratio (CR)
   * @param {AssetModel} asset Asset object for the input
   * @public
   */
   getPositionCR = async (asset: AssetModel) => {
-    // return 0;
+    const currPos = await this.getPosition(asset); 
+
+    try {
+      let currCollat;
+
+      if (asset.collateral == "WETH") { 
+        const collDec = new BigNumber(10).pow(new BigNumber(18)); 
+        currCollat = new BigNumber(currPos.rawCollateral).div(collDec).toFixed(4).toString()
+      } else if (asset.collateral == "USDC") {
+        const collDec = new BigNumber(10).pow(new BigNumber(6));
+        currCollat = new BigNumber(currPos.rawCollateral).div(collDec).toFixed(4).toString() 
+      }
+
+      return currCollat;
+    } catch (e) {
+      console.debug("couldnt get position for: ", asset.emp.address, " for user: ", this.options.account);// return 0;
+      return {};
+    }
   };
 
   /**
