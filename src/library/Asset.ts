@@ -41,6 +41,10 @@ export class Asset {
     return await this.methods.getPositionCR(this.asset);
   };
 
+  getUserStats = async () => {
+    return await this.methods.getUserStats(0, 1621298935)
+  }
+
   getGCR = async () => {
     return await this.methods.getGCR(this.asset);
   };

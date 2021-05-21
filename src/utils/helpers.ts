@@ -162,20 +162,16 @@ export const getTxStats = async (
   userAddress: string,
   startTimeStamp: number,
   endTimeStamp: number,
-  startBlockNumber: number,
-  endBlockNumber: number
 ): Promise<string[]> => {
   const web3 = new Web3(provider);
-  const etherscanApiKey = "YY6XQICVXTH8DIVGUK1TNKZGEKDZV4NV3K";
+  const etherscanApiKey = process.env.ETHERSCAN_KEY || ""
   let gasFeeTotal = 0;
   let gasPriceTotal = 0;
   let gasFeeTotalFail = 0;
-  if (endBlockNumber == 0) {
-    // Set current block number to end block number.
-    endBlockNumber = await web3.eth.getBlockNumber(function (error, result) {
-      if (!error) return result;
-    });
-  }
+  const startBlockNumber = 0;
+  const endBlockNumber = await web3.eth.getBlockNumber(function (error, result) {
+    if (!error) return result;
+  });
 
   try {
     // Fetch a list of 'normal' unique outgoing transactions by address (maximum of 10000 records only).
@@ -186,7 +182,6 @@ export const getTxStats = async (
     let txs = json["result"];
     let count = txs.length;
     txs = await fetchTxs("ether", userAddress, count, endBlockNumber, etherscanApiKey, txs);
-
     // Fetch a list of "ERC20 - Token Transfer Events" by address (maximum of 10000 records only).
     // Continue fetching if response >= 1000.
     url = `https://api.etherscan.io/api?module=account&action=tokentx&address=${userAddress}&startblock=${startBlockNumber}&endblock=${endBlockNumber}&sort=asc&apikey=${etherscanApiKey}`;
@@ -241,61 +236,6 @@ export const getTxStats = async (
     console.log("An error occurred while retrieving your transaction data.\nPlease submit it as an issue.");
     return ["...", "...", "...", "...", "..."];
   }
-};
-
-export const getUserTxStats = async (provider: provider, userAddress: string, interval: string, startDate: string, endDate: string) => {
-  console.debug("sdk getUserTxStats", interval, startDate, endDate);
-  let date = new Date();
-  let startTimestamp = 0;
-  let endTimestamp = 0;
-  switch (interval.toLowerCase()) {
-    case "day":
-      date.setHours(date.getHours() - 24);
-      startTimestamp = date.getTime();
-      break;
-    case "week":
-      date.setHours(date.getHours() - 168);
-      startTimestamp = date.getTime();
-      break;
-    case "month":
-      date.setMonth(date.getMonth() - 1);
-      startTimestamp = date.getTime();
-      break;
-    case "year":
-      date.setFullYear(date.getFullYear() - 1);
-      startTimestamp = date.getTime();
-      break;
-    default:
-      startTimestamp = 0;
-  }
-
-  if (startDate != null) {
-    date = new Date(startDate);
-    startTimestamp = date.getTime();
-
-    if (endDate == null) {
-      endTimestamp = 0;
-    }
-  }
-
-  if (endDate != null) {
-    date = new Date(endDate);
-    endTimestamp = date.getTime();
-
-    if (startDate == null) {
-      startTimestamp = 0;
-    }
-  }
-
-  const [txGasCostETH, averageTxPrice, txCount, failedTxCount, failedTxGasCostETH] = await getTxStats(
-    provider,
-    userAddress,
-    startTimestamp,
-    endTimestamp,
-    0,
-    0
-  ); // Zeros can be replaced by block numbers if necessary.
-  return [txGasCostETH, averageTxPrice, txCount, failedTxCount, failedTxGasCostETH];
 };
 
 export async function getContractInfo(address: string) {

@@ -1,6 +1,6 @@
 import { AbiItem } from "web3-utils";
 import { AssetGroupModel, AssetModel } from "../types/assets.t";
-import { approve, devMiningCalculator, getAllowance, getUniPrice, getBalance, getDevMiningEmps, getPriceByContract, getUserTxStats, getWETH, sleep, waitTransaction } from "../utils/helpers";
+import { approve, devMiningCalculator, getAllowance, getUniPrice, getBalance, getDevMiningEmps, getPriceByContract, getTxStats, getWETH, sleep, waitTransaction } from "../utils/helpers";
 import moment from "moment";
 import UNIContract from "../../src/abi/uni.json";
 import EMPContract from "../../src/abi/emp.json";
@@ -122,16 +122,24 @@ export class AssetMethods {
 
   /**
   * Fetch user transactions statistics
-  * @param {string} interval Interval of the input
   * @param {string} startDate Start date of the input
   * @param {string} endDate End date of the input
   * @public
   * @methods
   */
-  getUserStats = async (interval: string, startDate: string, endDate: string) => {
-    // console.debug("sdk getUserStats", interval, startDate, endDate);
-    const stats = await getUserTxStats(this.options.provider, this.options.account, interval, startDate, endDate)
-    return stats;
+  getUserStats = async (startTimestamp: number, endTimestamp: number) => {
+    startTimestamp = 0;
+    endTimestamp = 1621298935;
+    console.debug("sdk getUserTxStats", startTimestamp, endTimestamp);
+
+    const [txGasCostETH, averageTxPrice, txCount, failedTxCount, failedTxGasCostETH] = await getTxStats(
+      this.options.provider, 
+      this.options.account,
+      startTimestamp,
+      endTimestamp,
+    ); 
+
+    return [txGasCostETH, averageTxPrice, txCount, failedTxCount, failedTxGasCostETH];
   };
 
   /**
