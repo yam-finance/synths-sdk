@@ -61,4 +61,10 @@ describe('General function testing', () => {
     expect(typeof pos).toBe("object");
   });
 
+  it("getGCR must return an string", async () => {
+    const gcr = await SDK.methods.getGCR(Assets[network]["ustonks"][0]);
+    console.debug("gcr", gcr)
+    expect(typeof gcr).toBe("string");
+  });
+
 });

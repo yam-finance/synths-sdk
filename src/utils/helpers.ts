@@ -10,6 +10,9 @@ import erc20 from "@studydefi/money-legos/erc20";
 import { JsonTxResult } from "../types/assets.t";
 import { ethers } from "ethers";
 import Assets from "../assets.json";
+import UNIFactContract from "../abi/uniFactory.json";
+import UNIContract from "../abi/uni.json"
+import { USDC } from "../utils/addresses"
 
 export const sleep = (ms: number) => {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -325,6 +328,41 @@ export async function getDevMiningEmps(network: any) {
     // return emplistDataBackup;
   } else {
     return -1;
+  }
+}
+
+async function getUNIFact(provider: provider) {
+  const web3 = new Web3(provider);
+  const uniFactContract = new web3.eth.Contract((UNIFactContract.abi as unknown) as AbiItem, "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f");
+  return uniFactContract;
+}
+
+async function getUNI(provider: provider, address: string) {
+  const web3 = new Web3(provider)
+  const uniContract = new web3.eth.Contract((UNIContract.abi as unknown) as AbiItem, address);
+  return uniContract;
+}
+
+export async function getUniPrice(provider: provider, tokenA: string, tokenB: string) {
+  console.debug("getting uni price");
+  const uniFact = await getUNIFact(provider);
+  try {
+    const pair = await uniFact.methods.getPair(tokenA, tokenB).call();
+    const uniPair = await getUNI(provider, pair);
+    const token0 = await uniPair.methods.token0().call();
+    let reserves0: any = 0;
+    let reserves1: any = 0;
+    const res = await uniPair.methods.getReserves().call();
+    reserves0 = new BigNumber(res._reserve0);
+    reserves1 = new BigNumber(res._reserve1);
+    if (token0 == tokenA || token0.toLowerCase() == USDC) {
+      return reserves0.dividedBy(reserves1);
+    } else {
+      return reserves1.dividedBy(reserves0);
+    }
+  } catch (e) {
+    console.error("couldnt get uni price for:", tokenA, tokenB);
+    // console.log("user:", store.state.account, e);
   }
 }
 

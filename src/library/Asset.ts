@@ -42,10 +42,9 @@ export class Asset {
   //   return await this.methods.getPositionCR(this.asset);
   // };
 
-  // TODO getGCR
-  // getGCR = async () => {
-  //   return await this.methods.getGCR(this.asset);
-  // };
+  getGCR = async () => {
+    return await this.methods.getGCR(this.asset);
+  };
 
   mint = async (tokenQty: string, collateralQty: string, onTxHash?: (txHash: string) => void) => {
     return await this.methods.mint(this.asset, tokenQty, collateralQty, onTxHash);

@@ -1,6 +1,6 @@
 import { AbiItem } from "web3-utils";
 import { AssetGroupModel, AssetModel } from "../types/assets.t";
-import { approve, devMiningCalculator, getAllowance, getBalance, getDevMiningEmps, getPriceByContract, getUserTxStats, getWETH, sleep, waitTransaction } from "../utils/helpers";
+import { approve, devMiningCalculator, getAllowance, getUniPrice, getBalance, getDevMiningEmps, getPriceByContract, getUserTxStats, getWETH, sleep, waitTransaction } from "../utils/helpers";
 import moment from "moment";
 import UNIContract from "../../src/abi/uni.json";
 import EMPContract from "../../src/abi/emp.json";
@@ -578,26 +578,39 @@ export class AssetMethods {
     // return 0;
   };
 
-  // TODO getGCR
   /**
   * Get asset global collateral ratio (GCR)
   * @param {AssetModel} asset Asset object for the input
   * @public
   */
   getGCR = async (asset: AssetModel) => {
-    const empState = (asset ? await this.getEmpState(asset) : "bad");
-
-    if (empState != "bad") {
-      return
-    };
+    const empState = await this.getEmpState(asset);
 
     try {
-      console.debug(empState.expirationTimestamp);
-    } catch (e) {
-      return 0;
-    }
+      if (empState != "bad" && empState != undefined) {
+        const totalTokens = empState["totalTokensOutstanding"].div(new BigNumber(10).pow(new BigNumber(asset.token.decimals))).toNumber();
+        let totalColl;
+        let price; 
 
-    return {};
+        if (asset.collateral == "WETH") {
+          const collDec = new BigNumber(10).pow(new BigNumber(18)); 
+          price = await getUniPrice(this.options.provider, asset.token.address, WETH); 
+          totalColl = empState["cumulativeFeeMultiplier"].div(10 ** 18).times(empState["rawTotalPositionCollateral"].dividedBy(collDec)).toNumber();
+        } else if (asset.collateral == "USDC") {
+          const collDec = new BigNumber(10).pow(new BigNumber(6));
+          price = await getUniPrice(this.options.provider, asset.token.address, USDC);
+          totalColl = empState["cumulativeFeeMultiplier"].div(10 ** 18).times(empState["rawTotalPositionCollateral"].dividedBy(collDec)).toNumber();
+        } else {
+          throw "Collateral not found."
+        }
+
+        const gcr = totalTokens > 0 ? (totalColl / totalTokens / price).toFixed(4) : 0;
+        return gcr;
+      }
+    } catch (e) {
+      console.error("error", e)
+      return {};
+    }
   };
 
   /**
