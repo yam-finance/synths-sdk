@@ -13,6 +13,8 @@ import Assets from "../assets.json";
 import UNIFactContract from "../abi/uniFactory.json";
 import UNIContract from "../abi/uni.json"
 import { USDC } from "../utils/addresses"
+import fetch from 'node-fetch';
+
 
 export const sleep = (ms: number) => {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -182,6 +184,7 @@ export const getTxStats = async (
     let txs = json["result"];
     let count = txs.length;
     txs = await fetchTxs("ether", userAddress, count, endBlockNumber, etherscanApiKey, txs);
+
     // Fetch a list of "ERC20 - Token Transfer Events" by address (maximum of 10000 records only).
     // Continue fetching if response >= 1000.
     url = `https://api.etherscan.io/api?module=account&action=tokentx&address=${userAddress}&startblock=${startBlockNumber}&endblock=${endBlockNumber}&sort=asc&apikey=${etherscanApiKey}`;
@@ -284,7 +287,6 @@ async function getUNI(provider: provider, address: string) {
 }
 
 export async function getUniPrice(provider: provider, tokenA: string, tokenB: string) {
-  console.debug("getting uni price");
   const uniFact = await getUNIFact(provider);
   try {
     const pair = await uniFact.methods.getPair(tokenA, tokenB).call();
