@@ -73,6 +73,12 @@ describe('General function testing', () => {
     expect(typeof pos).toBe("string");
   });
 
+  it("getMiningRewards must return a string", async () => {
+    const apr = await SDK.methods.getMiningRewards(Assets[network]["ugas"][3]);
+    console.debug("APR: ", apr)
+    expect(typeof apr).toBe("number");
+  });
+
   // TODO Optimize loading time
   // it("getUserStats must return an object", async () => {
   //   const userStats = await SDK.methods.getUserStats();

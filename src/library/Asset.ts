@@ -49,6 +49,11 @@ export class Asset {
     return await this.methods.getGCR(this.asset);
   };
 
+  /* @ts-ignore */
+  getMiningRewards = async (asset) => {
+    return await this.methods.getMiningRewards(asset);
+  }
+
   mint = async (tokenQty: string, collateralQty: string, onTxHash?: (txHash: string) => void) => {
     return await this.methods.mint(this.asset, tokenQty, collateralQty, onTxHash);
   };

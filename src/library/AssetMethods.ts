@@ -216,21 +216,24 @@ export class AssetMethods {
   * @public
   * @methods
   */
-  getMiningRewards = async (assetGroup: AssetGroupModel, asset: AssetModel, assetPrice: number) => {
+   getMiningRewards = async (asset: AssetModel) => {
     // console.debug("sdk getMiningRewards", assetGroup, asset, assetPrice);
-    if (!assetGroup || !asset) {
-      return
+    /* @ts-ignore */
+    const assetGroup: AssetGroupModel = Assets[this.options.network];
+    const assetPrice = await this.getPrice(asset["token"]["address"])
+    if (!assetGroup || !asset || !assetPrice) {
+      return 0
     };
     try {
       const emps = await getDevMiningEmps(this.options.network);
       const devmining = await devMiningCalculator({
         provider: this.options.provider,
-        getPrice: getPriceByContract,
+        getPrice: this.getPrice,
         empAbi: EMPContract.abi,
       });
-      const getEmpInfo: any = await devmining.utils.getEmpInfo(asset.emp.address);
+      // const getEmpInfo: any = await devmining.utils.getEmpInfo(asset.emp.address);
       // console.debug("getEmpInfo", { size: getEmpInfo.size, price: getEmpInfo.price, decimals: getEmpInfo.decimals, });
-      const calculateEmpValue = await devmining.utils.calculateEmpValue(getEmpInfo);
+      // const calculateEmpValue = await devmining.utils.calculateEmpValue(getEmpInfo);
       // console.debug("calculateEmpValue", calculateEmpValue);
       const estimateDevMiningRewards = await devmining.estimateDevMiningRewards({
         totalRewards: emps.totalReward,
@@ -257,14 +260,15 @@ export class AssetMethods {
       let tokenPrice;
       if (asset.collateral === "USDC") {
         baseCollateral = new BigNumber(10).pow(6);
+        /* @ts-ignore */
         tokenPrice = assetPrice * 1;
         // } else if(assetInstance.collateral === "YAM"){
         //   tokenPrice = assetPrice * yamPrice;
       } else {
         baseCollateral = new BigNumber(10).pow(18);
-        tokenPrice = assetPrice * ethPrice;
+        /* @ts-ignore */
+        tokenPrice = assetPrice * 1;
       }
-      // console.debug("tokenPrice", tokenPrice);
 
       const current = moment().unix();
       const week1Until = 1615665600;
@@ -524,6 +528,9 @@ export class AssetMethods {
     if (!this.options.account) {
       return;
     }
+
+    const price = await getPriceByContract(tokenAddress) 
+    return price 
     // TODO get onchain price of the tokenAddress
   };
 
