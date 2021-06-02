@@ -1,5 +1,13 @@
 import Web3 from "web3/types";
 
+export type DevMiningCalculatorParams = {
+  ethers: any;
+  getPrice: any;
+  empAbi: any;
+  erc20Abi: any;
+  provider: any;
+};
+
 export interface AssetGroupModel {
   name: string;
   AssetModel: AssetModel[];

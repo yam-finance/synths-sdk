@@ -1,6 +1,6 @@
 import { AbiItem } from "web3-utils";
 import { AssetGroupModel, AssetModel } from "../types/assets.t";
-import { approve, devMiningCalculator, getAllowance, getUniPrice, getBalance, getDevMiningEmps, getPriceByContract, getTxStats, getWETH, sleep, waitTransaction } from "../utils/helpers";
+import { approve, devMiningCalculator, DevMiningCalculator, getAllowance, getUniPrice, getBalance, getDevMiningEmps, getPriceByContract, getTxStats, getWETH, sleep, waitTransaction } from "../utils/helpers";
 import moment from "moment";
 import UNIContract from "../../src/abi/uni.json";
 import EMPContract from "../../src/abi/emp.json";
@@ -8,6 +8,8 @@ import EMPContractOld from "../../src/abi/empold.json";
 import BigNumber from "bignumber.js";
 import { UMA, USDC, WETH, YAM } from "../utils/addresses";
 import Assets from "../assets.json";
+import { ethers } from "ethers";
+import erc20 from "@studydefi/money-legos/erc20"
 
 export class AssetMethods {
 
@@ -226,10 +228,12 @@ export class AssetMethods {
     };
     try {
       const emps = await getDevMiningEmps(this.options.network);
-      const devmining = await devMiningCalculator({
-        provider: this.options.provider,
+      const devmining = await DevMiningCalculator({
+        provider: this.options.ethersProvider,
+        ethers: ethers,
         getPrice: this.getPrice,
         empAbi: EMPContract.abi,
+        erc20Abi: erc20.abi
       });
       // const getEmpInfo: any = await devmining.utils.getEmpInfo(asset.emp.address);
       // console.debug("getEmpInfo", { size: getEmpInfo.size, price: getEmpInfo.price, decimals: getEmpInfo.decimals, });
@@ -267,6 +271,7 @@ export class AssetMethods {
       } else {
         baseCollateral = new BigNumber(10).pow(18);
         /* @ts-ignore */
+        // tokenPrice = assetPrice * ethPrice;
         tokenPrice = assetPrice * 1;
       }
 
@@ -306,6 +311,8 @@ export class AssetMethods {
         calcAsset = assetReserve0 * tokenPrice;
         calcCollateral = assetReserve1 * (asset.collateral == "WETH" ? ethPrice : 1);
       }
+
+      // ((dynamicAmountPerWeek * 52) * umaTokenPrice / 2) / (empCollateral + 50% totalCombinedLp) * 100 
 
       let empTVL = new BigNumber(contractEmpCall).dividedBy(baseAsset).toNumber();
       empTVL *= (asset.collateral == "WETH" ? ethPrice : 1);
