@@ -313,6 +313,7 @@ export class AssetMethods {
       }
 
 
+      // @notice New calculation based on the doc
       // umaRewardsPercentage = (`totalTokensOutstanding` * synthPrice) / whitelistedTVM
       let umaRewardsPercentage = new BigNumber(getEmpInfo.collateralCount).multipliedBy(getEmpInfo.tokenPrice)
       umaRewardsPercentage = umaRewardsPercentage.dividedBy(getEmpInfo.tokenCount) 
@@ -341,6 +342,7 @@ export class AssetMethods {
         collateralEfficiency 
       )
 
+      // @notice This is the old apr calculation
       // TODO: Remove old calculations 
       // ((dynamicAmountPerWeek * 52) * umaTokenPrice / 2) / (empCollateral + 50% totalCombinedLp) * 100 
       // let empTVL = new BigNumber(contractEmpCall).dividedBy(baseAsset).toNumber();
