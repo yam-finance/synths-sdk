@@ -235,8 +235,8 @@ export class AssetMethods {
         empAbi: EMPContract.abi,
         erc20Abi: erc20.abi
       });
-      // const getEmpInfo: any = await devmining.utils.getEmpInfo(asset.emp.address);
-      // console.debug("getEmpInfo", { size: getEmpInfo.size, price: getEmpInfo.price, decimals: getEmpInfo.decimals, });
+      const getEmpInfo: any = await devmining.utils.getEmpInfo(asset.emp.address);
+      console.debug("getEmpInfo", { tokenCount: getEmpInfo.tokenCount, price: getEmpInfo.tokenPrice, decimals: getEmpInfo.collateralDecimals, });
       // const calculateEmpValue = await devmining.utils.calculateEmpValue(getEmpInfo);
       // console.debug("calculateEmpValue", calculateEmpValue);
       const estimateDevMiningRewards = await devmining.estimateDevMiningRewards({
@@ -312,19 +312,47 @@ export class AssetMethods {
         calcCollateral = assetReserve1 * (asset.collateral == "WETH" ? ethPrice : 1);
       }
 
+
+      // umaRewardsPercentage = (`totalTokensOutstanding` * synthPrice) / whitelistedTVM
+      let umaRewardsPercentage = new BigNumber(getEmpInfo.collateralCount).multipliedBy(getEmpInfo.tokenPrice)
+      umaRewardsPercentage = umaRewardsPercentage.dividedBy(getEmpInfo.tokenCount) 
+      // dynamicAmountPerWeek = 50,000 * umaRewardsPercentage 
+      const dynamicAmountPerWeek = umaRewardsPercentage.multipliedBy(umaRewards) 
+      // dynamicAmountPerWeekInDollars = dynamicAmountPerWeek * UMA price
+      const dynamicAmountPerWeekInDollars = dynamicAmountPerWeek.multipliedBy(umaPrice) 
+      // standardWeeklyRewards = dynamicAmountPerWeekInDollars * developerRewardsPercentage
+      const standardWeeklyRewards = dynamicAmountPerWeekInDollars.multipliedBy(0.82) 
+      // totalWeeklyRewards = (standardRewards) + (Additional UMA * UMA price) + (Additional Yam * Yam Price)
+      const totalWeeklyRewards = standardWeeklyRewards.plus(weekRewards)
+      // sponsorAmountPerDollarMintedPerWeek = totalWeeklyRewards / (Synth in AMM pool * synth price)
+      const sponsorAmountPerDollarMintedPerWeek = totalWeeklyRewards.dividedBy(calcAsset)
+      // collateralEfficiency = 1 / (CR + 1)
+      const collateralEfficiency = new BigNumber(1).dividedBy(new BigNumber(1.5).plus(1))
+      // General APR = (sponsorAmountPerDollarMintedPerWeek * chosen collateralEfficiency * 52)  
+      const generalAPR = sponsorAmountPerDollarMintedPerWeek.multipliedBy(collateralEfficiency).multipliedBy(52).toNumber() 
+
+      console.log(
+        umaRewardsPercentage,
+        dynamicAmountPerWeek,
+        dynamicAmountPerWeekInDollars,
+        standardWeeklyRewards,
+        totalWeeklyRewards,
+        sponsorAmountPerDollarMintedPerWeek,
+        collateralEfficiency 
+      )
+
+      // TODO: Remove old calculations 
       // ((dynamicAmountPerWeek * 52) * umaTokenPrice / 2) / (empCollateral + 50% totalCombinedLp) * 100 
-
-      let empTVL = new BigNumber(contractEmpCall).dividedBy(baseAsset).toNumber();
-      empTVL *= (asset.collateral == "WETH" ? ethPrice : 1);
-
-      const uniLpPair = calcAsset + calcCollateral;
-      const assetReserveValue = empTVL + (uniLpPair * 0.5);
+      // let empTVL = new BigNumber(contractEmpCall).dividedBy(baseAsset).toNumber();
+      // empTVL *= (asset.collateral == "WETH" ? ethPrice : 1);
+      // const uniLpPair = calcAsset + calcCollateral;
+      // const assetReserveValue = empTVL + (uniLpPair * 0.5);
       // console.debug("assetReserveValue", assetReserveValue);
-      const aprCalculate = (((normalRewards * 52 * 0.82) / assetReserveValue) * 100);
-      const aprCalculateExtra = (((weekRewards * 52) / assetReserveValue) * 100);
-      const totalAprCalculation = aprCalculate + aprCalculateExtra;
+      // const aprCalculate = (((normalRewards * 52 * 0.82) / assetReserveValue) * 100);
+      // const aprCalculateExtra = (((weekRewards * 52) / assetReserveValue) * 100);
+      // const totalAprCalculation = aprCalculate + aprCalculateExtra;
       // console.debug("aprCalculate %", totalAprCalculation);
-      return totalAprCalculation;
+      return generalAPR;
     } catch (e) {
       console.error("error", e);
       return 0;

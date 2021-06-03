@@ -247,10 +247,11 @@ export async function getContractInfo(address: string) {
 }
 
 export async function getPriceByContract(address: string, toCurrency?: string) {
-  const result = await getContractInfo(address);
-  // while (!result) {
-  //   result = await getContractInfo(address); 
-  // }
+  // TODO: Remove while loop
+  let result = await getContractInfo(address);
+  while (!result) {
+    result = await getContractInfo(address); 
+  }
   return result && result.market_data && result.market_data.current_price[toCurrency || "usd"];
 }
 
