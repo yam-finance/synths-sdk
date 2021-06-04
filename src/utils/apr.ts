@@ -339,7 +339,6 @@ export function devMiningCalculator({
 
         const values: any[] = [];
         const totalValue = allInfo.reduce((totalValue, info) => {
-        console.log("Info", info)
         const value = calculateEmpValue(info);
         values.push(value);
         return totalValue.addUnsafe(value);
