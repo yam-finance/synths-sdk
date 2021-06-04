@@ -51,14 +51,6 @@ export class Asset {
     return await this.methods.getGCR(this.asset);
   };
 
-  /* @ts-ignore */
-  // getMiningRewards = async () => {
-  //   /* @ts-ignore */
-  //   const assetGroup: AssetGroupModel = Assets["mainnet"]["ugas"];
-  //   const assetPrice = await this.getPrice(this.asset["token"]["address"]);
-  //   return await this.methods.getMiningRewards(assetGroup, this.asset, assetPrice, 1.5);
-  // };
-
   mint = async (tokenQty: string, collateralQty: string, onTxHash?: (txHash: string) => void) => {
     return await this.methods.mint(this.asset, tokenQty, collateralQty, onTxHash);
   };
