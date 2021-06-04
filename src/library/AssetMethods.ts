@@ -219,19 +219,17 @@ export class AssetMethods {
   * @public
   * @methods
   */
-  getMiningRewards = async (assetGroup: number, asset: AssetModel) => {
-  // getMiningRewards = async (assetGroup: AssetGroupModel, asset: AssetModel, assetPrice: number, cr: number) => {
+  getMiningRewards = async (assetGroup: AssetGroupModel, asset: AssetModel, assetPrice: number, cr: number) => {
     
-    console.log("AssetGroup", assetGroup)
-    console.debug("Asset: ", asset)
-    // console.log(assetPrice)
-    // console.log(cr)
+    console.log("assetGroup", assetGroup)
+    console.debug("asset: ", asset)
+    console.log("assetPrice", assetPrice)
+    console.log("cr", cr)
 
     /// @dev Check if params are set
-    // if (!assetGroup || !asset || !assetPrice || !cr) {
-    //   return 0
-    // };
-    return 1
+    if (!assetGroup || !asset || !assetPrice || !cr) {
+      return 0
+    };
 
     try {
       /// @dev Get dev mining emp 
