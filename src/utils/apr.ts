@@ -31,7 +31,7 @@ export class MiningRewards {
         // TODO Use params for setup instead of test setup
         assetGroup = { name: "UGAS", AssetModel: Assets["mainnet"]["ugas"] } 
         asset = asset
-        assetPrice = await getPriceByContract(asset["token"]["address"]);
+        assetPrice = 242.93
         cr = 1.5
 
         // console.log("assetGroup", assetGroup)
@@ -59,7 +59,6 @@ export class MiningRewards {
 
         /// @dev Get emp info from devMiningCalculator
         const getEmpInfo: any = await devmining.utils.getEmpInfo(asset.emp.address);
-        console.debug("getEmpInfo", { tokenCount: getEmpInfo.tokenCount, price: getEmpInfo.tokenPrice, decimals: getEmpInfo.collateralDecimals, });
 
         /// @dev Get dev mining reward estimation from devMiningCalculator 
         const estimateDevMiningRewards = await devmining.estimateDevMiningRewards({
