@@ -1,6 +1,6 @@
 import { AbiItem } from "web3-utils";
 import { AssetGroupModel, AssetModel } from "../types/assets.t";
-import { approve, devMiningCalculator, DevMiningCalculator, getAllowance, getUniPrice, getBalance, getDevMiningEmps, getPriceByContract, getTxStats, getWETH, sleep, waitTransaction } from "../utils/helpers";
+import { approve, devMiningCalculator, getAllowance, getUniPrice, getBalance, getDevMiningEmps, getPriceByContract, getTxStats, getWETH, sleep, waitTransaction } from "../utils/helpers";
 import moment from "moment";
 import UNIContract from "../../src/abi/uni.json";
 import EMPContract from "../../src/abi/emp.json";
@@ -215,33 +215,44 @@ export class AssetMethods {
   * @param {AssetGroupModel} assetGroup Asset group of an asset for the input
   * @param {AssetModel} asset Asset object for the input
   * @param {number} assetPrice Asset price
+  * @param {number} cr Collateral Ratio
   * @public
   * @methods
   */
-   getMiningRewards = async (asset: AssetModel) => {
-    // console.debug("sdk getMiningRewards", assetGroup, asset, assetPrice);
-    /* @ts-ignore */
-    const assetGroup: AssetGroupModel = Assets[this.options.network];
-    const assetPrice = await this.getPrice(asset["token"]["address"])
-    if (!assetGroup || !asset || !assetPrice) {
-      return 0
-    };
+  getMiningRewards = async (assetGroup: number, asset: AssetModel) => {
+  // getMiningRewards = async (assetGroup: AssetGroupModel, asset: AssetModel, assetPrice: number, cr: number) => {
+    
+    console.log("AssetGroup", assetGroup)
+    console.debug("Asset: ", asset)
+    // console.log(assetPrice)
+    // console.log(cr)
+
+    /// @dev Check if params are set
+    // if (!assetGroup || !asset || !assetPrice || !cr) {
+    //   return 0
+    // };
+    return 1
+
     try {
-      const emps = await getDevMiningEmps(this.options.network);
-      const devmining = await DevMiningCalculator({
+      /// @dev Get dev mining emp 
+      const devMiningEmp = await getDevMiningEmps(this.options.network);
+
+      /// @dev Construct devMiningCalculator
+      const devmining = await devMiningCalculator({
         provider: this.options.ethersProvider,
         ethers: ethers,
-        getPrice: this.getPrice,
+        getPrice: getPriceByContract,
         empAbi: EMPContract.abi,
         erc20Abi: erc20.abi
       });
+      
       const getEmpInfo: any = await devmining.utils.getEmpInfo(asset.emp.address);
       console.debug("getEmpInfo", { tokenCount: getEmpInfo.tokenCount, price: getEmpInfo.tokenPrice, decimals: getEmpInfo.collateralDecimals, });
       // const calculateEmpValue = await devmining.utils.calculateEmpValue(getEmpInfo);
       // console.debug("calculateEmpValue", calculateEmpValue);
       const estimateDevMiningRewards = await devmining.estimateDevMiningRewards({
-        totalRewards: emps.totalReward,
-        empWhitelist: emps.empWhitelist,
+        totalRewards: devMiningEmp.totalReward,
+        empWhitelist: devMiningEmp.empWhitelist,
       });
       // console.debug("estimateDevMiningRewards", estimateDevMiningRewards);
       const rewards: any = {};
@@ -302,6 +313,7 @@ export class AssetMethods {
       let calcCollateral = 0;
       const normalRewards = umaRewards * umaPrice + yamRewards * yamPrice;
       const weekRewards = umaWeekRewards * umaPrice + yamWeekRewards * yamPrice;
+      console.log(contractLpCall)
       const assetReserve0 = new BigNumber(contractLpCall._reserve0).dividedBy(baseAsset).toNumber();
       const assetReserve1 = new BigNumber(contractLpCall._reserve1).dividedBy(baseCollateral).toNumber();
       if (assetGroup.name === "USTONKS") {
@@ -328,7 +340,7 @@ export class AssetMethods {
       // sponsorAmountPerDollarMintedPerWeek = totalWeeklyRewards / (Synth in AMM pool * synth price)
       const sponsorAmountPerDollarMintedPerWeek = totalWeeklyRewards.dividedBy(calcAsset)
       // collateralEfficiency = 1 / (CR + 1)
-      const collateralEfficiency = new BigNumber(1).dividedBy(new BigNumber(1.5).plus(1))
+      const collateralEfficiency = new BigNumber(1).dividedBy(new BigNumber(cr).plus(1))
       // General APR = (sponsorAmountPerDollarMintedPerWeek * chosen collateralEfficiency * 52)  
       const generalAPR = sponsorAmountPerDollarMintedPerWeek.multipliedBy(collateralEfficiency).multipliedBy(52).toNumber() 
 
@@ -555,21 +567,21 @@ export class AssetMethods {
     }
   };
 
-  /**
+ /**
   * Fetch the onchain token price
   * @param {string} tokenAddress Token address
   * @public
   */
-  getPrice = async (tokenAddress: string) => {
-    // console.debug("sdk getPrice", tokenAddress);
-    if (!this.options.account) {
-      return;
-    }
-
-    const price = await getPriceByContract(tokenAddress) 
-    return price 
-    // TODO get onchain price of the tokenAddress
-  };
+     getPrice = async (tokenAddress: string) => {
+      // console.debug("sdk getPrice", tokenAddress);
+      if (!this.options.account) {
+        return;
+      }
+  
+      const price = await getPriceByContract(tokenAddress) 
+      return price 
+      // TODO get onchain price of the tokenAddress
+    };
 
   /**
   * Fetch the position of an asset in relation to the connected user address

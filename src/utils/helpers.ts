@@ -7,7 +7,7 @@ import { provider, TransactionReceipt } from "web3-core";
 import { AbiItem } from "web3-utils";
 import { WETH } from "./addresses";
 import erc20 from "@studydefi/money-legos/erc20";
-import { JsonTxResult, DevMiningCalculatorParams } from "../types/assets.t";
+import { JsonTxResult, DevMiningCalculatorParams, AssetGroupModel } from "../types/assets.t";
 import { ethers } from "ethers";
 import Assets from "../assets.json";
 import UNIFactContract from "../abi/uniFactory.json";
@@ -241,6 +241,67 @@ export const getTxStats = async (
   }
 };
 
+// export function devMiningCalculator({ provider, getPrice, empAbi }: any) {
+//   const web3 = new Web3(provider);
+//   const { utils, BigNumber, FixedNumber } = ethers;
+//   const { parseEther } = utils;
+
+//   async function getEmpInfo(address: string, toCurrency = "usd") {
+//     try {
+//       const emp = new web3.eth.Contract((empAbi as unknown) as AbiItem, address);
+//       const collateralAddress = await emp.methods.collateralCurrency().call();
+//       const erc20Contract = new web3.eth.Contract((erc20.abi as unknown) as AbiItem, collateralAddress);
+//       const size = await emp.methods.rawTotalPositionCollateral().call();
+//       const price = await getPrice(collateralAddress, toCurrency);
+//       const decimals = await erc20Contract.methods.decimals().call();
+//       return {
+//         address,
+//         toCurrency,
+//         collateralAddress,
+//         size,
+//         price,
+//         decimals,
+//       };
+//     } catch (e) {
+//       console.log("error getting emp state", e);
+//       return "bad";
+//     }
+//   }
+
+//   function calculateEmpValue({ price, size, decimals }: { price: number; size: string; decimals: number }) {
+//     const fixedPrice = FixedNumber.from(price.toString() || 0);
+//     const fixedSize = FixedNumber.fromValue(BigNumber.from(size), decimals);
+//     return fixedPrice.mulUnsafe(fixedSize);
+//   }
+
+//   async function estimateDevMiningRewards({ totalRewards, empWhitelist }: { totalRewards: number; empWhitelist: string[] }) {
+//     const allInfo = await Promise.all(empWhitelist.map(address => getEmpInfo(address.toLowerCase())));
+//     const values: any[] = [];
+//     const totalValue = allInfo.reduce((totalValue: any, info: any) => {
+//       const value = calculateEmpValue(info);
+//       values.push(value);
+//       return totalValue.addUnsafe(value);
+//     }, FixedNumber.from("0"));
+//     return allInfo.map((info: any, i: any): [string, string] => {
+//       return [
+//         info.address,
+//         values[i]
+//           .mulUnsafe(FixedNumber.from(totalRewards))
+//           .divUnsafe(totalValue)
+//           .toString(),
+//       ];
+//     });
+//   }
+
+//   return {
+//     estimateDevMiningRewards,
+//     utils: {
+//       getEmpInfo,
+//       calculateEmpValue,
+//     },
+//   };
+// }
+
 export async function getContractInfo(address: string) {
   const data: any = await requestHttp(`https://api.coingecko.com/api/v3/coins/ethereum/contract/${address}`);
   return data;
@@ -263,16 +324,17 @@ function mergeUnique(arr1: any, arr2: any) {
   );
 }
 
-export async function getDevMiningEmps(network: any) {
+export async function getDevMiningEmps(network: String) {
   /* @ts-ignore */
-  const assets: any = Assets[network];
+  const assets: AssetGroupModel = Assets[network];
   if (assets) {
+    /* @ts-ignore */
     const data = [assets["ugas"][1].emp.address, assets["ugas"][2].emp.address, assets["ugas"][3].emp.address, assets["ustonks"][0].emp.address];
     const umadata: any = await requestHttp(`https://raw.githubusercontent.com/UMAprotocol/protocol/master/packages/affiliates/payouts/devmining-status.json`);
     const empWhitelistUpdated = mergeUnique(umadata.empWhitelist, data);
     umadata.empWhitelist = empWhitelistUpdated;
+
     return umadata;
-    // return emplistDataBackup;
   } else {
     return -1;
   }
@@ -312,70 +374,9 @@ export async function getUniPrice(provider: provider, tokenA: string, tokenB: st
   }
 }
 
-export function devMiningCalculator({ provider, getPrice, empAbi }: any) {
-  const web3 = new Web3(provider);
-  const { utils, BigNumber, FixedNumber } = ethers;
-  const { parseEther } = utils;
-
-  async function getEmpInfo(address: string, toCurrency = "usd") {
-    try {
-      const emp = new web3.eth.Contract((empAbi as unknown) as AbiItem, address);
-      const collateralAddress = await emp.methods.collateralCurrency().call();
-      const erc20Contract = new web3.eth.Contract((erc20.abi as unknown) as AbiItem, collateralAddress);
-      const size = await emp.methods.rawTotalPositionCollateral().call();
-      const price = await getPrice(collateralAddress, toCurrency);
-      const decimals = await erc20Contract.methods.decimals().call();
-      return {
-        address,
-        toCurrency,
-        collateralAddress,
-        size,
-        price,
-        decimals,
-      };
-    } catch (e) {
-      console.log("error getting emp state", e);
-      return "bad";
-    }
-  }
-
-  function calculateEmpValue({ price, size, decimals }: { price: number; size: string; decimals: number }) {
-    const fixedPrice = FixedNumber.from(price.toString() || 0);
-    const fixedSize = FixedNumber.fromValue(BigNumber.from(size), decimals);
-    return fixedPrice.mulUnsafe(fixedSize);
-  }
-
-  async function estimateDevMiningRewards({ totalRewards, empWhitelist }: { totalRewards: number; empWhitelist: string[] }) {
-    const allInfo = await Promise.all(empWhitelist.map(address => getEmpInfo(address.toLowerCase())));
-    const values: any[] = [];
-    const totalValue = allInfo.reduce((totalValue: any, info: any) => {
-      const value = calculateEmpValue(info);
-      values.push(value);
-      return totalValue.addUnsafe(value);
-    }, FixedNumber.from("0"));
-    return allInfo.map((info: any, i: any): [string, string] => {
-      return [
-        info.address,
-        values[i]
-          .mulUnsafe(FixedNumber.from(totalRewards))
-          .divUnsafe(totalValue)
-          .toString(),
-      ];
-    });
-  }
-
-  return {
-    estimateDevMiningRewards,
-    utils: {
-      getEmpInfo,
-      calculateEmpValue,
-    },
-  };
-}
-
 // UPDATE
 
-export function DevMiningCalculator({
+export function devMiningCalculator({
   provider,
   ethers,
   getPrice,

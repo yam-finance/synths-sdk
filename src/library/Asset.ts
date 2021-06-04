@@ -1,4 +1,6 @@
 import { AssetMethods } from "./AssetMethods";
+import Assets from "../assets.json";
+import { AssetGroupModel } from "../types/assets.t";
 
 export class Asset {
 
@@ -50,9 +52,13 @@ export class Asset {
   };
 
   /* @ts-ignore */
-  getMiningRewards = async (asset) => {
-    return await this.methods.getMiningRewards(asset);
-  }
+  getMiningRewards = async () => {
+    /* @ts-ignore */
+    const assetGroup: AssetGroupModel = await Assets["mainnet"]["ugas"];
+    console.debug("This is the assetGroup")
+    // const assetPrice = await this.getPrice(this.asset["token"]["address"]);
+    return await this.methods.getMiningRewards(1, this.asset);
+  };
 
   mint = async (tokenQty: string, collateralQty: string, onTxHash?: (txHash: string) => void) => {
     return await this.methods.mint(this.asset, tokenQty, collateralQty, onTxHash);
