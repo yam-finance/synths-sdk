@@ -137,9 +137,6 @@ export class MiningRewards {
         const weekRewards = umaWeekRewards * umaPrice + yamWeekRewards * yamPrice;
         const assetReserve0 = new BigNumber(contractLpCall._reserve0).dividedBy(baseAsset).toNumber();
         const assetReserve1 = new BigNumber(contractLpCall._reserve1).dividedBy(baseCollateral).toNumber();
-
-        console.log("R0", assetReserve0)
-        console.log("R1", assetReserve1)
         
         if (assetGroup.name === "USTONKS") {
             calcAsset = assetReserve1 * tokenPrice;
@@ -148,7 +145,6 @@ export class MiningRewards {
             calcAsset = assetReserve0 * tokenPrice;
             calcCollateral = assetReserve1 * (asset.collateral == "WETH" ? ethPrice : 1);
         }
-        
         
         // @notice New calculation based on the doc
         // umaRewardsPercentage = (`totalTokensOutstanding` * synthPrice) / whitelistedTVM
@@ -326,7 +322,6 @@ export function devMiningCalculator({
         );
 
         const values: any[] = [];
-        console.log(allInfo)
         const totalValue = allInfo.reduce((totalValue, info) => {
         console.log("Info", info)
         const value = calculateEmpValue(info);
