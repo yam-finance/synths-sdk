@@ -237,6 +237,7 @@ export function devMiningCalculator({
         const tokenPrice = await getPrice(tokenAddress, toCurrency).catch(
         () => null
         );
+        console.log("Fetched token Price: ", tokenPrice)
         const tokenCount = (await emp.totalTokensOutstanding()).toString();
         const tokenDecimals = (await tokenContract.decimals()).toString();
 
@@ -249,6 +250,7 @@ export function devMiningCalculator({
         const collateralPrice = await getPrice(collateralAddress, toCurrency).catch(
         () => null
         );
+        console.log("Fetched collateral Price: ", collateralPrice)
         const collateralCount = (await emp.totalPositionCollateral()).toString();
         const collateralDecimals = (await collateralContract.decimals()).toString();
         const collateralRequirement = (
