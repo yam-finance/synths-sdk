@@ -222,7 +222,6 @@ export class MiningRewards {
     getContractInfo = async (address: string) => {
         const data: any = await fetch(`https://api.coingecko.com/api/v3/coins/ethereum/contract/${address}`);
         const jsonData = await data.json()
-        console.log("Fetched data: ", jsonData)
         return jsonData;
       }
       
