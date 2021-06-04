@@ -1,5 +1,4 @@
 import { ethers } from "ethers"
-import { getPriceByContract } from "./helpers"
 import { AssetGroupModel, AssetModel, DevMiningCalculatorParams } from "../types/assets.t";
 import moment from "moment";
 import { AbiItem } from "web3-utils"
@@ -52,7 +51,7 @@ export class MiningRewards {
         const devmining = await devMiningCalculator({
             provider: this.options.ethersProvider,
             ethers: ethers,
-            getPrice: getPriceByContract,
+            getPrice: this.getPriceByContract,
             empAbi: EMPContract.abi,
             erc20Abi: erc20.abi
         });
@@ -86,9 +85,9 @@ export class MiningRewards {
         // const contractEmpCall = await contractEmp.methods.rawTotalPositionCollateral().call();
 
         /// @dev Get prices for relevant tokens 
-        const ethPrice = await getPriceByContract(WETH);
-        const umaPrice = await getPriceByContract(UMA);
-        const yamPrice = await getPriceByContract(YAM);
+        const ethPrice = await this.getPriceByContract(WETH);
+        const umaPrice = await this.getPriceByContract(UMA);
+        const yamPrice = await this.getPriceByContract(YAM);
         // const tokenPrice = await getPriceByContract(address);
         
         /// @dev Temp pricing
@@ -218,6 +217,22 @@ export class MiningRewards {
         } else {
           return -1;
         }
+      }
+
+    getContractInfo = async (address: string) => {
+        const data: any = await fetch(`https://api.coingecko.com/api/v3/coins/ethereum/contract/${address}`);
+        const jsonData = await data.json()
+        console.log("Fetched data: ", jsonData)
+        return jsonData;
+      }
+      
+    getPriceByContract = async (address: string, toCurrency?: string) => {
+        // TODO: Remove while loop
+        let result = await this.getContractInfo(address);
+        while (!result) {
+          result = await this.getContractInfo(address); 
+        }
+        return result && result.market_data && result.market_data.current_price[toCurrency || "usd"];
       }
 }
 
