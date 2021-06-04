@@ -1,14 +1,14 @@
 import { ethers } from "ethers"
-import { AssetGroupModel, AssetModel, DevMiningCalculatorParams } from "../types/assets.t";
 import moment from "moment";
 import { AbiItem } from "web3-utils"
+import BigNumber from "bignumber.js";
+import fetch from 'node-fetch';
+import { AssetGroupModel, AssetModel, DevMiningCalculatorParams } from "../types/assets.t";
 import UNIContract from "../abi/uni.json"
 import EMPContract from "../../src/abi/emp.json"
 import erc20 from "@studydefi/money-legos/erc20"
-import BigNumber from "bignumber.js";
-import { WETH, YAM, UMA } from "../utils/addresses";
 import Assets from "../assets.json";
-import fetch from 'node-fetch';
+import { WETH, YAM, UMA } from "../utils/addresses";
 
 export class MiningRewards {
     private options;
