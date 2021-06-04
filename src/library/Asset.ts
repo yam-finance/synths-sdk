@@ -54,7 +54,7 @@ export class Asset {
   /* @ts-ignore */
   getMiningRewards = async () => {
     /* @ts-ignore */
-    const assetGroup: AssetGroupModel = await Assets["mainnet"]["ugas"];
+    const assetGroup: AssetGroupModel = Assets["mainnet"]["ugas"];
     const assetPrice = await this.getPrice(this.asset["token"]["address"]);
     return await this.methods.getMiningRewards(assetGroup, this.asset, assetPrice, 1.5);
   };
