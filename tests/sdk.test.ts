@@ -78,7 +78,7 @@ describe('General function testing', () => {
   });
 
   it("getMiningRewards must return a string", async () => {
-    const apr = await SDK.apr.getMiningRewards(Assets[network]["ugas"][3]);
+    const apr = await SDK.apr.getMiningRewards(Assets[network]["ugas"][2]);
     console.debug("APR: ", apr)
     expect(typeof apr).toBe("number");
   });

@@ -254,30 +254,6 @@ export async function getPriceByContract(address: string, toCurrency?: string) {
   return result && result.market_data && result.market_data.current_price[toCurrency || "usd"];
 }
 
-function mergeUnique(arr1: any, arr2: any) {
-  return arr1.concat(
-    arr2.filter(function (item: any) {
-      return arr1.indexOf(item) === -1;
-    })
-  );
-}
-
-export async function getDevMiningEmps(network: String) {
-  /* @ts-ignore */
-  const assets: AssetGroupModel = Assets[network];
-  if (assets) {
-    /* @ts-ignore */
-    const data = [assets["ugas"][1].emp.address, assets["ugas"][2].emp.address, assets["ugas"][3].emp.address, assets["ustonks"][0].emp.address];
-    const umadata: any = await requestHttp(`https://raw.githubusercontent.com/UMAprotocol/protocol/master/packages/affiliates/payouts/devmining-status.json`);
-    const empWhitelistUpdated = mergeUnique(umadata.empWhitelist, data);
-    umadata.empWhitelist = empWhitelistUpdated;
-
-    return umadata;
-  } else {
-    return -1;
-  }
-}
-
 async function getUNIFact(provider: provider) {
   const web3 = new Web3(provider);
   const uniFactContract = new web3.eth.Contract((UNIFactContract.abi as unknown) as AbiItem, "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f");

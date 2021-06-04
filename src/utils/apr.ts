@@ -1,6 +1,6 @@
 import Web3 from "web3";
 import { ethers } from "ethers"
-import { getDevMiningEmps, getPriceByContract } from "./helpers"
+import { getPriceByContract } from "./helpers"
 import { AssetGroupModel, AssetModel, DevMiningCalculatorParams } from "../types/assets.t";
 import moment from "moment";
 import { AbiItem } from "web3-utils"
@@ -39,7 +39,7 @@ export class MiningRewards {
         
         try {
         /// @dev Get dev mining emp 
-        const devMiningEmp = await getDevMiningEmps(this.options.network);
+        const devMiningEmp = await this.getDevMiningEmps(this.options.network);
         
         /// @dev Construct devMiningCalculator
         const devmining = await devMiningCalculator({
@@ -176,6 +176,31 @@ export class MiningRewards {
         return 0;
         }
     };
+
+    mergeUnique = (arr1: any, arr2: any) => {
+        return arr1.concat(
+          arr2.filter(function (item: any) {
+            return arr1.indexOf(item) === -1;
+          })
+        );
+    }
+
+    getDevMiningEmps = async (network: String) => {
+        /* @ts-ignore */
+        const assets: AssetGroupModel = Assets[network];
+        if (assets) {
+          /* @ts-ignore */
+          const data = [assets["ugas"][1].emp.address, assets["ugas"][2].emp.address, assets["ugas"][3].emp.address, assets["ustonks"][0].emp.address];
+          const umadata: any = await fetch(`https://raw.githubusercontent.com/UMAprotocol/protocol/master/packages/affiliates/payouts/devmining-status.json`);
+          const umaDataJson = umadata.json()
+          const empWhitelistUpdated = this.mergeUnique(umaDataJson["empWhitelist"], data);
+          umadata.empWhitelist = empWhitelistUpdated;
+      
+          return umadata;
+        } else {
+          return -1;
+        }
+      }
 }
 
 export function devMiningCalculator({
