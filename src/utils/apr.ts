@@ -238,7 +238,7 @@ export function devMiningCalculator({
         const emp = new ethers.Contract(address, empAbi, provider);
         const tokenAddress = await emp.tokenCurrency();
         const tokenContract = new ethers.Contract(tokenAddress, erc20Abi, provider);
-        const tokenPrice = await getPrice(tokenAddress).catch(
+        const tokenPrice = await getPrice(tokenAddress, toCurrency).catch(
         () => null
         );
         const tokenCount = (await emp.totalTokensOutstanding()).toString();
@@ -250,7 +250,7 @@ export function devMiningCalculator({
         erc20Abi,
         provider
         );
-        const collateralPrice = await getPrice(collateralAddress).catch(
+        const collateralPrice = await getPrice(collateralAddress, toCurrency).catch(
         () => null
         );
         const collateralCount = (await emp.totalPositionCollateral()).toString();
@@ -326,6 +326,7 @@ export function devMiningCalculator({
         );
 
         const values: any[] = [];
+        console.log(allInfo)
         const totalValue = allInfo.reduce((totalValue, info) => {
         console.log("Info", info)
         const value = calculateEmpValue(info);
