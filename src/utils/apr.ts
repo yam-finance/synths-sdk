@@ -8,6 +8,8 @@ import EMPContract from "../../src/abi/emp.json"
 import erc20 from "@studydefi/money-legos/erc20"
 import BigNumber from "bignumber.js";
 import { WETH, YAM, UMA } from "../utils/addresses";
+import Assets from "../assets.json";
+import fetch from 'node-fetch';
 
 export class MiningRewards {
     private options;
@@ -24,12 +26,18 @@ export class MiningRewards {
     * @public
     * @methods
     */
-    getMiningRewards = async (assetGroup: AssetGroupModel, asset: AssetModel, assetPrice: number, cr: number) => {
+    getMiningRewards = async (asset: AssetModel, assetGroup: AssetGroupModel, assetPrice: number, cr: number) => {
 
-        console.log("assetGroup", assetGroup)
-        console.log("asset: ", asset)
-        console.log("assetPrice", assetPrice)
-        console.log("cr", cr)
+        // TODO Use params for setup instead of test setup
+        assetGroup = { name: "UGAS", AssetModel: Assets["mainnet"]["ugas"] } 
+        asset = asset
+        assetPrice = await getPriceByContract(asset["token"]["address"]);
+        cr = 1.5
+
+        // console.log("assetGroup", assetGroup)
+        // console.log("asset: ", asset)
+        // console.log("assetPrice", assetPrice)
+        // console.log("cr", cr)
         
         /// @dev Check if params are set
         if (!assetGroup || !asset || !assetPrice || !cr) {
@@ -48,7 +56,7 @@ export class MiningRewards {
             empAbi: EMPContract.abi,
             erc20Abi: erc20.abi
         });
-        
+
         /// @dev Get emp info from devMiningCalculator
         const getEmpInfo: any = await devmining.utils.getEmpInfo(asset.emp.address);
         console.debug("getEmpInfo", { tokenCount: getEmpInfo.tokenCount, price: getEmpInfo.tokenPrice, decimals: getEmpInfo.collateralDecimals, });
@@ -107,13 +115,13 @@ export class MiningRewards {
         const umaRewards = rewards[asset.emp.address];
         let yamWeekRewards = 0;
         let umaWeekRewards = 0;
-        if (assetGroup.name === "UGAS" && asset.cycle === "JUN" && asset.year === "21") {
+        if (assetGroup.name.toUpperCase() === "UGAS" && asset.cycle === "JUN" && asset.year === "21") {
             if (current < week1Until) {
             yamWeekRewards += 5000;
             } else if (current < week2Until) {
             yamWeekRewards += 10000;
             }
-        } else if (assetGroup.name === "USTONKS" && asset.cycle === "APR" && asset.year === "21") {
+        } else if (assetGroup.name.toUpperCase() === "USTONKS" && asset.cycle === "APR" && asset.year === "21") {
             if (current < week1Until) {
             umaWeekRewards += 5000;
             yamWeekRewards += 5000;
@@ -128,9 +136,12 @@ export class MiningRewards {
         let calcCollateral = 0;
         const normalRewards = umaRewards * umaPrice + yamRewards * yamPrice;
         const weekRewards = umaWeekRewards * umaPrice + yamWeekRewards * yamPrice;
-        console.log(contractLpCall)
         const assetReserve0 = new BigNumber(contractLpCall._reserve0).dividedBy(baseAsset).toNumber();
         const assetReserve1 = new BigNumber(contractLpCall._reserve1).dividedBy(baseCollateral).toNumber();
+
+        console.log("R0", assetReserve0)
+        console.log("R1", assetReserve1)
+        
         if (assetGroup.name === "USTONKS") {
             calcAsset = assetReserve1 * tokenPrice;
             calcCollateral = assetReserve0 * (asset.collateral == "WETH" ? ethPrice : 1);
@@ -204,10 +215,9 @@ export class MiningRewards {
           /* @ts-ignore */
           const data = [assets["ugas"][1].emp.address, assets["ugas"][2].emp.address, assets["ugas"][3].emp.address, assets["ustonks"][0].emp.address];
           const umadata: any = await fetch(`https://raw.githubusercontent.com/UMAprotocol/protocol/master/packages/affiliates/payouts/devmining-status.json`);
-          const umaDataJson = umadata.json()
+          const umaDataJson = await umadata.json()
           const empWhitelistUpdated = this.mergeUnique(umaDataJson["empWhitelist"], data);
           const umaObject = { empWhitelist: empWhitelistUpdated, totalReward: umaDataJson["totalReward"] };
-          console.log(umaObject.empWhitelist)
       
           return umaObject;
         } else {
@@ -318,6 +328,7 @@ export function devMiningCalculator({
 
         const values: any[] = [];
         const totalValue = allInfo.reduce((totalValue, info) => {
+        console.log("Info", info)
         const value = calculateEmpValue(info);
         values.push(value);
         return totalValue.addUnsafe(value);
