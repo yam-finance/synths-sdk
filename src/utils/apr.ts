@@ -1,4 +1,3 @@
-import Web3 from "web3";
 import { ethers } from "ethers"
 import { getPriceByContract } from "./helpers"
 import { AssetGroupModel, AssetModel, DevMiningCalculatorParams } from "../types/assets.t";
@@ -50,32 +49,42 @@ export class MiningRewards {
             erc20Abi: erc20.abi
         });
         
+        /// @dev Get emp info from devMiningCalculator
         const getEmpInfo: any = await devmining.utils.getEmpInfo(asset.emp.address);
         console.debug("getEmpInfo", { tokenCount: getEmpInfo.tokenCount, price: getEmpInfo.tokenPrice, decimals: getEmpInfo.collateralDecimals, });
-        // const calculateEmpValue = await devmining.utils.calculateEmpValue(getEmpInfo);
-        // console.debug("calculateEmpValue", calculateEmpValue);
+
+        /// @dev Get dev mining reward estimation from devMiningCalculator 
         const estimateDevMiningRewards = await devmining.estimateDevMiningRewards({
-            totalRewards: devMiningEmp.totalReward,
-            empWhitelist: devMiningEmp.empWhitelist,
+            /* @ts-ignore */
+            totalRewards: devMiningEmp["totalReward"],
+            /* @ts-ignore */
+            empWhitelist: devMiningEmp["empWhitelist"],
         });
-        // console.debug("estimateDevMiningRewards", estimateDevMiningRewards);
+
+        // TODO Object.fromEntries(estimateDevMiningRewards)
+        /// @dev Structure rewards
         const rewards: any = {};
         for (let i = 0; i < estimateDevMiningRewards.length; i++) {
             rewards[estimateDevMiningRewards[i][0]] = estimateDevMiningRewards[i][1];
         }
-        const baseGeneral = new BigNumber(10).pow(18);
-        const baseAsset = new BigNumber(10).pow(asset.token.decimals);
+
+        /// @dev Setup base variables for calculation
         let baseCollateral;
+        const baseAsset = new BigNumber(10).pow(asset.token.decimals);
+
+        /// @dev Setup contract calls
         const contractLp = new this.options.web3.eth.Contract((UNIContract.abi as unknown) as AbiItem, asset.pool.address);
-        const contractEmp = new this.options.web3.eth.Contract((EMPContract.abi as unknown) as AbiItem, asset.emp.address);
         const contractLpCall = await contractLp.methods.getReserves().call();
-        const contractEmpCall = await contractEmp.methods.rawTotalPositionCollateral().call();
+        // const contractEmp = new this.options.web3.eth.Contract((EMPContract.abi as unknown) as AbiItem, asset.emp.address);
+        // const contractEmpCall = await contractEmp.methods.rawTotalPositionCollateral().call();
+
+        /// @dev Get prices for relevant tokens 
         const ethPrice = await getPriceByContract(WETH);
         const umaPrice = await getPriceByContract(UMA);
         const yamPrice = await getPriceByContract(YAM);
         // const tokenPrice = await getPriceByContract(address);
         
-        // temp pricing
+        /// @dev Temp pricing
         let tokenPrice;
         if (asset.collateral === "USDC") {
             baseCollateral = new BigNumber(10).pow(6);
@@ -90,6 +99,7 @@ export class MiningRewards {
             tokenPrice = assetPrice * 1;
         }
         
+        /// @dev Prepare reward calculation
         const current = moment().unix();
         const week1Until = 1615665600;
         const week2Until = 1616961600;
@@ -113,6 +123,7 @@ export class MiningRewards {
             }
         }
         
+        /// @dev Calculate rewards
         let calcAsset = 0;
         let calcCollateral = 0;
         const normalRewards = umaRewards * umaPrice + yamRewards * yamPrice;
@@ -148,18 +159,8 @@ export class MiningRewards {
         // General APR = (sponsorAmountPerDollarMintedPerWeek * chosen collateralEfficiency * 52)  
         const generalAPR = sponsorAmountPerDollarMintedPerWeek.multipliedBy(collateralEfficiency).multipliedBy(52).toNumber() 
         
-        console.log(
-            umaRewardsPercentage,
-            dynamicAmountPerWeek,
-            dynamicAmountPerWeekInDollars,
-            standardWeeklyRewards,
-            totalWeeklyRewards,
-            sponsorAmountPerDollarMintedPerWeek,
-            collateralEfficiency 
-        )
-        
-        // @notice This is the old apr calculation
         // TODO: Remove old calculations 
+        // @notice Old apr calculation
         // ((dynamicAmountPerWeek * 52) * umaTokenPrice / 2) / (empCollateral + 50% totalCombinedLp) * 100 
         // let empTVL = new BigNumber(contractEmpCall).dividedBy(baseAsset).toNumber();
         // empTVL *= (asset.collateral == "WETH" ? ethPrice : 1);
@@ -170,6 +171,17 @@ export class MiningRewards {
         // const aprCalculateExtra = (((weekRewards * 52) / assetReserveValue) * 100);
         // const totalAprCalculation = aprCalculate + aprCalculateExtra;
         // console.debug("aprCalculate %", totalAprCalculation);
+
+        console.log(
+            umaRewardsPercentage,
+            dynamicAmountPerWeek,
+            dynamicAmountPerWeekInDollars,
+            standardWeeklyRewards,
+            totalWeeklyRewards,
+            sponsorAmountPerDollarMintedPerWeek,
+            collateralEfficiency 
+        );
+
         return generalAPR;
         } catch (e) {
         console.error("error", e);
