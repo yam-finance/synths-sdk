@@ -18,8 +18,8 @@ export class MiningRewards {
 
     /**
     * Fetch the mining rewards
-    * @param {AssetGroupModel} assetGroup Asset group of an asset for the input
     * @param {AssetModel} asset Asset object for the input
+    * @param {AssetGroupModel} assetGroup Asset group of an asset for the input
     * @param {number} assetPrice Asset price
     * @param {number} cr Collateral Ratio
     * @public
