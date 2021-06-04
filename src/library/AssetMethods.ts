@@ -222,7 +222,7 @@ export class AssetMethods {
   getMiningRewards = async (assetGroup: AssetGroupModel, asset: AssetModel, assetPrice: number, cr: number) => {
     
     console.log("assetGroup", assetGroup)
-    console.debug("asset: ", asset)
+    console.log("asset: ", asset)
     console.log("assetPrice", assetPrice)
     console.log("cr", cr)
 
