@@ -194,9 +194,10 @@ export class MiningRewards {
           const umadata: any = await fetch(`https://raw.githubusercontent.com/UMAprotocol/protocol/master/packages/affiliates/payouts/devmining-status.json`);
           const umaDataJson = umadata.json()
           const empWhitelistUpdated = this.mergeUnique(umaDataJson["empWhitelist"], data);
-          umadata.empWhitelist = empWhitelistUpdated;
+          const umaObject = { empWhitelist: empWhitelistUpdated, totalReward: umaDataJson["totalReward"] };
+          console.log(umaObject.empWhitelist)
       
-          return umadata;
+          return umaObject;
         } else {
           return -1;
         }
