@@ -239,7 +239,7 @@ export function devMiningCalculator({
         const emp = new ethers.Contract(address, empAbi, provider);
         const tokenAddress = await emp.tokenCurrency();
         const tokenContract = new ethers.Contract(tokenAddress, erc20Abi, provider);
-        const tokenPrice = await getPrice(tokenAddress, toCurrency).catch(
+        const tokenPrice = await getPrice(tokenAddress).catch(
         () => null
         );
         const tokenCount = (await emp.totalTokensOutstanding()).toString();
@@ -251,7 +251,7 @@ export function devMiningCalculator({
         erc20Abi,
         provider
         );
-        const collateralPrice = await getPrice(collateralAddress, toCurrency).catch(
+        const collateralPrice = await getPrice(collateralAddress).catch(
         () => null
         );
         const collateralCount = (await emp.totalPositionCollateral()).toString();
