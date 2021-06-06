@@ -185,8 +185,7 @@ export class MiningRewards {
       // TODO Calculate whitelistedTVM
       umaRewardsPercentage = umaRewardsPercentage.dividedBy(10000);
       // dynamicAmountPerWeek = 50,000 * umaRewardsPercentage
-      const dynamicAmountPerWeek =
-        umaRewardsPercentage.multipliedBy(umaRewards);
+      const dynamicAmountPerWeek = umaRewardsPercentage.multipliedBy(50_000);
       // dynamicAmountPerWeekInDollars = dynamicAmountPerWeek * UMA price
       const dynamicAmountPerWeekInDollars =
         dynamicAmountPerWeek.multipliedBy(umaPrice);
