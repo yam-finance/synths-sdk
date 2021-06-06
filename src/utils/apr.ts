@@ -252,9 +252,13 @@ export class MiningRewards {
     if (assets) {
       /* @ts-ignore */
       const data = [
+        /* @ts-ignore */
         assets["ugas"][1].emp.address,
+        /* @ts-ignore */
         assets["ugas"][2].emp.address,
+        /* @ts-ignore */
         assets["ugas"][3].emp.address,
+        /* @ts-ignore */
         assets["ustonks"][0].emp.address,
       ];
       const umadata: any = await fetch(
