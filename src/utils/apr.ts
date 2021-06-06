@@ -79,6 +79,15 @@ export class MiningRewards {
         }
       );
 
+      const whitelistedTVM = await devmining.estimateWhitelistedTVM(
+        {
+            /* @ts-ignore */
+            totalRewards: devMiningEmp["totalReward"],
+            /* @ts-ignore */
+            empWhitelist: devMiningEmp["empWhitelist"],
+          }  
+      );
+
       // TODO Object.fromEntries(estimateDevMiningRewards)
       /// @dev Structure rewards
       const rewards: any = {};
@@ -183,7 +192,7 @@ export class MiningRewards {
         getEmpInfo.tokenCount
       ).multipliedBy(getEmpInfo.tokenPrice);
       // TODO Calculate whitelistedTVM
-      umaRewardsPercentage = umaRewardsPercentage.dividedBy(10000);
+      umaRewardsPercentage = umaRewardsPercentage.dividedBy(whitelistedTVM);
       // dynamicAmountPerWeek = 50,000 * umaRewardsPercentage
       const dynamicAmountPerWeek = umaRewardsPercentage.multipliedBy(50_000);
       // dynamicAmountPerWeekInDollars = dynamicAmountPerWeek * UMA price
@@ -421,8 +430,30 @@ export function devMiningCalculator({
     });
   }
 
+  async function estimateWhitelistedTVM({
+    totalRewards,
+    empWhitelist,
+  }: {
+    totalRewards: number;
+    empWhitelist: string[];
+  }) {
+    const allInfo = await Promise.all(
+      empWhitelist.map((address) => getEmpInfo(address))
+    );
+
+    const values: any[] = [];
+    const totalValue = allInfo.reduce((totalValue, info) => {
+      const value = calculateEmpValue(info);
+      values.push(value);
+      return totalValue.addUnsafe(value);
+    }, FixedNumber.from("0"));
+
+    return totalValue;
+  }
+
   return {
     estimateDevMiningRewards,
+    estimateWhitelistedTVM,
     utils: {
       getEmpInfo,
       calculateEmpValue,
