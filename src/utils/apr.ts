@@ -147,8 +147,10 @@ export class MiningRewards {
         
         // @notice New calculation based on the doc
         // umaRewardsPercentage = (`totalTokensOutstanding` * synthPrice) / whitelistedTVM
-        let umaRewardsPercentage = new BigNumber(getEmpInfo.collateralCount).multipliedBy(getEmpInfo.tokenPrice)
-        umaRewardsPercentage = umaRewardsPercentage.dividedBy(getEmpInfo.tokenCount) 
+        /// TVM = sum of all marketcaps of all synths.
+        let umaRewardsPercentage = new BigNumber(getEmpInfo.tokenCount).multipliedBy(getEmpInfo.tokenPrice)
+        // TODO Calculate whitelistedTVM
+        umaRewardsPercentage = umaRewardsPercentage.dividedBy(/* whitelistedTVM */) 
         // dynamicAmountPerWeek = 50,000 * umaRewardsPercentage 
         const dynamicAmountPerWeek = umaRewardsPercentage.multipliedBy(umaRewards) 
         // dynamicAmountPerWeekInDollars = dynamicAmountPerWeek * UMA price
