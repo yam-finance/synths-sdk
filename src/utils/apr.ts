@@ -448,7 +448,7 @@ export function devMiningCalculator({
       return totalValue.addUnsafe(value);
     }, FixedNumber.from("0"));
 
-    return totalValue;
+    return totalValue.toString();
   }
 
   return {
