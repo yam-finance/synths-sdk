@@ -167,6 +167,7 @@ export class MiningRewards {
 
       /// @dev Prepare calculation
       // getEmpInfo.tokenCount
+      /// @TODO tokenCount should already be passed using the right params
       const _tokenCount: number = Number(utils.formatUnits(getEmpInfo.tokenCount, 18))
       console.log("_tokenCount", _tokenCount.toString())
       // tokenPrice
