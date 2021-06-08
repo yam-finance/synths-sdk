@@ -166,6 +166,7 @@ export class MiningRewards {
       }
 
       /// @dev Prepare calculation
+      console.log("assetName", assetGroup.name + "-" + asset.cycle + asset.year)
       // getEmpInfo.tokenCount
       /// @TODO tokenCount should already be passed using the right params
       const _tokenCount: number = Number(utils.formatUnits(getEmpInfo.tokenCount, 18))
@@ -233,6 +234,11 @@ export class MiningRewards {
       // General APR = (sponsorAmountPerDollarMintedPerWeek * chosen collateralEfficiency * 52)
       const generalAPR: number = sponsorAmountPerDollarMintedPerWeek * collateralEfficiency * _numberOfWeeksInYear * 100;
       console.log("generalAPR", generalAPR.toString())
+      console.log("------------------------------------")
+
+      if (generalAPR === Infinity) {
+        return 0;
+      }
 
       return generalAPR;
     } catch (e) {
