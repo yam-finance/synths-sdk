@@ -47,6 +47,7 @@ export class MiningRewards {
     }
 
     try {
+      /// @notice START
       /// @dev Get dev mining emp
       const devMiningEmp = await this.getDevMiningEmps(network);
 
@@ -83,6 +84,7 @@ export class MiningRewards {
           estimateDevMiningRewards[i][1];
         whitelistedTVM = estimateDevMiningRewards[i][2];
       }
+      /// @notice END
 
       /// @dev Setup base variables for calculation
       let baseCollateral;
