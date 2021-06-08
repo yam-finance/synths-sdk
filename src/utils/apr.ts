@@ -167,7 +167,7 @@ export class MiningRewards {
       // getEmpInfo.tokenCount
       const _tokenCount: number = Number(utils.formatUnits(getEmpInfo.tokenCount, 18))
       console.log("_tokenCount", _tokenCount.toString())
-      // getEmpInfo.tokenPrice
+      // tokenPrice
       const _tokenPrice: number = tokenPrice
       console.log("_tokenPrice", _tokenPrice)
       // whitelistedTVM
