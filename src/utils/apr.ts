@@ -1,6 +1,5 @@
 import { ethers, utils, BigNumber } from "ethers";
 import moment from "moment";
-import { AbiItem } from "web3-utils";
 import fetch from "node-fetch";
 import {
   AssetGroupModel,
@@ -165,7 +164,6 @@ export class MiningRewards {
       }
 
       /// @dev Prepare calculation
-      console.log(getEmpInfo.collateralCount)
       // getEmpInfo.tokenCount
       const _tokenCount: number = Number(utils.formatUnits(getEmpInfo.tokenCount, 18))
       console.log("_tokenCount", _tokenCount.toString())
