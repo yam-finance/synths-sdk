@@ -28,8 +28,8 @@ export class MiningRewards {
    * @methods
    */
   getMiningRewards = async (
-    assetGroup: AssetGroupModel,
     asset: AssetModel,
+    assetGroup: AssetGroupModel,
     assetPrice: number,
     cr: number,
   ) => {
