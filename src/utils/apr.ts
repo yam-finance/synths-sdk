@@ -21,16 +21,16 @@ export class MiningRewards {
 
   /**
    * Fetch the mining rewards
-   * @param {AssetModel} asset Asset object for the input
    * @param {AssetGroupModel} assetGroup Asset group of an asset for the input
+   * @param {AssetModel} asset Asset object for the input
    * @param {number} assetPrice Asset price
    * @param {number} cr Collateral Ratio
    * @public
    * @methods
    */
   getMiningRewards = async (
-    asset: AssetModel,
     assetGroup: AssetGroupModel,
+    asset: AssetModel,
     assetPrice: number,
     cr: number,
   ) => {
@@ -90,11 +90,8 @@ export class MiningRewards {
       const baseAsset = BigNumber.from(10).pow(asset.token.decimals);
 
       /// @dev Setup contract calls
-      const contractLp = new this.options.web3.eth.Contract(
-        UNIContract.abi as unknown as AbiItem,
-        asset.pool.address
-      );
-      const contractLpCall = await contractLp.methods.getReserves().call();
+      const contractLp = new ethers.Contract(asset.pool.address, UNIContract.abi, ethersProvider);
+      const contractLpCall = await contractLp.getReserves();
       // const contractEmp = new this.options.web3.eth.Contract((EMPContract.abi as unknown) as AbiItem, asset.emp.address);
       // const contractEmpCall = await contractEmp.methods.rawTotalPositionCollateral().call();
 
