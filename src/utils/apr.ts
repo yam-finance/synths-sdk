@@ -270,7 +270,7 @@ export class MiningRewards {
         /* @ts-ignore */
         assets["ustonks"][0].emp.address,
         /* @ts-ignore */
-        assets["uStonks"][1].emp.address,
+        assets["ustonks"][1].emp.address,
       ];
       const umadata: any = await fetch(
         `https://raw.githubusercontent.com/UMAprotocol/protocol/master/packages/affiliates/payouts/devmining-status.json`
