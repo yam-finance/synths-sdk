@@ -166,6 +166,7 @@ export class MiningRewards {
       }
 
       /// @dev Prepare calculation
+      console.log("asset", asset)
       console.log("assetName", assetGroup.name + "-" + asset.cycle + asset.year)
       // getEmpInfo.tokenCount
       /// @TODO tokenCount should already be passed using the right params
