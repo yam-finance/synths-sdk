@@ -28,8 +28,8 @@ export class AssetMethods {
 
   /**
   * Fetch user transactions statistics
-  * @param {string} startDate Start date of the input
-  * @param {string} endDate End date of the input
+  * @param {number} startTimestamp Start timestamp of the input
+  * @param {number} endTimestamp End timestamp of the input
   * @public
   * @methods
   */

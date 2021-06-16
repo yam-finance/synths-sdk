@@ -67,25 +67,25 @@ describe('General function testing', () => {
 
   it("getGCR must return an string", async () => {
     const gcr = await SDK.methods.getGCR(Assets[network]["ugas"][0]);
-    console.debug("gcr", gcr)
+    // console.debug("gcr", gcr)
     expect(typeof gcr).toBe("string");
   });
 
   it("getPositionCR must return an string", async () => {
     const pos = await SDK.methods.getPositionCR(Assets[network]["ugas"][0]);
-    console.debug("pos", pos)
+    // console.debug("pos", pos)
     expect(typeof pos).toBe("string");
   });
 
   it("getAPR should return a number", async () => {
     const apr = await SDK.methods.getAPR();
-    console.debug("apr", apr)
+    // console.debug("apr", apr)
     expect(typeof apr).toBe("number");
   });
 
   it("getUserStats must return an object", async () => {
-    const userStats = await SDK.methods.getUserStats();
-    console.debug("userStats", userStats)
+    const userStats = await SDK.methods.getUserStats(1623619086, 1623885486);
+    // console.debug("stats", userStats)
     expect(typeof userStats).toBe("object");
   })
 

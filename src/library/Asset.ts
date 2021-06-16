@@ -43,8 +43,9 @@ export class Asset {
     return await this.methods.getPositionCR(this.asset);
   };
 
-  getUserStats = async () => {
-    return await this.methods.getUserStats(1623619086, 1623885486)
+  /// @TODO Check param bug
+  getUserStats = async (_startTs: number, _endTs: number) => {
+    return await this.methods.getUserStats(_startTs, _endTs)
   }
 
   getAPR = async () => {
