@@ -1,7 +1,7 @@
 import Web3 from "web3";
 import BigNumber from "bignumber.js";
 import { provider } from "web3-core";
-import { JsonTxResult, AssetGroupModel } from "../types/assets.t";
+import { JsonTxResult } from "../types/stats.t";
 import axios from 'axios';
 import { sleep } from './helpers'
 
