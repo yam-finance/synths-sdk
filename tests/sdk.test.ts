@@ -77,6 +77,9 @@ describe('General function testing', () => {
     expect(typeof pos).toBe("string");
   });
 
+  /**
+   * @notice The following method tests should be abandoned in the future.
+   */
   it("getAPR should return a number", async () => {
     const apr = await SDK.methods.getAPR();
     // console.debug("apr", apr)
