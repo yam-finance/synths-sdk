@@ -1,3 +1,8 @@
+/**
+ * @notice The following is an sdk implementation of the apr calculation.
+ * This code is not used in any test. To enable a test call, uncomment the
+ * necessary lines in src/index.ts and add a test case.
+ */
 import { request } from 'graphql-request';
 import moment from 'moment';
 import axios from 'axios';
@@ -9,6 +14,7 @@ import erc20 from "@studydefi/money-legos/erc20";
 import { ExternalProvider, Web3Provider } from '@ethersproject/providers';
 import { ISynth, AssetModel, DevMiningCalculatorParams, ILiquidityPool } from '../types/assets.t';
 import { BigNumber, ethers, utils, constants, providers } from 'ethers';
+/* @ts-ignore */
 import sessionStorage from 'node-sessionstorage';
 import {
   UNISWAP_ENDPOINT,
