@@ -27,6 +27,27 @@ export class AssetMethods {
   }
 
   /**
+  * Fetch user transactions statistics
+  * @param {string} startDate Start date of the input
+  * @param {string} endDate End date of the input
+  * @public
+  * @methods
+  */
+  getUserStats = async (startTimestamp: number, endTimestamp: number) => {
+    startTimestamp = 0;
+    endTimestamp = 1621298935;
+
+    const [txGasCostETH, averageTxPrice, txCount, failedTxCount, failedTxGasCostETH] = await getTxStats(
+      this.options.provider,
+      this.options.account,
+      startTimestamp,
+      endTimestamp,
+    );
+
+    return [txGasCostETH, averageTxPrice, txCount, failedTxCount, failedTxGasCostETH];
+  };
+
+  /**
   * Wrap ETH to WETH
   * @param {string} amount Amount of ETH to wrap
   * @public
@@ -128,27 +149,6 @@ export class AssetMethods {
       console.error("error", e);
       return 0;
     }
-  };
-
-  /**
-  * Fetch user transactions statistics
-  * @param {string} startDate Start date of the input
-  * @param {string} endDate End date of the input
-  * @public
-  * @methods
-  */
-  getUserStats = async (startTimestamp: number, endTimestamp: number) => {
-    startTimestamp = 0;
-    endTimestamp = 1621298935;
-
-    const [txGasCostETH, averageTxPrice, txCount, failedTxCount, failedTxGasCostETH] = await getTxStats(
-      this.options.provider,
-      this.options.account,
-      startTimestamp,
-      endTimestamp,
-    );
-
-    return [txGasCostETH, averageTxPrice, txCount, failedTxCount, failedTxGasCostETH];
   };
 
   /**
