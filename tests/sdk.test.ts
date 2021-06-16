@@ -77,6 +77,12 @@ describe('General function testing', () => {
     expect(typeof pos).toBe("string");
   });
 
+  it("getAPR should return a number", async () => {
+    const apr = await SDK.methods.getAPR();
+    console.debug("apr", apr)
+    expect(typeof apr).toBe("number");
+  });
+
   // TODO Optimize loading time
   // it("getUserStats must return an object", async () => {
   //   const userStats = await SDK.methods.getUserStats();

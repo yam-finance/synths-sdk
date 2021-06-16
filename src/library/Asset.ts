@@ -47,6 +47,10 @@ export class Asset {
     return await this.methods.getUserStats(0, 1621298935)
   }
 
+  getAPR = async () => {
+    return await this.methods.getAPR("73", "1.5")
+  }
+
   getGCR = async () => {
     return await this.methods.getGCR(this.asset);
   };
@@ -84,4 +88,3 @@ export class Asset {
   };
 
 }
-

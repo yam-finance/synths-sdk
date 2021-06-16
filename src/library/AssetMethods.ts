@@ -15,6 +15,17 @@ export class AssetMethods {
   }
 
   /**
+  * Calculate apr with aprMultiplier
+  * @param {string} aprMultiplier Amount of ETH to wrap
+  * @param {string} cr Collateral requirement
+  * @public
+  * @methods
+  */
+  getAPR = async (aprMultiplier: string, cr: string) => {
+    return (1 / (Number(cr) + 1)) * Number(aprMultiplier);
+  }
+
+  /**
   * Wrap ETH to WETH
   * @param {string} amount Amount of ETH to wrap
   * @public
@@ -131,11 +142,11 @@ export class AssetMethods {
     console.debug("sdk getUserTxStats", startTimestamp, endTimestamp);
 
     const [txGasCostETH, averageTxPrice, txCount, failedTxCount, failedTxGasCostETH] = await getTxStats(
-      this.options.provider, 
+      this.options.provider,
       this.options.account,
       startTimestamp,
       endTimestamp,
-    ); 
+    );
 
     return [txGasCostETH, averageTxPrice, txCount, failedTxCount, failedTxGasCostETH];
   };
@@ -391,9 +402,9 @@ export class AssetMethods {
       if (!this.options.account) {
         return;
       }
-  
-      const price = await getPriceByContract(tokenAddress) 
-      return price 
+
+      const price = await getPriceByContract(tokenAddress)
+      return price
       // TODO get onchain price of the tokenAddress
     };
 
@@ -452,17 +463,17 @@ export class AssetMethods {
   * @public
   */
   getPositionCR = async (asset: AssetModel) => {
-    const currPos = await this.getPosition(asset); 
+    const currPos = await this.getPosition(asset);
 
     try {
       let currCollat;
 
-      if (asset.collateral == "WETH") { 
-        const collDec = new BigNumber(10).pow(new BigNumber(18)); 
+      if (asset.collateral == "WETH") {
+        const collDec = new BigNumber(10).pow(new BigNumber(18));
         currCollat = new BigNumber(currPos.rawCollateral).div(collDec).toFixed(4).toString()
       } else if (asset.collateral == "USDC") {
         const collDec = new BigNumber(10).pow(new BigNumber(6));
-        currCollat = new BigNumber(currPos.rawCollateral).div(collDec).toFixed(4).toString() 
+        currCollat = new BigNumber(currPos.rawCollateral).div(collDec).toFixed(4).toString()
       }
 
       return currCollat;
@@ -484,11 +495,11 @@ export class AssetMethods {
       if (empState != "bad" && empState != undefined) {
         const totalTokens = empState["totalTokensOutstanding"].div(new BigNumber(10).pow(new BigNumber(asset.token.decimals))).toNumber();
         let totalColl;
-        let price; 
+        let price;
 
         if (asset.collateral == "WETH") {
-          const collDec = new BigNumber(10).pow(new BigNumber(18)); 
-          price = await getUniPrice(this.options.provider, asset.token.address, WETH); 
+          const collDec = new BigNumber(10).pow(new BigNumber(18));
+          price = await getUniPrice(this.options.provider, asset.token.address, WETH);
           totalColl = empState["cumulativeFeeMultiplier"].div(10 ** 18).times(empState["rawTotalPositionCollateral"].dividedBy(collDec)).toNumber();
         } else if (asset.collateral == "USDC") {
           const collDec = new BigNumber(10).pow(new BigNumber(6));
