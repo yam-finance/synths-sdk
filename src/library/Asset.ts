@@ -44,7 +44,7 @@ export class Asset {
   };
 
   getUserStats = async () => {
-    return await this.methods.getUserStats(0, 1621298935)
+    return await this.methods.getUserStats(1623619086, 1623885486)
   }
 
   getAPR = async () => {

@@ -44,6 +44,12 @@ const fetchTxs = async (_type: string, _userAddress: string, _count: number, _en
   return _txs;
 };
 
+const getBlockNumberByTimestamp = async (_timestamp: number, _etherscanApiKey: string) => {
+  let url = `https://api.etherscan.io/api?module=block&action=getblocknobytime&timestamp=${_timestamp}&closest=before&apikey=${_etherscanApiKey}`
+  let response = await axios.get(url);
+  return response.data["result"]
+}
+
 export const getTxStats = async (
   provider: provider,
   userAddress: string,
@@ -55,12 +61,15 @@ export const getTxStats = async (
   let gasFeeTotal = 0;
   let gasPriceTotal = 0;
   let gasFeeTotalFail = 0;
-  const startBlockNumber = 0;
-  const endBlockNumber = await web3.eth.getBlockNumber(function (error, result) {
+  let startBlockNumber = 0;
+  let endBlockNumber = await web3.eth.getBlockNumber(function (error, result) {
     if (!error) return result;
   });
 
   try {
+    startBlockNumber = await getBlockNumberByTimestamp(startTimeStamp, etherscanApiKey)
+    endBlockNumber = await getBlockNumberByTimestamp(endTimeStamp, etherscanApiKey)
+
     // Fetch a list of 'normal' unique outgoing transactions by address (maximum of 10000 records only).
     // Continue fetching if response >= 1000.
     let url = `https://api.etherscan.io/api?module=account&action=txlist&address=${userAddress}&startblock=${startBlockNumber}&endblock=${endBlockNumber}&sort=asc&apikey=${etherscanApiKey}`;
@@ -84,12 +93,6 @@ export const getTxStats = async (
 
     // Show only txs that come from the user address.
     let txsOut: any = txs.filter((v: any) => v.from === userAddress.toLowerCase());
-    if (startTimeStamp > 0) {
-      txsOut = txsOut.filter((v: any) => v.timeStamp > Math.floor(startTimeStamp / 1000));
-    }
-    if (endTimeStamp > 0) {
-      txsOut = txsOut.filter((v: any) => v.timeStamp < Math.floor(endTimeStamp / 1000));
-    }
     txsOut = txsOut.map(({ confirmations, ...item }: any) => item);
     txsOut = new Set(txsOut.map(JSON.stringify));
     txsOut = Array.from(txsOut);
@@ -121,7 +124,7 @@ export const getTxStats = async (
     const txCount = txsOutCount.toString();
     const failedTxCount = txOutFail.toString();
     const failedTxGasCostETH = new BigNumber(web3.utils.fromWei(gasFeeTotalFail.toString(), "ether")).decimalPlaces(3);
-    return [txGasCostETH, averageTxPrice, txCount, failedTxCount, failedTxGasCostETH];
+    return [txGasCostETH.toString(), averageTxPrice.toString(), txCount, failedTxCount, failedTxGasCostETH.toString()];
   } catch (e) {
     console.log("An error occurred while retrieving your transaction data.\nPlease submit it as an issue.");
     return ["...", "...", "...", "...", "..."];

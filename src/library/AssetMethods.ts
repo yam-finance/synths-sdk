@@ -34,8 +34,8 @@ export class AssetMethods {
   * @methods
   */
   getUserStats = async (startTimestamp: number, endTimestamp: number) => {
-    startTimestamp = 0;
-    endTimestamp = 1621298935;
+    startTimestamp = 1623619086;
+    endTimestamp = 1623885486;
 
     const [txGasCostETH, averageTxPrice, txCount, failedTxCount, failedTxGasCostETH] = await getTxStats(
       this.options.provider,
