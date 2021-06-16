@@ -1,6 +1,7 @@
 import { AbiItem } from "web3-utils";
 import { AssetModel } from "../types/assets.t";
-import { approve, getUniPrice, getBalance, getPriceByContract, getTxStats, getWETH, waitTransaction } from "../utils/helpers";
+import { approve, getUniPrice, getBalance, getPriceByContract, getWETH, waitTransaction } from "../utils/helpers";
+import { getTxStats } from "../utils/stats";
 import EMPContract from "../../src/abi/emp.json";
 import EMPContractOld from "../../src/abi/empold.json";
 import BigNumber from "bignumber.js";
