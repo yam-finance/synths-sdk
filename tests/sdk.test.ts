@@ -17,7 +17,7 @@ beforeAll(async () => {
   // @notice Passing ethersProvider is just for apr integration on v2
   SDK = await new Degenerative({
     provider: provider,
-    ethersProvider: ethersProvider, 
+    ethersProvider: ethersProvider,
     network: network,
     account: account,
   });
@@ -75,12 +75,6 @@ describe('General function testing', () => {
     const pos = await SDK.methods.getPositionCR(Assets[network]["ugas"][0]);
     console.debug("pos", pos)
     expect(typeof pos).toBe("string");
-  });
-
-  it("getMiningRewards must return a string", async () => {
-    const apr = await SDK.apr.getMiningRewards(Assets[network]["ugas"][3]);
-    console.debug("APR: ", apr)
-    expect(typeof apr).toBe("number");
   });
 
   // TODO Optimize loading time
