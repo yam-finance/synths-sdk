@@ -14,7 +14,7 @@ beforeAll(async () => {
   const web3 = await new Web3(new Web3.providers.HttpProvider(process.env.INFURA_URL_HTTP || ""));
   const provider: ExternalProvider = (new Web3Provider(web3.currentProvider as any)).provider;
   const ethersProvider = new ethers.providers.JsonRpcProvider(process.env.INFURA_URL_HTTP || "");
-  // @notice Passing ethersProvider is just for apr integration on v2
+  /// @notice Passing ethersProvider is just for apr integration on v2
   SDK = await new Degenerative({
     provider: provider,
     ethersProvider: ethersProvider,

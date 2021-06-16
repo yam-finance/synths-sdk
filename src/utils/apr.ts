@@ -11,9 +11,8 @@ import Assets from "../assets.json";
 import UNIContract from "../abi/uni.json";
 import EMPContract from "../../src/abi/emp.json";
 import erc20 from "@studydefi/money-legos/erc20";
-import { ExternalProvider, Web3Provider } from '@ethersproject/providers';
-import { ISynth, AssetModel, DevMiningCalculatorParams, ILiquidityPool } from '../types/assets.t';
-import { BigNumber, ethers, utils, constants, providers } from 'ethers';
+import { ISynth, DevMiningCalculatorParams, ILiquidityPool } from '../types/apr.t';
+import { BigNumber, ethers, utils  } from 'ethers';
 /* @ts-ignore */
 import sessionStorage from 'node-sessionstorage';
 import {
