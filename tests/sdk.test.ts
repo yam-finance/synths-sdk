@@ -83,11 +83,10 @@ describe('General function testing', () => {
     expect(typeof apr).toBe("number");
   });
 
-  // TODO Optimize loading time
-  // it("getUserStats must return an object", async () => {
-  //   const userStats = await SDK.methods.getUserStats();
-  //   console.debug("userStats", userStats)
-  //   expect(typeof userStats).toBe("object");
-  // })
+  it("getUserStats must return an object", async () => {
+    const userStats = await SDK.methods.getUserStats();
+    console.debug("userStats", userStats)
+    expect(typeof userStats).toBe("object");
+  })
 
 });
