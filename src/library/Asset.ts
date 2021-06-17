@@ -44,8 +44,8 @@ export class Asset {
   };
 
   /// @TODO Check param bug
-  getAPR = async () => {
-    return await this.methods.getAPR("73", "1.5")
+  getAPR = async (_aprMultiplier: string, _cr: string) => {
+    return await this.methods.getAPR(_aprMultiplier, _cr);
   }
 
   getGCR = async () => {

@@ -1,7 +1,6 @@
 import { AbiItem } from "web3-utils";
 import { AssetModel } from "../types/assets.t";
 import { approve, getUniPrice, getBalance, getPriceByContract, getWETH, waitTransaction } from "../utils/helpers";
-import { getTxStats } from "../utils/stats";
 import EMPContract from "../../src/abi/emp.json";
 import EMPContractOld from "../../src/abi/empold.json";
 import BigNumber from "bignumber.js";
@@ -25,27 +24,6 @@ export class AssetMethods {
   getAPR = async (aprMultiplier: string, cr: string) => {
     return (1 / (Number(cr) + 1)) * Number(aprMultiplier);
   }
-
-  /**
-  * Fetch user transactions statistics
-  * @param {number} startTimestamp Start timestamp of the input
-  * @param {number} endTimestamp End timestamp of the input
-  * @public
-  * @methods
-  */
-  getUserStats = async (startTimestamp: number, endTimestamp: number) => {
-    startTimestamp = 1623619086;
-    endTimestamp = 1623885486;
-
-    const [txGasCostETH, averageTxPrice, txCount, failedTxCount, failedTxGasCostETH] = await getTxStats(
-      this.options.provider,
-      this.options.account,
-      startTimestamp,
-      endTimestamp,
-    );
-
-    return [txGasCostETH, averageTxPrice, txCount, failedTxCount, failedTxGasCostETH];
-  };
 
   /**
   * Wrap ETH to WETH
