@@ -77,17 +77,24 @@ describe('General function testing', () => {
     expect(typeof pos).toBe("string");
   });
 
-  /**
-   * @notice The following method tests should be abandoned in the future.
-   */
   it("getAPR should return a number", async () => {
     const apr = await SDK.methods.getAPR();
     // console.debug("apr", apr)
     expect(typeof apr).toBe("number");
   });
 
+  /**
+   * @notice The following method tests should be abandoned in the future.
+   */
+  it("getAPR should return a number", async () => {
+    /// @TODO Pass right params
+    const apr = await SDK.apr.getMiningRewards();
+    // console.debug("apr", apr)
+    expect(typeof apr).toBe("number");
+  });
+
   it("getUserStats must return an object", async () => {
-    const userStats = await SDK.methods.getUserStats(1623619086, 1623885486);
+    const userStats = await SDK.stats.getUserStats(1623619086, 1623885486);
     // console.debug("stats", userStats)
     expect(typeof userStats).toBe("object");
   })

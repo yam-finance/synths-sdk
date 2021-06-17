@@ -1,5 +1,5 @@
 /**
- * @notice The following is an sdk implementation of the apr calculation.
+ * @notice The following is a sdk implementation of the apr calculation.
  * This code is not used in any test. To enable a test call, uncomment the
  * necessary lines in src/index.ts and add a test case.
  */

@@ -4,6 +4,7 @@ import { Contracts } from "./protocol/Contracts";
 import { AssetMethods } from "./library/AssetMethods";
 import { Synthetics } from "./protocol/Synthetics";
 import Assets from "../src/assets.json";
+// import { TxStats } from "./library/TxStats";
 // import { MiningRewards } from "./utils/apr"
 require('dotenv').config();
 
@@ -21,6 +22,7 @@ export class Degenerative {
     public assets: any;
     public methods: any;
     // public apr: any;
+    // public stats: any;
     constructor(options: any) {
         this.options = options;
         this.account = options.account;
@@ -29,6 +31,7 @@ export class Degenerative {
         this.contracts;
         this.synthetics;
         // this.apr;
+        // this.stats;
         this.utils;
 
         /* @ts-ignore */
@@ -52,5 +55,6 @@ export class Degenerative {
         this.contracts = new Contracts(this.options);
         this.synthetics = new Synthetics(this.options, this.assets);
         // this.apr = new MiningRewards(this.options);
+        // this.stats = new TxStats(this.options);
     }
 }

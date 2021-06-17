@@ -44,11 +44,6 @@ export class Asset {
   };
 
   /// @TODO Check param bug
-  getUserStats = async (_startTs: number, _endTs: number) => {
-    return await this.methods.getUserStats(_startTs, _endTs)
-  }
-
-  /// @TODO Check param bug
   getAPR = async () => {
     return await this.methods.getAPR("73", "1.5")
   }
