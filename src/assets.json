@@ -100,7 +100,7 @@
       },
       {
         "name": "June",
-        "cycle": "JUN",
+        "cycle": "06",
         "year": "21",
         "collateral": "USDC",
         "token": {
@@ -121,7 +121,7 @@
     "upunks": [
       {
         "name": "September",
-        "cycle": "SEP",
+        "cycle": "09",
         "year": "21",
         "collateral": "WETH",
         "token": {
@@ -144,8 +144,8 @@
   "kovan": {
     "ugas": [
       {
-        "name": "June",
-        "cycle": "06",
+        "name": "December",
+        "cycle": "12",
         "year": "21",
         "collateral": "WETH",
         "token": {
@@ -165,8 +165,8 @@
     ],
     "uvolbtc": [
       {
-        "name": "June",
-        "cycle": "06",
+        "name": "December",
+        "cycle": "12",
         "year": "21",
         "collateral": "USDC",
         "token": {
