@@ -78,6 +78,7 @@ describe('General function testing', () => {
   });
 
   it("getAPR should return a number", async () => {
+    // const apr = await SDK.apr.getMiningRewards('uGAS-JUN21', Assets[network]["ugas"][3], 107.5);
     const apr = await SDK.methods.getAPR('80', '1.5');
     // console.debug("apr", apr)
     expect(typeof apr).toBe("number");
