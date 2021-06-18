@@ -35,7 +35,7 @@ describe('SDK Initialization', () => {
   });
 
   it("sdk synthetics must be initialized", async () => {
-    expect(SDK.synthetics["ugas"]["feb21"].asset.name).toBe(Assets[network]["ugas"][1].name);
+    expect(SDK.synthetics["ugas"]["0221"].asset.name).toBe(Assets[network]["ugas"][1].name);
   });
 
 });

@@ -21,8 +21,6 @@ export class TxStats {
   * @methods
   */
   getUserStats = async (startTimestamp: number, endTimestamp: number) => {
-    startTimestamp = 1623619086;
-    endTimestamp = 1623885486;
 
     const [txGasCostETH, averageTxPrice, txCount, failedTxCount, failedTxGasCostETH] = await getTxStats(
       this.options.provider,
