@@ -81,10 +81,10 @@ describe('General function testing', () => {
     expect(typeof apr).toBe("number");
   });
 
-  it("getUserStats must return an object", async () => {
-    const userStats = await SDK.stats.getUserStats(1623619086, 1623885486);
-    // console.debug("stats", userStats)
-    expect(typeof userStats).toBe("object");
-  })
+  // it("getUserStats must return an object", async () => {
+  //   const userStats = await SDK.stats.getUserStats(1623619086, 1623885486);
+  //   // console.debug("stats", userStats)
+  //   expect(typeof userStats).toBe("object");
+  // })
 
 });
