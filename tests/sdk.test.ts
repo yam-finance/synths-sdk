@@ -13,7 +13,6 @@ const account = "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be";
 beforeAll(async () => {
   const web3 = await new Web3(new Web3.providers.HttpProvider(process.env.INFURA_URL_HTTP || ""));
   const provider: ExternalProvider = (new Web3Provider(web3.currentProvider as any)).provider;
-  /// @notice Passing ethersProvider is just for apr integration on v2
   SDK = await new Degenerative({
     provider: provider,
     network: network,
