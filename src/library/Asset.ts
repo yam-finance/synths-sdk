@@ -1,4 +1,6 @@
 import { AssetMethods } from "./AssetMethods";
+import Assets from "../assets.json";
+import { AssetGroupModel } from "../types/assets.t";
 
 export class Asset {
 
@@ -37,15 +39,18 @@ export class Asset {
     return await this.methods.getPositions();
   };
 
-  // TODO getPositionCR
-  // getPositionCR = async () => {
-  //   return await this.methods.getPositionCR(this.asset);
-  // };
+  getPositionCR = async () => {
+    return await this.methods.getPositionCR(this.asset);
+  };
 
-  // TODO getGCR
-  // getGCR = async () => {
-  //   return await this.methods.getGCR(this.asset);
-  // };
+  /// @TODO Check param bug
+  getAPR = async (_aprMultiplier: string, _cr: string) => {
+    return await this.methods.getAPR(_aprMultiplier, _cr);
+  }
+
+  getGCR = async () => {
+    return await this.methods.getGCR(this.asset);
+  };
 
   mint = async (tokenQty: string, collateralQty: string, onTxHash?: (txHash: string) => void) => {
     return await this.methods.mint(this.asset, tokenQty, collateralQty, onTxHash);
@@ -80,4 +85,3 @@ export class Asset {
   };
 
 }
-

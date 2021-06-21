@@ -1,5 +1,6 @@
 
 import Web3 from "web3";
+import { ethers } from "ethers";
 import Assets from "../src/assets.json";
 import { ExternalProvider, Web3Provider } from "@ethersproject/providers";
 import { Degenerative } from "../src";
@@ -34,7 +35,7 @@ describe('SDK Initialization', () => {
   });
 
   it("sdk synthetics must be initialized", async () => {
-    expect(SDK.synthetics["ugas"]["feb21"].asset.name).toBe(Assets[network]["ugas"][1].name);
+    expect(SDK.synthetics["ugas"]["0221"].asset.name).toBe(Assets[network]["ugas"][1].name);
   });
 
 });
@@ -60,5 +61,30 @@ describe('General function testing', () => {
     const pos = await SDK.methods.getPositions();
     expect(typeof pos).toBe("object");
   });
+
+  it("getGCR must return an string", async () => {
+    const gcr = await SDK.methods.getGCR(Assets[network]["ugas"][0]);
+    // console.debug("gcr", gcr)
+    expect(typeof gcr).toBe("string");
+  });
+
+  it("getPositionCR must return an string", async () => {
+    const pos = await SDK.methods.getPositionCR(Assets[network]["ugas"][0]);
+    // console.debug("pos", pos)
+    expect(typeof pos).toBe("string");
+  });
+
+  it("getAPR should return a number", async () => {
+    // const apr = await SDK.apr.getMiningRewards('uGAS-JUN21', Assets[network]["ugas"][3], 107.5);
+    const apr = await SDK.methods.getAPR('80', '1.5');
+    // console.debug("apr", apr)
+    expect(typeof apr).toBe("number");
+  });
+
+  // it("getUserStats must return an object", async () => {
+  //   const userStats = await SDK.stats.getUserStats(1623619086, 1623885486);
+  //   // console.debug("stats", userStats)
+  //   expect(typeof userStats).toBe("object");
+  // })
 
 });

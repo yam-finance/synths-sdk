@@ -1,11 +1,11 @@
 
 import Web3 from "web3";
-import { Web3Provider } from "@ethersproject/providers";
 import { Contracts } from "./protocol/Contracts";
 import { AssetMethods } from "./library/AssetMethods";
 import { Synthetics } from "./protocol/Synthetics";
 import Assets from "../src/assets.json";
-import { ethers } from "ethers";
+import { TxStats } from "./library/TxStats";
+import { MiningRewards } from "./utils/apr"
 require('dotenv').config();
 
 export class Degenerative {
@@ -21,6 +21,8 @@ export class Degenerative {
     public abis: any;
     public assets: any;
     public methods: any;
+    public apr: any;
+    public stats: any;
     constructor(options: any) {
         this.options = options;
         this.account = options.account;
@@ -28,8 +30,10 @@ export class Degenerative {
         this.abis;
         this.contracts;
         this.synthetics;
+        this.apr;
+        this.stats;
         this.utils;
-        
+
         /* @ts-ignore */
         this.assets = Assets[this.options.network];
         this.methods = new AssetMethods(this.options);
@@ -50,5 +54,7 @@ export class Degenerative {
         this.options.web3 = this.web3;
         this.contracts = new Contracts(this.options);
         this.synthetics = new Synthetics(this.options, this.assets);
+        this.apr = new MiningRewards(this.options);
+        this.stats = new TxStats(this.options);
     }
 }
