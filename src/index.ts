@@ -4,7 +4,7 @@ import { Contracts } from "./protocol/Contracts";
 import { AssetMethods } from "./library/AssetMethods";
 import { Synthetics } from "./protocol/Synthetics";
 import Assets from "../src/assets.json";
-import { TxStats } from "./library/TxStats";
+import { TxStats } from "./utils/TxStats";
 import { MiningRewards } from "./utils/apr"
 require('dotenv').config();
 
