@@ -10,7 +10,7 @@ yarn add degenerative-sdk
 import { Degenerative } from "degenerative-sdk";
 
 // Initialize
-const degenerative: Degenerative = await new Degenerative({
+const degenerative = await new Degenerative({
   provider: Web3Provider,
   network: "mainnet",
   account: "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be",
