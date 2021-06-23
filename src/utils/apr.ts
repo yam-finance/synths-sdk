@@ -117,17 +117,17 @@ export class MiningRewards {
 
       /// @dev Prepare reward calculation
       const current = moment().unix();
-      /// @TODO Update week1UntilWeek2 and week3UntilWeek4 timestamps for uPUNKS after launch.
-      const week1UntilWeek2 = 1615665600;
-      const week3UntilWeek4 = 1616961600;
+      const startRewardsTs = 1624309200;
+      const week1UntilWeek2 = 1625518800;
+      const week3UntilWeek4 = 1626728400;
       const umaRewards = rewards[asset.emp.address];
       let yamWeekRewards = 0;
       let umaWeekRewards = 0;
       /// @TODO Check assetName
       if (assetName.toLowerCase() === "upunks-0921") {
-        if (current < week1UntilWeek2) {
+        if (current <= week1UntilWeek2 && current >= startRewardsTs) {
           umaWeekRewards += 5000
-        } else if (current < week3UntilWeek4) {
+        } else if (current <= week3UntilWeek4 && current > week1UntilWeek2) {
           yamWeekRewards += 5000;
         }
       }
