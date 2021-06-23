@@ -4,16 +4,16 @@ import { AssetGroupModel } from "../types/assets.t";
 
 export class Asset {
 
-  private _options;
+  private options;
   private asset;
   public tvl: any;
   public apr: any;
   public gcr: any;
   private methods: AssetMethods;
-  constructor(asset: any, _options: any, config?: any) {
-    this._options = _options;
+  constructor(asset: any, options: any, config?: any) {
+    this.options = options;
     this.asset = asset;
-    this.methods = new AssetMethods(this._options);
+    this.methods = new AssetMethods(this.options);
     this.tvl = null; // get asset TVL
     this.apr = null; // get asset APR
     this.gcr = null; // get asset GCR

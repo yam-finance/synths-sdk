@@ -4,8 +4,10 @@ import { ethers } from "ethers";
 import Assets from "../src/assets.json";
 import { ExternalProvider, Web3Provider } from "@ethersproject/providers";
 import { Degenerative } from "../src";
+import { Asset } from "../src/library/Asset";
 
 let SDK: Degenerative;
+let UGAS0221: Asset;
 let globals: any;
 const network = "mainnet";
 const account = "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be";
@@ -18,6 +20,8 @@ beforeAll(async () => {
     network: network,
     account: account,
   });
+
+  UGAS0221 = await new Asset(SDK.synthetics["ugas"]["0221"], SDK.options);
 });
 
 describe('SDK Initialization', () => {

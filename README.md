@@ -5,6 +5,7 @@
 yarn add degenerative-sdk
 ```
 
+Example for using the Degenerative SDK:
 ## Code
 ```js
 import { Degenerative } from "degenerative-sdk";
@@ -20,4 +21,7 @@ const degenerative = await new Degenerative({
 degenerative.network;
 degenerative.account;
 degenerative.methods.getUserBalanceUSDC();
+
+const UGAS0921 = await new Asset(SDK.synthetics["ugas"]["0221"], SDK.options);
+UGAS0921.getTVL();
 ```
