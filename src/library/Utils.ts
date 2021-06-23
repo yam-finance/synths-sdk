@@ -1,44 +1,178 @@
 /**
- * @notice The following is a sdk implementation of the apr calculation.
+ * @notice The following is a sdk implementation of the tx stats calculation.
  * This code is not used in any test. To enable a test call, uncomment the
  * necessary lines in src/index.ts and add a test case.
  */
-import { request } from 'graphql-request';
-import moment from 'moment';
-import axios from 'axios';
-import fetch from "node-fetch";
-import Assets from "../assets.json";
-import UNIContract from "../abi/uni.json";
-import EMPContract from "../../src/abi/emp.json";
-import erc20 from "@studydefi/money-legos/erc20";
-import { ISynth, DevMiningCalculatorParams, ILiquidityPool } from '../types/apr.t';
-import { BigNumber, ethers, utils  } from 'ethers';
-/* @ts-ignore */
-import sessionStorage from 'node-sessionstorage';
-import {
-  UNISWAP_ENDPOINT,
-  SUSHISWAP_ENDPOINT,
-  UNISWAP_MARKET_DATA_QUERY,
-} from './queries';
+ import { request } from 'graphql-request';
+ import moment from 'moment';
+ import axios from 'axios';
+ import fetch from "node-fetch";
+ import Assets from "../assets.json";
+ import UNIContract from "../abi/uni.json";
+ import EMPContract from "../../src/abi/emp.json";
+ import erc20 from "@studydefi/money-legos/erc20";
+ import { ISynth, DevMiningCalculatorParams, ILiquidityPool } from '../types/apr.t';
+ import { BigNumber, ethers, utils  } from 'ethers';
+ import { getTxStats } from "../utils/stats";
+ import Web3 from "web3";
+ import { provider } from "web3-core";
+ import { JsonTxResult } from "../types/stats.t";
+ import { sleep, multiplyEach } from '../utils/helpers'
+ /* @ts-ignore */
+ import sessionStorage from 'node-sessionstorage';
+ import {
+   UNISWAP_ENDPOINT,
+   SUSHISWAP_ENDPOINT,
+   UNISWAP_MARKET_DATA_QUERY,
+ } from '../utils/queries';
 
+export class Utils {
 
-export class MiningRewards {
   private options;
   constructor(options: any) {
     this.options = options;
   }
 
-  getPoolData = async (pool: ILiquidityPool) => {
-    const endpoint = pool.location === 'uni' ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
+  /** @title SDK implementation of transaction stats calculation */
+
+  /**
+  * Fetch user transactions statistics
+  * @param {number} startTimestamp Start timestamp of the input
+  * @param {number} endTimestamp End timestamp of the input
+  * @public
+  * @methods
+  */
+  getUserStats = async (startTimestamp: number, endTimestamp: number, address: string) => {
+
+    const [txGasCostETH, averageTxPrice, txCount, failedTxCount, failedTxGasCostETH] = await getTxStats(
+      this.options.provider,
+      address,
+      startTimestamp,
+      endTimestamp,
+    );
+
+    return [txGasCostETH, averageTxPrice, txCount, failedTxCount, failedTxGasCostETH];
+  };
+
+  fetchTxs = async (_type: string, _userAddress: string, _count: number, _endBlockNumber: number, _etherscanApiKey: string, _txs: any) => {
+    let url = "";
+    while (_count === 10000) {
+      await sleep(500);
+      const startBlock = _txs[_txs.length - 1].blockNumber;
+      const endBlock = _endBlockNumber;
+      switch (_type) {
+        case "ether":
+          url = `https://api.etherscan.io/api?module=account&action=txlist&address=${_userAddress}&startblock=${startBlock}&endblock=${endBlock}&sort=asc&apikey=${_etherscanApiKey}`;
+          break;
+        case "erc20":
+          url = `https://api.etherscan.io/api?module=account&action=tokentx&address=${_userAddress}&startblock=${startBlock}&endblock=${endBlock}&sort=asc&apikey=${_etherscanApiKey}`;
+          break;
+        default:
+          console.log("No transaction type passed.");
+          break;
+      }
+
+      const response = await axios.get(url);
+
+      if (response.data["status"] == 0) {
+        break;
+      }
+
+      const nextTxs = response.data["result"];
+      _count = nextTxs.length;
+      _txs.push(...nextTxs);
+    }
+    return _txs;
+  };
+
+  getBlockNumberByTimestamp = async (_timestamp: number, _etherscanApiKey: string) => {
+    let url = `https://api.etherscan.io/api?module=block&action=getblocknobytime&timestamp=${_timestamp}&closest=before&apikey=${_etherscanApiKey}`
+    let response = await axios.get(url);
+    return response.data["result"]
+  }
+
+  getTxStats = async (
+    provider: provider,
+    userAddress: string,
+    startTimeStamp: number,
+    endTimeStamp: number,
+  ): Promise<string[]> => {
+    const web3 = new Web3(provider);
+    const etherscanApiKey = process.env.ETHERSCAN_KEY || ""
+    let gasFeeTotal = 0;
+    let gasPriceTotal = 0;
+    let gasFeeTotalFail = 0;
+    let startBlockNumber = 0;
+    let endBlockNumber = await web3.eth.getBlockNumber(function (error, result) {
+      if (!error) return result;
+    });
+
     try {
-      const data = await request(endpoint, UNISWAP_MARKET_DATA_QUERY, { poolAddress: pool.address });
-      return data.pair;
-    } catch (err) {
-      console.log(err);
-      return Promise.reject(err);
+      startBlockNumber = await this.getBlockNumberByTimestamp(startTimeStamp, etherscanApiKey)
+      endBlockNumber = await this.getBlockNumberByTimestamp(endTimeStamp, etherscanApiKey)
+
+      // Fetch a list of 'normal' unique outgoing transactions by address (maximum of 10000 records only).
+      // Continue fetching if response >= 1000.
+      let url = `https://api.etherscan.io/api?module=account&action=txlist&address=${userAddress}&startblock=${startBlockNumber}&endblock=${endBlockNumber}&sort=asc&apikey=${etherscanApiKey}`;
+      // let response = await fetch(url);
+      let response = await axios.get(url);
+      let json = await response.data;
+      let txs = json["result"];
+      let count = txs.length;
+      txs = await this.fetchTxs("ether", userAddress, count, endBlockNumber, etherscanApiKey, txs);
+
+      // Fetch a list of "ERC20 - Token Transfer Events" by address (maximum of 10000 records only).
+      // Continue fetching if response >= 1000.
+      url = `https://api.etherscan.io/api?module=account&action=tokentx&address=${userAddress}&startblock=${startBlockNumber}&endblock=${endBlockNumber}&sort=asc&apikey=${etherscanApiKey}`;
+      response = await axios.get(url);
+      // response = await fetch(url);
+      json = await response.data;
+      const erc20Txs = json["result"];
+      count = erc20Txs.length;
+      txs.push(...erc20Txs);
+      txs = await this.fetchTxs("erc20", userAddress, count, endBlockNumber, etherscanApiKey, txs);
+
+      // Show only txs that come from the user address.
+      let txsOut: any = txs.filter((v: any) => v.from === userAddress.toLowerCase());
+      txsOut = txsOut.map(({ confirmations, ...item }: any) => item);
+      txsOut = new Set(txsOut.map(JSON.stringify));
+      txsOut = Array.from(txsOut);
+      const txsOutArray: JsonTxResult = txsOut.map(JSON.parse);
+      txsOut = txsOutArray;
+      const txsOutCount = txsOut.length;
+      const txsOutFail = txsOut.filter((v: any) => v.isError === "1"); // 0 = No Error, 1 = Got Error.
+      const txOutFail = txsOutFail.length;
+
+      if (txsOutCount > 0) {
+        const gasUsedArray = txsOut.map((value: any) => parseInt(value.gasUsed));
+        const gasPriceArray = txsOut.map((value: any) => parseInt(value.gasPrice));
+        const gasFee = await multiplyEach(gasPriceArray, gasUsedArray);
+        gasFeeTotal = gasFee.reduce((partialSum, a) => partialSum + a, 0);
+        gasPriceTotal = gasPriceArray.reduce((partialSum: any, a: any) => partialSum + a, 0);
+        const gasUsedFailArray = txsOutFail.map((value: any) => parseInt(value.gasUsed));
+        const gasPriceFailArray = txsOutFail.map((value: any) => parseInt(value.gasPrice));
+        const gasFeeFail = await multiplyEach(gasPriceFailArray, gasUsedFailArray);
+        gasFeeTotalFail = gasFeeFail.reduce((partialSum, a) => partialSum + a, 0);
+      }
+
+      const txGasCostETH = BigNumber.from(web3.utils.fromWei(gasFeeTotal.toString(), "ether"));
+      let averageTxPrice = BigNumber.from(0);
+
+      if (txsOutCount != 0) {
+        averageTxPrice = BigNumber.from(gasPriceTotal / txsOutCount / 1e9);
+      }
+
+      const txCount = txsOutCount.toString();
+      const failedTxCount = txOutFail.toString();
+      const failedTxGasCostETH = BigNumber.from(web3.utils.fromWei(gasFeeTotalFail.toString(), "ether"));
+      return [txGasCostETH.toString(), averageTxPrice.toString(), txCount, failedTxCount, failedTxGasCostETH.toString()];
+    } catch (e) {
+      console.log("An error occurred while retrieving your transaction data.\nPlease submit it as an issue.");
+      return ["...", "...", "...", "...", "..."];
     }
   };
 
+  /** @title SDK implementation of apr calculation */
 
   /**
    * Fetch the mining rewards
@@ -225,6 +359,17 @@ export class MiningRewards {
     } catch (e) {
       console.error("error", e);
       return "0";
+    }
+  };
+
+  getPoolData = async (pool: ILiquidityPool) => {
+    const endpoint = pool.location === 'uni' ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
+    try {
+      const data = await request(endpoint, UNISWAP_MARKET_DATA_QUERY, { poolAddress: pool.address });
+      return data.pair;
+    } catch (err) {
+      console.log(err);
+      return Promise.reject(err);
     }
   };
 
