@@ -57,7 +57,7 @@ describe('General function testing', () => {
   });
 
   it("getTVL must return a string", async () => {
-    const getTVL = await SDK.methods.getTVL(Assets[network]["ugas"][0]);
+    const getTVL = await SDK.methods.getTVL(SDK.assets["ugas"][0]);
     expect(typeof getTVL).toBe("string");
   });
 
@@ -67,25 +67,28 @@ describe('General function testing', () => {
   });
 
   it("getGCR must return an string", async () => {
-    const gcr = await SDK.methods.getGCR(Assets[network]["ugas"][0]);
+    const gcr = await SDK.methods.getGCR(SDK.assets["ugas"][0]);
+    // console.debug("gcr", gcr)
     expect(typeof gcr).toBe("string");
   });
 
   it("getPositionCR must return an string", async () => {
-    const pos = await SDK.methods.getPositionCR(Assets[network]["ugas"][0]);
+    const pos = await SDK.methods.getPositionCR(SDK.assets["ugas"][0]);
+    // console.debug("pos", pos)
     expect(typeof pos).toBe("string");
   });
 
   it("getAPR should return a number", async () => {
-    // const apr = await SDK.apr.getMiningRewards('uGAS-JUN21', Assets[network]["ugas"][3], 107.5);
+    // const apr = await SDK.apr.getMiningRewards('uGAS-0621', SDK.assets["ugas"][3], 107.5);
     const apr = await SDK.methods.getAPR('80', '1.5');
-    expect(typeof apr).toBe("number");
+    // console.debug("apr", apr)
+    expect(typeof apr).toBe("string");
   });
 
-  // it("getUserStats must return an object", async () => {
-  //   const userStats = await SDK.stats.getUserStats(1623619086, 1623885486);
-  //   // console.debug("stats", userStats)
-  //   expect(typeof userStats).toBe("object");
-  // })
+  it("getUserStats must return an object", async () => {
+    const userStats = await SDK.stats.getUserStats(1624273680, 1624453680, "0x5591421879B605786b33F43Fe1BFAE1137FC1020");
+    // console.debug("stats", userStats)
+    expect(typeof userStats).toBe("object");
+  })
 
 });

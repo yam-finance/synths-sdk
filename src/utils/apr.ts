@@ -54,7 +54,6 @@ export class MiningRewards {
     asset: ISynth,
     assetPrice: number,
   ) => {
-    // TODO Use params for setup instead of test setup
     const ethersProvider: ethers.providers.JsonRpcProvider = new ethers.providers.JsonRpcProvider(process.env.INFURA_URL_HTTP || "");
     const network = 'mainnet';
 
@@ -118,17 +117,16 @@ export class MiningRewards {
 
       /// @dev Prepare reward calculation
       const current = moment().unix();
-      /// @TODO Update week1UntilWeek2 and week3UntilWeek4 timestamps for uPUNKS after launch.
-      const week1UntilWeek2 = 1615665600;
-      const week3UntilWeek4 = 1616961600;
+      const startRewardsTs = 1624309200;
+      const week1UntilWeek2 = 1625518800;
+      const week3UntilWeek4 = 1626728400;
       const umaRewards = rewards[asset.emp.address];
       let yamWeekRewards = 0;
       let umaWeekRewards = 0;
-      /// @TODO Check assetName
       if (assetName.toLowerCase() === "upunks-0921") {
-        if (current < week1UntilWeek2) {
+        if (current <= week1UntilWeek2 && current >= startRewardsTs) {
           umaWeekRewards += 5000
-        } else if (current < week3UntilWeek4) {
+        } else if (current <= week3UntilWeek4 && current > week1UntilWeek2) {
           yamWeekRewards += 5000;
         }
       }
@@ -187,7 +185,6 @@ export class MiningRewards {
 
 
       // @notice New calculation based on the doc
-      /// @TODO Check _whitelistedTVM
       // umaRewardsPercentage = (`totalTokensOutstanding` * synthPrice) / whitelistedTVM
       let umaRewardsPercentage: number = (_tokenCount * _tokenPrice) / _whitelistedTVM;
       console.log("umaRewardsPercentage", umaRewardsPercentage.toString())
@@ -227,7 +224,7 @@ export class MiningRewards {
       return aprMultiplier.toString();
     } catch (e) {
       console.error("error", e);
-      return 0;
+      return "0";
     }
   };
 
@@ -298,6 +295,8 @@ export class MiningRewards {
         assets["ugas"][3].emp.address,
         /* @ts-ignore */
         assets["ustonks"][0].emp.address,
+        /* @ts-ignore */
+        assets["ustonks"][1].emp.address,
       ];
       const umadata: any = await fetch(
         `https://raw.githubusercontent.com/UMAprotocol/protocol/master/packages/affiliates/payouts/devmining-status.json`
@@ -327,7 +326,6 @@ export class MiningRewards {
   };
 
   getPriceByContract = async (address: string, toCurrency?: string) => {
-    // TODO: Remove while loop
     let loopCount = 0
     let result = await this.getContractInfo(address);
 
@@ -356,10 +354,6 @@ export class MiningRewards {
       const emp = new ethers.Contract(address, empAbi, provider);
       const tokenAddress = await emp.tokenCurrency();
       const tokenContract = new ethers.Contract(tokenAddress, erc20Abi, provider);
-      /// @dev Fetches the token price from coingecko using getPriceByContract (getPrice == getPriceByContract)
-      const tokenPrice = await getPrice(tokenAddress, toCurrency).catch(
-        () => null
-      );
       const tokenCount = (await emp.totalTokensOutstanding()).toString();
       const tokenDecimals = (await tokenContract.decimals()).toString();
 
@@ -383,7 +377,6 @@ export class MiningRewards {
         address,
         toCurrency,
         tokenAddress,
-        tokenPrice,
         tokenCount,
         tokenDecimals,
         collateralAddress,
@@ -395,7 +388,6 @@ export class MiningRewards {
     }
     /// @dev Returns a fixed number
     function calculateEmpValue({
-      tokenPrice,
       tokenDecimals,
       collateralPrice,
       collateralDecimals,
@@ -403,7 +395,6 @@ export class MiningRewards {
       collateralCount,
       collateralRequirement,
     }: {
-      tokenPrice: number;
       tokenDecimals: number;
       collateralPrice: number;
       collateralDecimals: number;
