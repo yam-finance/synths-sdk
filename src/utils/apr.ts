@@ -227,7 +227,7 @@ export class MiningRewards {
       return aprMultiplier.toString();
     } catch (e) {
       console.error("error", e);
-      return 0;
+      return "0";
     }
   };
 
@@ -356,10 +356,6 @@ export class MiningRewards {
       const emp = new ethers.Contract(address, empAbi, provider);
       const tokenAddress = await emp.tokenCurrency();
       const tokenContract = new ethers.Contract(tokenAddress, erc20Abi, provider);
-      /// @dev Fetches the token price from coingecko using getPriceByContract (getPrice == getPriceByContract)
-      const tokenPrice = await getPrice(tokenAddress, toCurrency).catch(
-        () => null
-      );
       const tokenCount = (await emp.totalTokensOutstanding()).toString();
       const tokenDecimals = (await tokenContract.decimals()).toString();
 
@@ -383,7 +379,6 @@ export class MiningRewards {
         address,
         toCurrency,
         tokenAddress,
-        tokenPrice,
         tokenCount,
         tokenDecimals,
         collateralAddress,
@@ -395,7 +390,6 @@ export class MiningRewards {
     }
     /// @dev Returns a fixed number
     function calculateEmpValue({
-      tokenPrice,
       tokenDecimals,
       collateralPrice,
       collateralDecimals,
@@ -403,7 +397,6 @@ export class MiningRewards {
       collateralCount,
       collateralRequirement,
     }: {
-      tokenPrice: number;
       tokenDecimals: number;
       collateralPrice: number;
       collateralDecimals: number;
