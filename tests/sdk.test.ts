@@ -83,7 +83,7 @@ describe('General function testing', () => {
 
   it("getUserStats must return an object", async () => {
     const userStats = await SDK.stats.getUserStats(1624273680, 1624453680, "0x5591421879B605786b33F43Fe1BFAE1137FC1020");
-    console.debug("stats", userStats)
+    // console.debug("stats", userStats)
     expect(typeof userStats).toBe("object");
   })
 
