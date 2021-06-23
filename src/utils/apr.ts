@@ -54,7 +54,6 @@ export class MiningRewards {
     asset: ISynth,
     assetPrice: number,
   ) => {
-    // TODO Use params for setup instead of test setup
     const ethersProvider: ethers.providers.JsonRpcProvider = new ethers.providers.JsonRpcProvider(process.env.INFURA_URL_HTTP || "");
     const network = 'mainnet';
 
