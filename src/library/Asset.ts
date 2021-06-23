@@ -43,7 +43,6 @@ export class Asset {
     return await this.methods.getPositionCR(this.asset);
   };
 
-  /// @TODO Check param bug
   getAPR = async (_aprMultiplier: string, _cr: string) => {
     return await this.methods.getAPR(_aprMultiplier, _cr);
   }

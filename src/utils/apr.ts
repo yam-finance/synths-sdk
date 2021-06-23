@@ -123,7 +123,6 @@ export class MiningRewards {
       const umaRewards = rewards[asset.emp.address];
       let yamWeekRewards = 0;
       let umaWeekRewards = 0;
-      /// @TODO Check assetName
       if (assetName.toLowerCase() === "upunks-0921") {
         if (current <= week1UntilWeek2 && current >= startRewardsTs) {
           umaWeekRewards += 5000
@@ -186,7 +185,6 @@ export class MiningRewards {
 
 
       // @notice New calculation based on the doc
-      /// @TODO Check _whitelistedTVM
       // umaRewardsPercentage = (`totalTokensOutstanding` * synthPrice) / whitelistedTVM
       let umaRewardsPercentage: number = (_tokenCount * _tokenPrice) / _whitelistedTVM;
       console.log("umaRewardsPercentage", umaRewardsPercentage.toString())
@@ -328,7 +326,6 @@ export class MiningRewards {
   };
 
   getPriceByContract = async (address: string, toCurrency?: string) => {
-    // TODO: Remove while loop
     let loopCount = 0
     let result = await this.getContractInfo(address);
 

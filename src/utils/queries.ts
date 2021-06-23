@@ -29,7 +29,6 @@ export const UNISWAP_DAILY_PRICE_QUERY = gql`
   }
 `;
 
-// TODO
 export const UNISWAP_DAILY_PRICE_QUERY2 = gql`
   query tokenDayDatas($tokenAddresses: [String!], $startingTime: Int!) {
     tokenDayDatas(orderBy: date, orderDirection: asc, where: { token_in: $tokenAddresses, date_gt: $startingTime }) {
