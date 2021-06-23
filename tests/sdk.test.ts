@@ -79,15 +79,15 @@ describe('General function testing', () => {
   });
 
   it("getAPR should return a number", async () => {
-    // const apr = await SDK.utils.getMiningRewards('uGAS-0621', SDK.assets["ugas"][3], 107.5);
-    const apr = await SDK.methods.getAPR('80', '1.5');
-    // console.debug("apr", apr)
+    const apr = await SDK.utils.getMiningRewards('uGAS-0621', SDK.assets["ugas"][3], 107.5);
+    // const apr = await SDK.methods.getAPR('80', '1.5');
+    console.debug("apr", apr)
     expect(typeof apr).toBe("string");
   });
 
   it("getUserStats must return an object", async () => {
     const userStats = await SDK.utils.getUserStats(1624273680, 1624453680, "0x5591421879B605786b33F43Fe1BFAE1137FC1020");
-    // console.debug("stats", userStats)
+    console.debug("stats", userStats)
     expect(typeof userStats).toBe("object");
   })
 
