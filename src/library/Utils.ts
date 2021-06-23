@@ -1,33 +1,58 @@
 /**
- * @notice The following is a sdk implementation of the apr calculation.
+ * @notice The following is a sdk implementation of the tx stats calculation.
  * This code is not used in any test. To enable a test call, uncomment the
  * necessary lines in src/index.ts and add a test case.
  */
-import { request } from 'graphql-request';
-import moment from 'moment';
-import axios from 'axios';
-import fetch from "node-fetch";
-import Assets from "../assets.json";
-import UNIContract from "../abi/uni.json";
-import EMPContract from "../../src/abi/emp.json";
-import erc20 from "@studydefi/money-legos/erc20";
-import { ISynth, DevMiningCalculatorParams, ILiquidityPool } from '../types/apr.t';
-import { BigNumber, ethers, utils  } from 'ethers';
-/* @ts-ignore */
-import sessionStorage from 'node-sessionstorage';
-import {
-  UNISWAP_ENDPOINT,
-  SUSHISWAP_ENDPOINT,
-  UNISWAP_MARKET_DATA_QUERY,
-} from './queries';
+ import { request } from 'graphql-request';
+ import moment from 'moment';
+ import axios from 'axios';
+ import fetch from "node-fetch";
+ import Assets from "../assets.json";
+ import UNIContract from "../abi/uni.json";
+ import EMPContract from "../../src/abi/emp.json";
+ import erc20 from "@studydefi/money-legos/erc20";
+ import { ISynth, DevMiningCalculatorParams, ILiquidityPool } from '../types/apr.t';
+ import { BigNumber, ethers, utils  } from 'ethers';
+ import { getTxStats } from "../utils/stats";
+ /* @ts-ignore */
+ import sessionStorage from 'node-sessionstorage';
+ import {
+   UNISWAP_ENDPOINT,
+   SUSHISWAP_ENDPOINT,
+   UNISWAP_MARKET_DATA_QUERY,
+ } from '../utils/queries';
 
+export class Utils {
 
-export class MiningRewards {
   private options;
   constructor(options: any) {
     this.options = options;
   }
 
+  /**
+  * Fetch user transactions statistics
+  * @param {number} startTimestamp Start timestamp of the input
+  * @param {number} endTimestamp End timestamp of the input
+  * @public
+  * @methods
+  */
+  getUserStats = async (startTimestamp: number, endTimestamp: number, address: string) => {
+
+    const [txGasCostETH, averageTxPrice, txCount, failedTxCount, failedTxGasCostETH] = await getTxStats(
+      this.options.provider,
+      address,
+      startTimestamp,
+      endTimestamp,
+    );
+
+    return [txGasCostETH, averageTxPrice, txCount, failedTxCount, failedTxGasCostETH];
+  };
+
+  /**
+   * @notice The following is a sdk implementation of the apr calculation.
+   * This code is not used in any test. To enable a test call, uncomment the
+   * necessary lines in src/index.ts and add a test case.
+   */
   getPoolData = async (pool: ILiquidityPool) => {
     const endpoint = pool.location === 'uni' ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
     try {
@@ -38,7 +63,6 @@ export class MiningRewards {
       return Promise.reject(err);
     }
   };
-
 
   /**
    * Fetch the mining rewards
