@@ -10,8 +10,8 @@ require('dotenv').config();
 
 export class Degenerative {
 
-    private options: any;
-    private web3: any;
+    public options: any;
+    public web3: any;
     public provider: any;
     public network: string;
     public account: any;
@@ -21,8 +21,8 @@ export class Degenerative {
     public abis: any;
     public assets: any;
     public methods: any;
-    public apr: any;
-    public stats: any;
+    // public apr: any;
+    // public stats: any;
     constructor(options: any) {
         this.options = options;
         this.account = options.account;
@@ -30,8 +30,8 @@ export class Degenerative {
         this.abis;
         this.contracts;
         this.synthetics;
-        this.apr;
-        this.stats;
+        // this.apr;
+        // this.stats;
         this.utils;
 
         /* @ts-ignore */
@@ -54,7 +54,9 @@ export class Degenerative {
         this.options.web3 = this.web3;
         this.contracts = new Contracts(this.options);
         this.synthetics = new Synthetics(this.options, this.assets);
-        this.apr = new MiningRewards(this.options);
-        this.stats = new TxStats(this.options);
+
+        // TODO move these out to this.utils
+        // this.apr = new MiningRewards(this.options);
+        // this.stats = new TxStats(this.options);
     }
 }
