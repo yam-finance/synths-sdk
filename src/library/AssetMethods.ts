@@ -1,12 +1,10 @@
 import { AbiItem } from "web3-utils";
-import { AssetGroupModel, AssetModel } from "../types/assets.t";
-import { approve, devMiningCalculator, getAllowance, getBalance, getDevMiningEmps, getPriceByContract, getUserTxStats, getWETH, sleep, waitTransaction } from "../utils/helpers";
-import moment from "moment";
-import UNIContract from "../../src/abi/uni.json";
+import { AssetModel } from "../types/assets.t";
+import { approve, getUniPrice, getBalance, getPriceByContract, getWETH, waitTransaction } from "../utils/helpers";
 import EMPContract from "../../src/abi/emp.json";
 import EMPContractOld from "../../src/abi/empold.json";
 import BigNumber from "bignumber.js";
-import { UMA, USDC, WETH, YAM } from "../utils/addresses";
+import { USDC, WETH } from "../utils/addresses";
 import Assets from "../assets.json";
 
 export class AssetMethods {
@@ -14,6 +12,17 @@ export class AssetMethods {
   private options;
   constructor(options: any) {
     this.options = options;
+  }
+
+  /**
+  * Calculate apr with aprMultiplier
+  * @param {string} aprMultiplier Amount of ETH to wrap
+  * @param {string} cr Collateral requirement
+  * @public
+  * @methods
+  */
+  getAPR = async (aprMultiplier: string, cr: string) => {
+    return (1 / (Number(cr) + 1)) * Number(aprMultiplier);
   }
 
   /**
@@ -121,20 +130,6 @@ export class AssetMethods {
   };
 
   /**
-  * Fetch user transactions statistics
-  * @param {string} interval Interval of the input
-  * @param {string} startDate Start date of the input
-  * @param {string} endDate End date of the input
-  * @public
-  * @methods
-  */
-  getUserStats = async (interval: string, startDate: string, endDate: string) => {
-    // console.debug("sdk getUserStats", interval, startDate, endDate);
-    const stats = await getUserTxStats(this.options.provider, this.options.account, interval, startDate, endDate)
-    return stats;
-  };
-
-  /**
   * Get user WETH balance
   * @public
   * @methods
@@ -179,137 +174,6 @@ export class AssetMethods {
     const makeApproval = await approve(this.options.account, spenderAddress, tokenAddress, this.options.provider);
     return makeApproval;
     // TODO handle update approvals on web
-  };
-
-  /**
-  * Fetch a contract approvals
-  * @param {string} identifier Identifier for the input
-  * @param {string} spenderAddress Spender address
-  * @param {string} tokenAddress Token address
-  * @public
-  * @methods
-  */
-  fetchContractApproval = async (identifier: string, spenderAddress: string, tokenAddress: string, onTxHash?: (txHash: string) => void) => {
-    // console.debug("sdk fetchContractApproval", identifier, spenderAddress, tokenAddress);
-    if (!this.options.account) {
-      return false;
-    }
-    await sleep(500);
-    const result = await getAllowance(this.options.account, spenderAddress, tokenAddress, this.options.provider);
-    // console.debug("res fetchContractApproval", identifier, spenderAddress, tokenAddress, result);
-    return result;
-  };
-
-  /**
-  * Fetch the mining rewards
-  * @param {AssetGroupModel} assetGroup Asset group of an asset for the input
-  * @param {AssetModel} asset Asset object for the input
-  * @param {number} assetPrice Asset price
-  * @public
-  * @methods
-  */
-  getMiningRewards = async (assetGroup: AssetGroupModel, asset: AssetModel, assetPrice: number) => {
-    // console.debug("sdk getMiningRewards", assetGroup, asset, assetPrice);
-    if (!assetGroup || !asset) {
-      return
-    };
-    try {
-      const emps = await getDevMiningEmps(this.options.network);
-      const devmining = await devMiningCalculator({
-        provider: this.options.provider,
-        getPrice: getPriceByContract,
-        empAbi: EMPContract.abi,
-      });
-      const getEmpInfo: any = await devmining.utils.getEmpInfo(asset.emp.address);
-      // console.debug("getEmpInfo", { size: getEmpInfo.size, price: getEmpInfo.price, decimals: getEmpInfo.decimals, });
-      const calculateEmpValue = await devmining.utils.calculateEmpValue(getEmpInfo);
-      // console.debug("calculateEmpValue", calculateEmpValue);
-      const estimateDevMiningRewards = await devmining.estimateDevMiningRewards({
-        totalRewards: emps.totalReward,
-        empWhitelist: emps.empWhitelist,
-      });
-      // console.debug("estimateDevMiningRewards", estimateDevMiningRewards);
-      const rewards: any = {};
-      for (let i = 0; i < estimateDevMiningRewards.length; i++) {
-        rewards[estimateDevMiningRewards[i][0]] = estimateDevMiningRewards[i][1];
-      }
-      const baseGeneral = new BigNumber(10).pow(18);
-      const baseAsset = new BigNumber(10).pow(asset.token.decimals);
-      let baseCollateral;
-      const contractLp = new this.options.web3.eth.Contract((UNIContract.abi as unknown) as AbiItem, asset.pool.address);
-      const contractEmp = new this.options.web3.eth.Contract((EMPContract.abi as unknown) as AbiItem, asset.emp.address);
-      const contractLpCall = await contractLp.methods.getReserves().call();
-      const contractEmpCall = await contractEmp.methods.rawTotalPositionCollateral().call();
-      const ethPrice = await getPriceByContract(WETH);
-      const umaPrice = await getPriceByContract(UMA);
-      const yamPrice = await getPriceByContract(YAM);
-      // const tokenPrice = await getPriceByContract(address);
-
-      // temp pricing
-      let tokenPrice;
-      if (asset.collateral === "USDC") {
-        baseCollateral = new BigNumber(10).pow(6);
-        tokenPrice = assetPrice * 1;
-        // } else if(assetInstance.collateral === "YAM"){
-        //   tokenPrice = assetPrice * yamPrice;
-      } else {
-        baseCollateral = new BigNumber(10).pow(18);
-        tokenPrice = assetPrice * ethPrice;
-      }
-      // console.debug("tokenPrice", tokenPrice);
-
-      const current = moment().unix();
-      const week1Until = 1615665600;
-      const week2Until = 1616961600;
-      const yamRewards = 0;
-      const umaRewards = rewards[asset.emp.address];
-      let yamWeekRewards = 0;
-      let umaWeekRewards = 0;
-      if (assetGroup.name === "UGAS" && asset.cycle === "JUN" && asset.year === "21") {
-        if (current < week1Until) {
-          yamWeekRewards += 5000;
-        } else if (current < week2Until) {
-          yamWeekRewards += 10000;
-        }
-      } else if (assetGroup.name === "USTONKS" && asset.cycle === "APR" && asset.year === "21") {
-        if (current < week1Until) {
-          umaWeekRewards += 5000;
-          yamWeekRewards += 5000;
-        } else if (current < week2Until) {
-          umaWeekRewards += 10000;
-          yamWeekRewards += 10000;
-        }
-      }
-
-      let calcAsset = 0;
-      let calcCollateral = 0;
-      const normalRewards = umaRewards * umaPrice + yamRewards * yamPrice;
-      const weekRewards = umaWeekRewards * umaPrice + yamWeekRewards * yamPrice;
-      const assetReserve0 = new BigNumber(contractLpCall._reserve0).dividedBy(baseAsset).toNumber();
-      const assetReserve1 = new BigNumber(contractLpCall._reserve1).dividedBy(baseCollateral).toNumber();
-      if (assetGroup.name === "USTONKS") {
-        calcAsset = assetReserve1 * tokenPrice;
-        calcCollateral = assetReserve0 * (asset.collateral == "WETH" ? ethPrice : 1);
-      } else {
-        calcAsset = assetReserve0 * tokenPrice;
-        calcCollateral = assetReserve1 * (asset.collateral == "WETH" ? ethPrice : 1);
-      }
-
-      let empTVL = new BigNumber(contractEmpCall).dividedBy(baseAsset).toNumber();
-      empTVL *= (asset.collateral == "WETH" ? ethPrice : 1);
-
-      const uniLpPair = calcAsset + calcCollateral;
-      const assetReserveValue = empTVL + (uniLpPair * 0.5);
-      // console.debug("assetReserveValue", assetReserveValue);
-      const aprCalculate = (((normalRewards * 52 * 0.82) / assetReserveValue) * 100);
-      const aprCalculateExtra = (((weekRewards * 52) / assetReserveValue) * 100);
-      const totalAprCalculation = aprCalculate + aprCalculateExtra;
-      // console.debug("aprCalculate %", totalAprCalculation);
-      return totalAprCalculation;
-    } catch (e) {
-      console.error("error", e);
-      return 0;
-    }
   };
 
   /**
@@ -506,18 +370,21 @@ export class AssetMethods {
     }
   };
 
-  /**
+ /**
   * Fetch the onchain token price
   * @param {string} tokenAddress Token address
   * @public
   */
-  getPrice = async (tokenAddress: string) => {
-    // console.debug("sdk getPrice", tokenAddress);
-    if (!this.options.account) {
-      return;
-    }
-    // TODO get onchain price of the tokenAddress
-  };
+     getPrice = async (tokenAddress: string) => {
+      // console.debug("sdk getPrice", tokenAddress);
+      if (!this.options.account) {
+        return;
+      }
+
+      const price = await getPriceByContract(tokenAddress)
+      return price
+      // TODO get onchain price of the tokenAddress
+    };
 
   /**
   * Fetch the position of an asset in relation to the connected user address
@@ -538,10 +405,8 @@ export class AssetMethods {
     }
   };
 
-  // TODO getPositions
   /**
   * Fetch all the positions of an address
-  * @param {string} userAddress User address
   * @public
   */
   getPositions = async () => {
@@ -570,24 +435,65 @@ export class AssetMethods {
     }
   };
 
-  // TODO getPositionCR
   /**
   * Get the current user asset position collateral ratio (CR)
   * @param {AssetModel} asset Asset object for the input
   * @public
   */
   getPositionCR = async (asset: AssetModel) => {
-    // return 0;
+    const currPos = await this.getPosition(asset);
+
+    try {
+      let currCollat;
+
+      if (asset.collateral == "WETH") {
+        const collDec = new BigNumber(10).pow(new BigNumber(18));
+        currCollat = new BigNumber(currPos.rawCollateral).div(collDec).toFixed(4).toString()
+      } else if (asset.collateral == "USDC") {
+        const collDec = new BigNumber(10).pow(new BigNumber(6));
+        currCollat = new BigNumber(currPos.rawCollateral).div(collDec).toFixed(4).toString()
+      }
+
+      return currCollat;
+    } catch (e) {
+      console.debug("couldnt get position for: ", asset.emp.address, " for user: ", this.options.account);// return 0;
+      return {};
+    }
   };
 
-  // TODO getGCR
   /**
   * Get asset global collateral ratio (GCR)
   * @param {AssetModel} asset Asset object for the input
   * @public
   */
   getGCR = async (asset: AssetModel) => {
-    // return 0;
+    const empState = await this.getEmpState(asset);
+
+    try {
+      if (empState != "bad" && empState != undefined) {
+        const totalTokens = empState["totalTokensOutstanding"].div(new BigNumber(10).pow(new BigNumber(asset.token.decimals))).toNumber();
+        let totalColl;
+        let price;
+
+        if (asset.collateral == "WETH") {
+          const collDec = new BigNumber(10).pow(new BigNumber(18));
+          price = await getUniPrice(this.options.provider, asset.token.address, WETH);
+          totalColl = empState["cumulativeFeeMultiplier"].div(10 ** 18).times(empState["rawTotalPositionCollateral"].dividedBy(collDec)).toNumber();
+        } else if (asset.collateral == "USDC") {
+          const collDec = new BigNumber(10).pow(new BigNumber(6));
+          price = await getUniPrice(this.options.provider, asset.token.address, USDC);
+          totalColl = empState["cumulativeFeeMultiplier"].div(10 ** 18).times(empState["rawTotalPositionCollateral"].dividedBy(collDec)).toNumber();
+        } else {
+          throw "Collateral not found."
+        }
+
+        const gcr = totalTokens > 0 ? (totalColl / totalTokens / price).toFixed(4) : 0;
+        return gcr;
+      }
+    } catch (e) {
+      console.error("error", e)
+      return {};
+    }
   };
 
   /**

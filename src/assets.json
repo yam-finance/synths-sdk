@@ -3,7 +3,7 @@
     "ugas": [
       {
         "name": "January",
-        "cycle": "JAN",
+        "cycle": "01",
         "year": "21",
         "collateral": "WETH",
         "token": {
@@ -22,7 +22,7 @@
       },
       {
         "name": "February",
-        "cycle": "FEB",
+        "cycle": "02",
         "year": "21",
         "collateral": "WETH",
         "token": {
@@ -41,7 +41,7 @@
       },
       {
         "name": "March",
-        "cycle": "MAR",
+        "cycle": "03",
         "year": "21",
         "collateral": "WETH",
         "token": {
@@ -60,7 +60,7 @@
       },
       {
         "name": "June",
-        "cycle": "JUN",
+        "cycle": "06",
         "year": "21",
         "collateral": "WETH",
         "token": {
@@ -81,7 +81,7 @@
     "ustonks": [
       {
         "name": "April",
-        "cycle": "APR",
+        "cycle": "04",
         "year": "21",
         "collateral": "USDC",
         "token": {
@@ -100,7 +100,7 @@
       },
       {
         "name": "June",
-        "cycle": "JUN",
+        "cycle": "06",
         "year": "21",
         "collateral": "USDC",
         "token": {
@@ -121,7 +121,7 @@
     "upunks": [
       {
         "name": "September",
-        "cycle": "SEP",
+        "cycle": "09",
         "year": "21",
         "collateral": "WETH",
         "token": {
@@ -145,7 +145,7 @@
     "ugas": [
       {
         "name": "December",
-        "cycle": "DEC",
+        "cycle": "12",
         "year": "21",
         "collateral": "WETH",
         "token": {
@@ -166,7 +166,7 @@
     "uvolbtc": [
       {
         "name": "December",
-        "cycle": "DEC",
+        "cycle": "12",
         "year": "21",
         "collateral": "USDC",
         "token": {
@@ -187,7 +187,7 @@
     "yamdollar": [
       {
         "name": "December",
-        "cycle": "DEC",
+        "cycle": "12",
         "year": "21",
         "collateral": "USDC",
         "token": {
