@@ -160,3 +160,11 @@ export async function getUniPrice(provider: provider, tokenA: string, tokenB: st
     // console.log("user:", store.state.account, e);
   }
 }
+
+export async function multiplyEach(arg1: any, arg2: any) {
+  const result: number[] = [];
+  for (let i = 0; i < arg1.length; i++) {
+    result[i] = arg1[i] * arg2[i];
+  }
+  return result;
+};

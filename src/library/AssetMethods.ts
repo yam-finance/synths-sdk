@@ -22,7 +22,7 @@ export class AssetMethods {
   * @methods
   */
   getAPR = async (aprMultiplier: string, cr: string) => {
-    return (1 / (Number(cr) + 1)) * Number(aprMultiplier);
+    return ((1 / (Number(cr) + 1)) * Number(aprMultiplier)).toString();
   }
 
   /**
