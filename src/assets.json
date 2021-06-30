@@ -131,7 +131,7 @@
           "new": true
         },
         "pool": {
-          "address": "0x0000000000000000000000000000000000000000",
+          "address": "0x3Cf50ca88953fB9F458D62f38ECe642c80b2A00E",
           "location": "uniswap"
         },
         "expired": null
