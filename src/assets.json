@@ -131,7 +131,7 @@
           "new": true
         },
         "pool": {
-          "address": "0xb9292B40cab08e5208b863ea9c4c4927a2308eEE",
+          "address": "0xb9292b40cab08e5208b863ea9c4c4927a2308eee",
           "location": "sushiswap"
         },
         "expired": null
