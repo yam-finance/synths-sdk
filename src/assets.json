@@ -115,7 +115,7 @@
           "address": "0x360acfeb5c1548bad3583c559a646d803077236d",
           "location": "uniswap"
         },
-        "expired": null
+        "expired": true
       },
       {
         "name": "September",
@@ -131,8 +131,8 @@
           "new": true
         },
         "pool": {
-          "address": "0x3Cf50ca88953fB9F458D62f38ECe642c80b2A00E",
-          "location": "uniswap"
+          "address": "0xb9292B40cab08e5208b863ea9c4c4927a2308eEE",
+          "location": "sushiswap"
         },
         "expired": null
       }
