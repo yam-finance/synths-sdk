@@ -115,6 +115,25 @@
           "address": "0x360acfeb5c1548bad3583c559a646d803077236d",
           "location": "uniswap"
         },
+        "expired": true
+      },
+      {
+        "name": "September",
+        "cycle": "09",
+        "year": "21",
+        "collateral": "USDC",
+        "token": {
+          "address": "0xad4353347f05438ace12aef7acef6cb2b4186c00",
+          "decimals": 6
+        },
+        "emp": {
+          "address": "0x799c9518ea434bbda03d4c0eaa58d644b768d3ab",
+          "new": true
+        },
+        "pool": {
+          "address": "0xb9292b40cab08e5208b863ea9c4c4927a2308eee",
+          "location": "sushiswap"
+        },
         "expired": null
       }
     ],

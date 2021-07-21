@@ -7,7 +7,7 @@ import Assets from "../src/assets.json";
 import { Utils } from "./library/Utils"
 require('dotenv').config();
 
-export class Degenerative {
+export class Synths {
 
     public options: any;
     public web3: any;
