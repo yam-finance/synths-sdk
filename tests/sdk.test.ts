@@ -3,10 +3,10 @@ import Web3 from "web3";
 import { ethers } from "ethers";
 import Assets from "../src/assets.json";
 import { ExternalProvider, Web3Provider } from "@ethersproject/providers";
-import { Degenerative } from "../src";
+import { Synths } from "../src";
 import { Asset } from "../src/library/Asset";
 
-let SDK: Degenerative;
+let SDK: Synths;
 let UGAS0221: Asset;
 let globals: any;
 const network = "mainnet";
@@ -15,7 +15,7 @@ const account = "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be";
 beforeAll(async () => {
   const web3 = await new Web3(new Web3.providers.HttpProvider(process.env.INFURA_URL_HTTP || ""));
   const provider: ExternalProvider = (new Web3Provider(web3.currentProvider as any)).provider;
-  SDK = await new Degenerative({
+  SDK = await new Synths({
     provider: provider,
     network: network,
     account: account,

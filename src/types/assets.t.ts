@@ -35,7 +35,7 @@ export interface AprModel {
   extra: number;
 }
 
-export interface Degenerative {
+export interface Synths {
   web3: Web3;
   contracts: any;
   addresses: any;
