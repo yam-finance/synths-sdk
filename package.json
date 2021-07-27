@@ -22,11 +22,9 @@
   "author": "e",
   "license": "MIT",
   "jest": {
-    "globals": {
-      "ts-jest": {
-        "tsconfig": "jest.config.json"
-      }
-    }
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testTimeout": 50000
   },
   "dependencies": {
     "@ethersproject/providers": "^5.1.0",
