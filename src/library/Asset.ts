@@ -1,16 +1,19 @@
 import { AssetMethods } from "./AssetMethods";
 import Assets from "../assets.json";
 import { AssetGroupModel } from "../types/assets.t";
+import {AssetModel} from "../types/assets.t";
+
+
 
 export class Asset {
 
   private options;
-  private asset;
+  public asset;
   public tvl: any;
   public apr: any;
   public gcr: any;
   private methods: AssetMethods;
-  constructor(asset: any, options: any, config?: any) {
+  constructor(asset: AssetModel, options: any, config?: any) {
     this.options = options;
     this.asset = asset;
     this.methods = new AssetMethods(this.options);
