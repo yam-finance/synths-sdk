@@ -1,15 +1,16 @@
+// @todo Replace web3 with ether.js
+
 import Web3 from "web3";
+import { ethers } from "ethers";
 import WETHContract from "../abi/weth.json";
 import YAMContract from "../abi/yam.json";
 import BigNumber from "bignumber.js";
 import request from "request";
 import { provider, TransactionReceipt } from "web3-core";
 import { AbiItem } from "web3-utils";
-import { WETH } from "./addresses";
-import { ethers } from "ethers";
+import { WETH, USDC } from "../lib/config/";
 import UNIFactContract from "../abi/uniFactory.json";
 import UNIContract from "../abi/uni.json"
-import { USDC } from "../utils/addresses"
 
 export const sleep = (ms: number) => {
   return new Promise(resolve => setTimeout(resolve, ms));

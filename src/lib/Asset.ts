@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { AssetClassConfig } from "../types/assets.t";
-// import { Emp } from "../types/contracts";
+import { ExpiringMultiParty } from "../types/contracts";
 import EmpAbi from "../abi/emp.json";
 
 class Asset {
@@ -38,14 +38,14 @@ class Asset {
         this.#ethersProvider = ethersProvider;
         const assetIdentifierSplit = assetIdentifier.split("-");
 
+        // @todo Throw error if assetIdentifier does not exist 
+        // @todo Check EmpAbi error
         for (const assetCycle of contracts[assetIdentifierSplit[0]]) { 
             if ((assetCycle.cycle + assetCycle.year) == assetIdentifierSplit[1]) {
-                console.log(assetCycle);
-                // TODO Get new abi
-                // this.#assetContract = new ethers.Contract(
-                //     assetCycle.emp.address,
-                //     EmpAbi,
-                //     this.#ethersProvider) as Emp;
+                this.#assetContract = new ethers.Contract(
+                    assetCycle.emp.address,
+                    EmpAbi,
+                    this.#ethersProvider) as ExpiringMultiParty;
                 break;
             }
         }

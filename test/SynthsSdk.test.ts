@@ -58,7 +58,7 @@ describe("Synths", function () {
         userAssetsConfig: userAssetsConfig
       });
 
-      synthsSDK.connectAsset("ustonks-0921")
+      synthsSDK.connectAsset("upunks-0921")
     });
 
     // TODO Add tests

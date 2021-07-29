@@ -1,7 +1,8 @@
+// @todo Cleanup code
+
 /**
  * @notice The following is a sdk implementation of the tx stats calculation.
- * This code is not used in any test. To enable a test call, uncomment the
- * necessary lines in src/index.ts and add a test case.
+ * This code is not used in any test. 
  */
  import { request } from 'graphql-request';
  import moment from 'moment';
@@ -9,7 +10,7 @@
  import fetch from "node-fetch";
  import Assets from "../assets.json";
  import UNIContract from "../abi/uni.json";
- import EMPContract from "../../src/abi/emp.json";
+ import EMPContract from "../abi/emp.json";
  import erc20 from "@studydefi/money-legos/erc20";
  import { ISynth, DevMiningCalculatorParams, ILiquidityPool } from '../types/apr.t';
  import { BigNumber, ethers, utils  } from 'ethers';
