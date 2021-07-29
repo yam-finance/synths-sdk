@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/utils/math/SignedSafeMath.sol";
 
 import "./LongShortPairFinancialProductLibrary.sol";
-import "../../common/implementation/Lockable.sol";
+import "../../../../common/implementation/Lockable.sol";
 
 /**
  * @title Linear Long Short Pair Financial Product Library.
