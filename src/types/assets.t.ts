@@ -1,45 +1,6 @@
-import Web3 from "web3/types";
+import { ethers } from "ethers";
 
-export interface AssetGroupModel {
-  name: string;
-  AssetModel: AssetModel[];
-}
-
-export interface AssetModel {
-  name: string;
-  cycle: string;
-  year: string;
-  collateral: string;
-  token: TokenModel;
-  emp: EmpModel;
-  pool: PoolModel;
-  apr?: AprModel;
-}
-
-export interface TokenModel {
-  address: string;
-  decimals: number;
-}
-
-export interface EmpModel {
-  address: string;
-  new: boolean;
-}
-
-export interface PoolModel {
-  address: string;
-}
-
-export interface AprModel {
-  force: number;
-  extra: number;
-}
-
-export interface Synths {
-  web3: Web3;
-  contracts: any;
-  addresses: any;
-}
+/// @notice Asset class interfaces
 
 export interface AssetClassConfig {
   /** ethersProvider - ethers.js provider */
@@ -48,6 +9,29 @@ export interface AssetClassConfig {
   contracts: AssetsConfig;
   /** assetIdentifier - The identifier of the asset contract to use */
   assetIdentifier: string;
+}
+
+export interface EmpState {
+  expirationTimestamp: ethers.BigNumber;
+  collateralCurrency: string;
+  priceIdentifier: string;
+  tokenCurrency: string;
+  collateralRequirement: ethers.BigNumber;
+  disputeBondPercentage: ethers.BigNumber;
+  disputerDisputeRewardPercentage: ethers.BigNumber;
+  sponsorDisputeRewardPercentage: ethers.BigNumber;
+  minSponsorTokens: ethers.BigNumber;
+  timerAddress: string;
+  cumulativeFeeMultiplier: ethers.BigNumber;
+  rawTotalPositionCollateral: ethers.BigNumber;
+  totalTokensOutstanding: ethers.BigNumber;
+  liquidationLiveness: ethers.BigNumber;
+  withdrawalLiveness: ethers.BigNumber;
+  currentTime: ethers.BigNumber;
+  isExpired: boolean;
+  contractState: number;
+  finderAddress: string;
+  expiryPrice: ethers.BigNumber;
 }
 
 /// @notice assets.json interfaces

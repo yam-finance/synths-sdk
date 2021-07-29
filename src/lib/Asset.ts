@@ -1,11 +1,11 @@
 import { ethers } from "ethers";
-import { AssetClassConfig } from "../types/assets.t";
-import { ExpiringMultiParty } from "../types/contracts";
+import { AssetClassConfig, EmpState } from "../types/assets.t";
+import { ExpiringMultiParty } from "../types/contracts"
 import EmpAbi from "../abi/emp.json";
 
 class Asset {
     #ethersProvider!: any;
-    #assetContract!: any;
+    #assetContract!: ExpiringMultiParty;
 
     /**
      * Connects an instance of the Asset.
@@ -38,7 +38,6 @@ class Asset {
         this.#ethersProvider = ethersProvider;
         const assetIdentifierSplit = assetIdentifier.split("-");
 
-        // @todo Throw error if assetIdentifier does not exist 
         // @todo Check EmpAbi error
         for (const assetCycle of contracts[assetIdentifierSplit[0]]) { 
             if ((assetCycle.cycle + assetCycle.year) == assetIdentifierSplit[1]) {
@@ -49,18 +48,81 @@ class Asset {
                 break;
             }
         }
+
+        if (!this.#assetContract) {
+          throw new Error("Synths contract with the passed identifier not found in the current network");
+        }
     }
 
+    /**
+     * Get expiring multi party (EMP) state
+     *
+     * @return A promise with the info of the metapool contract
+     */
+    async getEmpState(): Promise<EmpState | undefined>  {
+        try {
 
+            /// @dev Because of an overload error, we split the calls into separate promises
+
+            const result1 = await Promise.all([
+              this.#assetContract.expirationTimestamp(),
+              this.#assetContract.collateralCurrency(),
+              this.#assetContract.priceIdentifier(),
+              this.#assetContract.tokenCurrency(),
+              this.#assetContract.collateralRequirement(),
+              this.#assetContract.disputeBondPercentage(),
+              this.#assetContract.disputerDisputeRewardPercentage(),
+              this.#assetContract.sponsorDisputeRewardPercentage(),
+              this.#assetContract.minSponsorTokens(),
+              this.#assetContract.timerAddress(),
+            ]);
+
+            const result2 = await Promise.all([
+              this.#assetContract.cumulativeFeeMultiplier(),
+              this.#assetContract.rawTotalPositionCollateral(),
+              this.#assetContract.totalTokensOutstanding(),
+              this.#assetContract.liquidationLiveness(),
+              this.#assetContract.withdrawalLiveness(),
+              this.#assetContract.getCurrentTime(),
+              this.#assetContract.contractState(),
+              this.#assetContract.finder(),
+              this.#assetContract.expiryPrice()
+            ]);
+
+            const data: EmpState = {
+              expirationTimestamp: result1[0],
+              collateralCurrency: result1[1],
+              priceIdentifier: result1[2],
+              tokenCurrency: result1[3], 
+              collateralRequirement: result1[4],
+              disputeBondPercentage: result1[5],
+              disputerDisputeRewardPercentage: result1[6],
+              sponsorDisputeRewardPercentage: result1[7],
+              minSponsorTokens: result1[8],
+              timerAddress: result1[9],
+              cumulativeFeeMultiplier: result2[0],
+              rawTotalPositionCollateral: result2[1],
+              totalTokensOutstanding: result2[2],
+              liquidationLiveness: result2[3],
+              withdrawalLiveness: result2[4],
+              currentTime: result2[5],
+              isExpired: Number(result2[5]) >= Number(result1[0]),
+              contractState: Number(result2[6]),
+              finderAddress: result2[7],
+              expiryPrice: result2[8],
+            };
+
+            return data;
+        } catch (e) {
+            console.error("error", e);
+        }
+    }
+  
 
 
 
 
 // ----- Asset -----
-
-
-
-
 
 // private options;
 // private asset;
@@ -79,10 +141,6 @@ class Asset {
 
 // getTVL = async (combine?: boolean) => {
 //   return await this.methods.getTVL(this.asset, combine);
-// };
-
-// getEmpState = async () => {
-//   return await this.methods.getEmpState(this.asset);
 // };
 
 // getPrice = async (tokenAddress: string) => {
@@ -147,12 +205,6 @@ class Asset {
 
 
 // ----- AssetMethods -----
-
-
-
-
-
-
 
 // import { AbiItem } from "web3-utils";
 // import { AssetModel } from "../types/assets.t";
@@ -374,148 +426,6 @@ class Asset {
 //     } catch (e) {
 //       console.error("error", e);
 //       return "0";
-//     }
-//   };
-
-//   /**
-//   * Get expiring multi party (EMP) contract
-//   * @param {AssetModel} asset Asset object
-//   * @public
-//   */
-//   getEmp = async (asset: AssetModel) => {
-//     // console.debug("sdk getEmp", asset);
-//     if (!asset) {
-//       return
-//     };
-//     const empContract = await new this.options.web3.eth.Contract((EMPContract.abi as unknown) as AbiItem, asset.emp.address);
-//     return empContract;
-//   };
-
-//   /**
-//   * Get expiring multi party (EMP) data V1
-//   * @param {AssetModel} asset Asset object
-//   * @public
-//   */
-//   getEmpV1 = async (asset: AssetModel) => {
-//     // console.debug("sdk getEmpV1", asset);
-//     if (!asset) {
-//       return
-//     };
-//     const empContract = await new this.options.web3.eth.Contract((EMPContractOld.abi as unknown) as AbiItem, asset.emp.address);
-//     return empContract;
-//   };
-
-//   /**
-//   * Get expiring multi party (EMP) state
-//   * @param {AssetModel} asset Asset object
-//   * @public
-//   */
-//   getEmpState = async (asset: AssetModel) => {
-//     // console.debug("sdk getEmpState", asset);
-//     if (!asset) {
-//       return
-//     };
-//     const emp = (asset.emp.new ? await this.getEmp(asset) : await this.getEmpV1(asset));
-//     if (asset.emp.new) {
-//       try {
-//         const res = await Promise.all([
-//           emp.methods.expirationTimestamp().call(),
-//           emp.methods.collateralCurrency().call(),
-//           emp.methods.priceIdentifier().call(),
-//           emp.methods.tokenCurrency().call(),
-//           emp.methods.collateralRequirement().call(),
-//           emp.methods.disputeBondPercentage().call(),
-//           emp.methods.disputerDisputeRewardPercentage().call(),
-//           emp.methods.sponsorDisputeRewardPercentage().call(),
-//           emp.methods.minSponsorTokens().call(),
-//           emp.methods.timerAddress().call(),
-//           emp.methods.cumulativeFeeMultiplier().call(),
-//           emp.methods.rawTotalPositionCollateral().call(),
-//           emp.methods.totalTokensOutstanding().call(),
-//           emp.methods.liquidationLiveness().call(),
-//           emp.methods.withdrawalLiveness().call(),
-//           emp.methods.getCurrentTime().call(),
-//           emp.methods.contractState().call(),
-//           emp.methods.finder().call(),
-//           emp.methods.expiryPrice().call(),
-//         ]);
-//         const dat = {
-//           expirationTimestamp: new BigNumber(res[0]),
-//           collateralCurrency: res[1], // address
-//           priceIdentifier: res[2],
-//           tokenCurrency: res[3], // address
-//           collateralRequirement: new BigNumber(res[4]),
-//           disputeBondPercentage: new BigNumber(res[5]),
-//           disputerDisputeRewardPercentage: new BigNumber(res[6]),
-//           sponsorDisputeRewardPercentage: new BigNumber(res[7]),
-//           minSponsorTokens: new BigNumber(res[8]),
-//           timerAddress: res[9], // address
-//           cumulativeFeeMultiplier: new BigNumber(res[10]),
-//           rawTotalPositionCollateral: new BigNumber(res[11]),
-//           totalTokensOutstanding: new BigNumber(res[12]),
-//           liquidationLiveness: new BigNumber(res[13]),
-//           withdrawalLiveness: new BigNumber(res[14]),
-//           currentTime: new BigNumber(res[15]),
-//           isExpired: Number(res[15]) >= Number(res[0]),
-//           contractState: Number(res[16]),
-//           finderAddress: res[17], // address
-//           expiryPrice: new BigNumber(res[18]),
-//         };
-//         return dat;
-//       } catch (e) {
-//         console.error("error getting emp state", e);
-//         return "bad";
-//       }
-//     } else {
-//       try {
-//         const res = await Promise.all([
-//           emp.methods.expirationTimestamp().call(),
-//           emp.methods.collateralCurrency().call(),
-//           emp.methods.priceIdentifier().call(),
-//           emp.methods.tokenCurrency().call(),
-//           emp.methods.collateralRequirement().call(),
-//           emp.methods.disputeBondPct().call(),
-//           emp.methods.disputerDisputeRewardPct().call(),
-//           emp.methods.sponsorDisputeRewardPct().call(),
-//           emp.methods.minSponsorTokens().call(),
-//           emp.methods.timerAddress().call(),
-//           emp.methods.cumulativeFeeMultiplier().call(),
-//           emp.methods.rawTotalPositionCollateral().call(),
-//           emp.methods.totalTokensOutstanding().call(),
-//           emp.methods.liquidationLiveness().call(),
-//           emp.methods.withdrawalLiveness().call(),
-//           emp.methods.getCurrentTime().call(),
-//           emp.methods.contractState().call(),
-//           emp.methods.finder().call(),
-//           emp.methods.expiryPrice().call(),
-//         ]);
-//         const dat = {
-//           expirationTimestamp: new BigNumber(res[0]),
-//           collateralCurrency: res[1], // address
-//           priceIdentifier: res[2],
-//           tokenCurrency: res[3], // address
-//           collateralRequirement: new BigNumber(res[4]),
-//           disputeBondPct: new BigNumber(res[5]),
-//           disputerDisputeRewardPct: new BigNumber(res[6]),
-//           sponsorDisputeRewardPct: new BigNumber(res[7]),
-//           minSponsorTokens: new BigNumber(res[8]),
-//           timerAddress: res[9], // address
-//           cumulativeFeeMultiplier: new BigNumber(res[10]),
-//           rawTotalPositionCollateral: new BigNumber(res[11]),
-//           totalTokensOutstanding: new BigNumber(res[12]),
-//           liquidationLiveness: new BigNumber(res[13]),
-//           withdrawalLiveness: new BigNumber(res[14]),
-//           currentTime: new BigNumber(res[15]),
-//           isExpired: Number(res[15]) >= Number(res[0]),
-//           contractState: Number(res[16]),
-//           finderAddress: res[17], // address
-//           expiryPrice: new BigNumber(res[18]),
-//         };
-//         return dat;
-//       } catch (e) {
-//         console.error("error getting the old emp state", e);
-//         return "bad";
-//       }
 //     }
 //   };
 

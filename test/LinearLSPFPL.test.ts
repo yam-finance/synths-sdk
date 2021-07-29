@@ -3,17 +3,16 @@ import { Signer, Contract, BigNumber } from "ethers";
 import { MockProvider } from "@ethereum-waffle/provider";
 import { expect } from "chai";
 import Synths from "../src";
-import { INFURA_API_KEY } from "../src/lib/config";
-import { SynthsAssetsConfig, EmpState } from "../src/types/assets.t";
+import { didContractThrow, ZERO_ADDRESS, runDefaultFixture } from "@uma/common";
+import { SynthsAssetsConfig } from "../src/types/assets.t";
 
 async function deploy(name: string, ...params: any) {
   const Contract = await ethers.getContractFactory(name);
   return await Contract.deploy(...params).then((f) => f.deployed());
 }
 
-describe("Synths SDK", function () {
-  // let provider: MockProvider;
-  let provider: any;
+describe("LinearLongShortPairFinancialProductLibrary", function () {
+  let provider: MockProvider;
   let accounts: Signer[];
 
   // beforeEach(async function () {
@@ -21,12 +20,11 @@ describe("Synths SDK", function () {
   //   accounts = await ethers.getSigners();
   // });
 
-  describe("Ethereum Mainnet tests", function () {
+  describe("LinearLongShortPairFinancialProductLibrary hardhat node tests", function () {
     let synthsSDK: any;
 
     before(async function () {
-      // provider = waffle.provider;
-      provider = new ethers.providers.JsonRpcProvider(`https://mainnet.infura.io/v3/${INFURA_API_KEY}`);
+      provider = waffle.provider;
       accounts = await ethers.getSigners();
       const chainId: number = (await provider.getNetwork()).chainId;
       const userAssetsConfig: SynthsAssetsConfig = {
@@ -66,9 +64,8 @@ describe("Synths SDK", function () {
 
     // @todo Add tests
     describe("Interact with asset", function () {
-      it("getEmpState - success", async function () {
-        const empState: EmpState = await synthsSDK.asset.getEmpState();
-        expect(empState).to.deep.include({ collateralCurrency: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' });
+      it("should do something", async function () {
+        
       });
     });
   });

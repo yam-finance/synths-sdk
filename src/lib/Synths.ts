@@ -13,6 +13,7 @@ class Synths {
      * @return The Synths SDK instance
      * @throws "Synths contracts not found in the current network"
      */
+    // @todo Add options type
     static async create(options: any): Promise<Synths> {
         const synthsSdk = new Synths();
         await synthsSdk.init(options);
@@ -24,6 +25,7 @@ class Synths {
      * @param options - Ethers Synths configuration
      * @throws "Synths contracts not found in the current network"
      */
+    // @todo Add options type
     private async init(options: any): Promise<void> {
         this.#ethersProvider = options.ethersProvider;
 
