@@ -4,10 +4,14 @@
   "description": "Yam Uma Synths SDK",
   "main": "./src/index.ts",
   "types": "./src/types/assets.t.ts",
+  "author": "YAM",
+  "license": "MIT",
   "scripts": {
-    "watch": "tsc-watch --onSuccess \"node dist/index.js\"",
-    "build": "tsc",
-    "test": "jest --watchAll"
+    "postinstall": "hardhat compile",
+    "build": "hardhat compile --force && tsc",
+    "test": "hardhat test",
+    "format": "prettier --write .",
+    "watch": "tsc-watch --onSuccess \"node dist/index.js\""
   },
   "keywords": [
     "yam",
@@ -19,8 +23,6 @@
     "assets",
     "protocol"
   ],
-  "author": "e",
-  "license": "MIT",
   "jest": {
     "globals": {
       "ts-jest": {
@@ -33,8 +35,8 @@
     "@ethersproject/units": "^5.1.0",
     "@studydefi/money-legos": "^2.4.2",
     "axios": "^0.21.1",
-    "dotenv": "^8.2.0",
-    "ethers": "^5.1.0",
+    "dotenv": "^10.0.0",
+    "ethers": "^5.4.2",
     "graphql": "^15.5.0",
     "graphql-request": "^3.4.0",
     "moment": "^2.29.1",
@@ -42,16 +44,35 @@
     "node-sessionstorage": "^1.0.0",
     "request": "^2.88.2",
     "tsc-watch": "^4.2.9",
-    "typescript": "^4.2.4",
     "web3": "^1.3.5",
     "web3-core": "^1.3.5",
     "web3-utils": "^1.3.5"
   },
   "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.2",
+    "@nomiclabs/hardhat-etherscan": "^2.1.4",
+    "@nomiclabs/hardhat-solhint": "^2.0.0",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@typechain/ethers-v5": "^7.0.1",
+    "@typechain/hardhat": "^2.2.0",
+    "@types/chai": "^4.2.21",
     "@types/jest": "^26.0.22",
+    "@types/mocha": "^9.0.0",
+    "@types/node": "^16.4.6",
     "@types/node-fetch": "^2.5.10",
     "@types/request": "^2.48.5",
+    "chai": "^4.3.4",
+    "ethereum-waffle": "^3.4.0",
+    "hardhat": "^2.5.0",
+    "hardhat-gas-reporter": "^1.0.4",
     "jest": "^26.6.3",
-    "ts-jest": "^26.5.4"
+    "prettier": "^2.3.2",
+    "prettier-plugin-solidity": "^1.0.0-beta.17",
+    "solhint-plugin-prettier": "^0.0.5",
+    "ts-jest": "^26.5.4",
+    "ts-node": "^10.1.0",
+    "tsconfig-paths": "^3.10.1",
+    "typechain": "^5.1.2",
+    "typescript": "^4.3.5"
   }
 }
