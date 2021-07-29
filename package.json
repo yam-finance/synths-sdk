@@ -34,7 +34,6 @@
     "@ethersproject/providers": "^5.1.0",
     "@ethersproject/units": "^5.1.0",
     "@studydefi/money-legos": "^2.4.2",
-    "@uma/common": "^2.6.0",
     "axios": "^0.21.1",
     "dotenv": "^10.0.0",
     "ethers": "^5.4.2",
@@ -45,7 +44,7 @@
     "node-sessionstorage": "^1.0.0",
     "request": "^2.88.2",
     "tsc-watch": "^4.2.9",
-    "web3": "^1.3.5",
+    "web3": "^1.5.0",
     "web3-core": "^1.3.5",
     "web3-utils": "^1.3.5"
   },
