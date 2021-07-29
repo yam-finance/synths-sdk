@@ -26,61 +26,67 @@ describe("Synths SDK", function () {
 
     before(async function () {
       // provider = waffle.provider;
-      provider = new ethers.providers.JsonRpcProvider(`https://mainnet.infura.io/v3/${INFURA_API_KEY}`);
+      provider = new ethers.providers.JsonRpcProvider(
+        `https://mainnet.infura.io/v3/${INFURA_API_KEY}`
+      );
       accounts = await ethers.getSigners();
       const chainId: number = (await provider.getNetwork()).chainId;
       const userAssetsConfig: SynthsAssetsConfig = {
         [chainId]: {
-          "upunks": [
+          upunks: [
             {
-              "name": "September",
-              "cycle": "09",
-              "year": "21",
-              "collateral": "WETH",
-              "token": {
-                "address": "0x86140A763077155964754968B6F6e243fE809cBe",
-                "decimals": 18
+              name: "September",
+              cycle: "09",
+              year: "21",
+              collateral: "WETH",
+              token: {
+                address: "0x86140A763077155964754968B6F6e243fE809cBe",
+                decimals: 18,
               },
-              "emp": {
-                "address": "0xF8eF02C10C473CA5E48b10c62ba4d46115dd2288",
-                "new": true,
-                "type": "finlib"
+              emp: {
+                address: "0xF8eF02C10C473CA5E48b10c62ba4d46115dd2288",
+                new: true,
+                type: "finlib",
               },
-              "pool": {
-                "address": "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
-                "location": "sushiswap"
+              pool: {
+                address: "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
+                location: "sushiswap",
               },
-              "expired": false 
-            }
+              expired: false,
+            },
           ],
         },
       };
 
       synthsSDK = await Synths.create({
         ethersProvider: provider,
-        userAssetsConfig: userAssetsConfig
+        userAssetsConfig: userAssetsConfig,
       });
 
-      synthsSDK.connectAsset("upunks-0921")
+      synthsSDK.connectAsset("upunks-0921");
     });
 
     // @todo Add tests
     describe("Interact with asset", function () {
       it("getEmpState - success", async function () {
         const empState: EmpState = await synthsSDK.asset.getEmpState();
-        expect(empState).to.deep.include({ collateralCurrency: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' });
+        expect(empState).to.deep.include({
+          collateralCurrency: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        });
       });
       it("getPosition - success", async function () {
         const position: any = await synthsSDK.asset.getPosition();
-        expect(position.rawCollateral['rawValue']).to.equal(BigNumber.from(0));
+        expect(position.rawCollateral["rawValue"]).to.equal(BigNumber.from(0));
       });
       it("getPositionCR - success", async function () {
         const positionCR: any = await synthsSDK.asset.getPositionCR();
-        expect(positionCR).to.equal('0');
+        expect(positionCR).to.equal("0");
       });
       it("getPositions - success", async function () {
         const positions: any = await synthsSDK.asset.getPositions();
-        expect(positions).to.deep.include({ '0x86140A763077155964754968B6F6e243fE809cBe': BigNumber.from(0) });
+        expect(positions).to.deep.include({
+          "0x86140A763077155964754968B6F6e243fE809cBe": BigNumber.from(0),
+        });
       });
       it("getGCR - success", async function () {
         const gcr: any = await synthsSDK.asset.getGCR();

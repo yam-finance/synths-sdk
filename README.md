@@ -1,6 +1,7 @@
 # synths-sdk
 
 ## Install
+
 ```
 yarn add synths-sdk
 ```
@@ -47,7 +48,7 @@ const provider = new ethers.providers.Web3Provider(web3Provider);
 //           "address": "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
 //           "location": "sushiswap"
 //         },
-//         "expired": false 
+//         "expired": false
 //       }
 //     ],
 //   },
@@ -58,7 +59,7 @@ synthsSDK = await Synths.create({
   // userAssetsConfig: userAssetsConfig
 });
 
-synthsSDK.connectAsset("upunks-0921")
+synthsSDK.connectAsset("upunks-0921");
 
 /// @notice Example method calls
 const gcr: any = await synthsSDK.asset.getGCR();

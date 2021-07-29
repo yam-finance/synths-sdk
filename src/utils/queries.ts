@@ -1,10 +1,12 @@
-import { gql } from 'graphql-request';
+import { gql } from "graphql-request";
 
-export const UNISWAP_ENDPOINT = 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2';
-export const SUSHISWAP_ENDPOINT = 'https://api.thegraph.com/subgraphs/name/sushiswap/exchange';
+export const UNISWAP_ENDPOINT =
+  "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2";
+export const SUSHISWAP_ENDPOINT =
+  "https://api.thegraph.com/subgraphs/name/sushiswap/exchange";
 
 export const UNISWAP_PAIR_DATA = gql`
-  query pair($pairAddress: Bytes!) { 
+  query pair($pairAddress: Bytes!) {
     pair(id: $pairAddress) {
       token0 {
         id
@@ -19,7 +21,7 @@ export const UNISWAP_PAIR_DATA = gql`
 `;
 
 export const SUSHISWAP_PAIR_DATA = gql`
-  query pair($pairAddress: Bytes!) { 
+  query pair($pairAddress: Bytes!) {
     pair(id: $pairAddress) {
       token0 {
         id

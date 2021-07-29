@@ -14,10 +14,4 @@ export const COINMARKETCAP_PUBLIC_KEY = process.env["COINMARKETCAP_PUBLIC_KEY"];
 // @todo Check type error
 export const defaultAssetsConfig: SynthsAssetsConfig = assets;
 
-export {
-    WETH,
-    YAM,
-    UMA,
-    DAI,
-    USDC
-}
+export { WETH, YAM, UMA, DAI, USDC };

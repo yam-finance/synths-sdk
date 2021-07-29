@@ -74,7 +74,7 @@ export interface AssetConfig {
   emp: EmpConfig;
   /** pool - Pool of the asset */
   pool: PoolConfig;
-  /** expired - Identifier for the expiry of the asset */ 
+  /** expired - Identifier for the expiry of the asset */
   expired: boolean;
 }
 
