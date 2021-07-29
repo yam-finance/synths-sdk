@@ -24,6 +24,7 @@ import { ethers } from "ethers";
 /// @dev Create an ethers provider instance
 const provider = new ethers.providers.Web3Provider(web3Provider);
 
+/// @dev User params for a local / not supported chain or asset
 // const chainId = 1;
 // const userAssetsConfig: SynthsAssetsConfig = {
 //   [chainId]: {

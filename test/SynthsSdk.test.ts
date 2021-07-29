@@ -70,6 +70,10 @@ describe("Synths SDK", function () {
         const empState: EmpState = await synthsSDK.asset.getEmpState();
         expect(empState).to.deep.include({ collateralCurrency: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' });
       });
+      it("getPosition - success", async function () {
+        const position: any = await synthsSDK.asset.getPosition();
+        console.log(position);
+      });
     });
   });
 });

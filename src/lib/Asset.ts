@@ -5,6 +5,7 @@ import EmpAbi from "../abi/emp.json";
 
 class Asset {
     #ethersProvider!: any;
+    #signer!: any;
     #assetContract!: ExpiringMultiParty;
 
     /**
@@ -36,6 +37,11 @@ class Asset {
         assetIdentifier,
     }: AssetClassConfig): Promise<void> {
         this.#ethersProvider = ethersProvider;
+
+        // @todo Check alternatives
+        // this.#signer = await this.#ethersProvider.getSigner();
+        this.#signer = ethers.Wallet.createRandom();
+
         const assetIdentifierSplit = assetIdentifier.split("-");
 
         // @todo Check EmpAbi error
@@ -117,6 +123,20 @@ class Asset {
             console.error("error", e);
         }
     }
+
+    /**
+     * Fetch the position of an asset in relation to the connected user address
+     *
+     * @return A promise with the user position
+     */
+    async getPosition(): Promise<any | undefined> {
+        try {
+          const address = await this.#signer.getAddress();
+          return this.#assetContract.positions(address);
+        } catch (e) {
+          console.error("error", e);
+        }
+    }
   
 
 
@@ -145,10 +165,6 @@ class Asset {
 
 // getPrice = async (tokenAddress: string) => {
 //   return await this.methods.getPrice(tokenAddress);
-// };
-
-// getPosition = async () => {
-//   return await this.methods.getPosition(this.asset);
 // };
 
 // getPositions = async () => {
@@ -444,25 +460,6 @@ class Asset {
 //       return price
 //       // TODO get onchain price of the tokenAddress
 //     };
-
-//   /**
-//   * Fetch the position of an asset in relation to the connected user address
-//   * @param {AssetModel} asset Asset object for the input
-//   * @public
-//   */
-//   getPosition = async (asset: AssetModel) => {
-//     // console.debug("sdk getPosition", asset);
-//     if (!asset) {
-//       return
-//     };
-//     const emp = (asset.emp.new ? await this.getEmp(asset) : await this.getEmpV1(asset));
-//     try {
-//       const pos = await emp.methods.positions(this.options.account).call();
-//       return pos;
-//     } catch (e) {
-//       // console.debug(`Could not get position of ${asset.emp.address} for user ${this.options.account}`);
-//     }
-//   };
 
 //   /**
 //   * Fetch all the positions of an address
