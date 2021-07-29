@@ -41,21 +41,65 @@ export interface Synths {
   addresses: any;
 }
 
-export interface Protection {
-  coverageAmount: string;
-  paid: string;
-  holder: string;
-  start: number;
-  expiry: number;
-  conceptIndex: number;
-  status: number;
+export interface AssetClassConfig {
+  /** ethersProvider - ethers.js provider */
+  ethersProvider: any;
+  /** contracts - Official contracts of the selected network */
+  contracts: AssetsConfig;
+  /** assetIdentifier - The identifier of the asset contract to use */
+  assetIdentifier: string;
 }
 
-export interface ProtectionProvider {
-  totalTokenSecondsProvided: string;
-  premiumIndex: string;
-  curTokens: string;
-  lastUpdate: number;
-  lastProvide: number;
-  withdrawInitiated: number;
+/// @notice assets.json interfaces
+
+export interface PoolConfig {
+  /** address - Address of the pool contract */
+  address: string;
+  /** location - Location of the pool contract */
+  location: string;
+}
+
+export interface EmpConfig {
+  /** address - Address of the emp contract */
+  address: string;
+  /** new - Identifier to distinguish between the new and the old emp contracts */
+  new: boolean;
+  /** type - Identifier to clarify the emp contract type */
+  type?: string;
+}
+
+export interface TokenConfig {
+  /** address - Address of the token contract */
+  address: string;
+  /** decimals - Decimals of the token contract */
+  decimals: number;
+}
+
+export interface AssetConfig {
+  /** name - Name of the asset */
+  name: string;
+  /** cycle - Cycle of the asset */
+  cycle: string;
+  /** year - Year of the asset */
+  year: string;
+  /** collateral - Collateral of the asset */
+  collateral: string;
+  /** token - Token of the asset */
+  token: TokenConfig;
+  /** emp - Emp of the asset */
+  emp: EmpConfig;
+  /** pool - Pool of the asset */
+  pool: PoolConfig;
+  /** expired - Identifier for the expiry of the asset */ 
+  expired: boolean;
+}
+
+export interface AssetsConfig {
+  /** assetType - Object of all official asset contracts of a type in a network */
+  [assetType: string]: AssetConfig[];
+}
+
+export interface SynthsAssetsConfig {
+  /** id - Network name */
+  [id: string]: AssetsConfig;
 }
