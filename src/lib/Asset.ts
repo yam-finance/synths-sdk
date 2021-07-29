@@ -1,12 +1,14 @@
-import { ethers } from "ethers";
-import { AssetClassConfig, EmpState } from "../types/assets.t";
+import { ethers, BigNumber } from "ethers";
+import { AssetClassConfig, EmpState, AssetsConfig, AssetConfig } from "../types/assets.t";
 import { ExpiringMultiParty } from "../types/contracts"
 import EmpAbi from "../abi/emp.json";
 
 class Asset {
     #ethersProvider!: any;
     #signer!: any;
-    #assetContract!: ExpiringMultiParty;
+    #assets!: AssetsConfig;
+    #config!: AssetConfig;
+    #contract!: ExpiringMultiParty;
 
     /**
      * Connects an instance of the Asset.
@@ -15,13 +17,13 @@ class Asset {
      */
     static async connect({
         ethersProvider,
-        contracts,
+        assets,
         assetIdentifier,
     }: AssetClassConfig): Promise<Asset> {
         const asset = new Asset();
         await asset.init({
             ethersProvider,
-            contracts,
+            assets,
             assetIdentifier,
         });
         return asset;
@@ -33,10 +35,11 @@ class Asset {
      */
     private async init({
         ethersProvider,
-        contracts,
+        assets,
         assetIdentifier,
     }: AssetClassConfig): Promise<void> {
         this.#ethersProvider = ethersProvider;
+        this.#assets = assets; 
 
         // @todo Check alternatives
         // this.#signer = await this.#ethersProvider.getSigner();
@@ -45,9 +48,10 @@ class Asset {
         const assetIdentifierSplit = assetIdentifier.split("-");
 
         // @todo Check EmpAbi error
-        for (const assetCycle of contracts[assetIdentifierSplit[0]]) { 
+        for (const assetCycle of assets[assetIdentifierSplit[0]]) { 
             if ((assetCycle.cycle + assetCycle.year) == assetIdentifierSplit[1]) {
-                this.#assetContract = new ethers.Contract(
+                this.#config = assetCycle; 
+                this.#contract = new ethers.Contract(
                     assetCycle.emp.address,
                     EmpAbi,
                     this.#ethersProvider) as ExpiringMultiParty;
@@ -55,7 +59,7 @@ class Asset {
             }
         }
 
-        if (!this.#assetContract) {
+        if (!this.#contract) {
           throw new Error("Synths contract with the passed identifier not found in the current network");
         }
     }
@@ -71,28 +75,28 @@ class Asset {
             /// @dev Because of an overload error, we split the calls into separate promises
 
             const result1 = await Promise.all([
-              this.#assetContract.expirationTimestamp(),
-              this.#assetContract.collateralCurrency(),
-              this.#assetContract.priceIdentifier(),
-              this.#assetContract.tokenCurrency(),
-              this.#assetContract.collateralRequirement(),
-              this.#assetContract.disputeBondPercentage(),
-              this.#assetContract.disputerDisputeRewardPercentage(),
-              this.#assetContract.sponsorDisputeRewardPercentage(),
-              this.#assetContract.minSponsorTokens(),
-              this.#assetContract.timerAddress(),
+              this.#contract.expirationTimestamp(),
+              this.#contract.collateralCurrency(),
+              this.#contract.priceIdentifier(),
+              this.#contract.tokenCurrency(),
+              this.#contract.collateralRequirement(),
+              this.#contract.disputeBondPercentage(),
+              this.#contract.disputerDisputeRewardPercentage(),
+              this.#contract.sponsorDisputeRewardPercentage(),
+              this.#contract.minSponsorTokens(),
+              this.#contract.timerAddress(),
             ]);
 
             const result2 = await Promise.all([
-              this.#assetContract.cumulativeFeeMultiplier(),
-              this.#assetContract.rawTotalPositionCollateral(),
-              this.#assetContract.totalTokensOutstanding(),
-              this.#assetContract.liquidationLiveness(),
-              this.#assetContract.withdrawalLiveness(),
-              this.#assetContract.getCurrentTime(),
-              this.#assetContract.contractState(),
-              this.#assetContract.finder(),
-              this.#assetContract.expiryPrice()
+              this.#contract.cumulativeFeeMultiplier(),
+              this.#contract.rawTotalPositionCollateral(),
+              this.#contract.totalTokensOutstanding(),
+              this.#contract.liquidationLiveness(),
+              this.#contract.withdrawalLiveness(),
+              this.#contract.getCurrentTime(),
+              this.#contract.contractState(),
+              this.#contract.finder(),
+              this.#contract.expiryPrice()
             ]);
 
             const data: EmpState = {
@@ -132,12 +136,64 @@ class Asset {
     async getPosition(): Promise<any | undefined> {
         try {
           const address = await this.#signer.getAddress();
-          return this.#assetContract.positions(address);
+          return this.#contract.positions(address);
         } catch (e) {
           console.error("error", e);
         }
     }
-  
+
+    /**
+     * ------------------------------------------------------------------------------
+     * @notice The following are helper methods that don't directly call the contract
+     * ------------------------------------------------------------------------------
+     */
+    
+    /**
+     * Get the current user asset position collateral ratio (CR).
+     *
+     * @return A promise with the user asset CR
+     */
+    async getPositionCR(): Promise<string | undefined> {
+        try {
+            const position = await this.getPosition();
+            const decimals = BigNumber.from(10).pow(BigNumber.from(this.#config.token.decimals));
+            const collateralRatio = BigNumber.from(position.rawCollateral['rawValue']).div(decimals).toString();
+
+            return collateralRatio;
+        } catch (e) {
+            console.error("error", e);
+        }
+    }
+
+    /**
+     * Fetch all the positions of an address.
+     *
+     * @return A promise with an object that contains all positions of an address
+     */
+    async getPositions(): Promise<{string: ethers.BigNumber} | undefined> {
+        try {
+            let positions: any = {};
+
+            for (const assetCycles in this.#assets) {
+                for (const asset in this.#assets[assetCycles]) {
+                    const customEmp = new ethers.Contract(
+                        this.#assets[assetCycles][asset].emp.address,
+                        EmpAbi,
+                        this.#ethersProvider
+                    ) as ExpiringMultiParty;
+
+                    const position = await this.getPosition();
+                    positions[this.#assets[assetCycles][asset].token.address] = position.tokensOutstanding['rawValue'];
+                }
+            }
+
+            return positions;
+        } catch (e) {
+            console.error("error", e);
+        }
+    }
+
+
 
 
 
@@ -165,14 +221,6 @@ class Asset {
 
 // getPrice = async (tokenAddress: string) => {
 //   return await this.methods.getPrice(tokenAddress);
-// };
-
-// getPositions = async () => {
-//   return await this.methods.getPositions();
-// };
-
-// getPositionCR = async () => {
-//   return await this.methods.getPositionCR(this.asset);
 // };
 
 // getAPR = async (_aprMultiplier: string, _cr: string) => {
@@ -460,62 +508,6 @@ class Asset {
 //       return price
 //       // TODO get onchain price of the tokenAddress
 //     };
-
-//   /**
-//   * Fetch all the positions of an address
-//   * @public
-//   */
-//   getPositions = async () => {
-//     /* @ts-ignore */
-//     const assetsObject = Assets[this.options.network];
-//     let posObject = {};
-
-//     try {
-//       for (let assets in assetsObject) {
-//         let assetDetails = assetsObject[assets];
-//         for (let asset in assetDetails) {
-//           const emp = (assetDetails[asset].emp.new ? await this.getEmp(assetDetails[asset]) : await this.getEmpV1(assetDetails[asset]));
-//           const pos = await emp.methods.positions(this.options.account).call();
-
-//           /* @ts-ignore */
-//           posObject[assetDetails[asset].token.address] = pos.tokensOutstanding['rawValue'];
-//         }
-//       }
-
-//       // console.log(posObject);
-
-//       return posObject;
-//     } catch (e) {
-//       // console.debug(`Could not get positions of ${emp} for user ${userAddress}`);
-//       return 0;
-//     }
-//   };
-
-//   /**
-//   * Get the current user asset position collateral ratio (CR)
-//   * @param {AssetModel} asset Asset object for the input
-//   * @public
-//   */
-//   getPositionCR = async (asset: AssetModel) => {
-//     const currPos = await this.getPosition(asset);
-
-//     try {
-//       let currCollat;
-
-//       if (asset.collateral == "WETH") {
-//         const collDec = new BigNumber(10).pow(new BigNumber(18));
-//         currCollat = new BigNumber(currPos.rawCollateral).div(collDec).toFixed(4).toString()
-//       } else if (asset.collateral == "USDC") {
-//         const collDec = new BigNumber(10).pow(new BigNumber(6));
-//         currCollat = new BigNumber(currPos.rawCollateral).div(collDec).toFixed(4).toString()
-//       }
-
-//       return currCollat;
-//     } catch (e) {
-//       console.debug("couldnt get position for: ", asset.emp.address, " for user: ", this.options.account);// return 0;
-//       return {};
-//     }
-//   };
 
 //   /**
 //   * Get asset global collateral ratio (GCR)

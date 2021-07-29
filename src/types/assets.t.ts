@@ -5,8 +5,8 @@ import { ethers } from "ethers";
 export interface AssetClassConfig {
   /** ethersProvider - ethers.js provider */
   ethersProvider: any;
-  /** contracts - Official contracts of the selected network */
-  contracts: AssetsConfig;
+  /** assets - Official contracts of the selected network */
+  assets: AssetsConfig;
   /** assetIdentifier - The identifier of the asset contract to use */
   assetIdentifier: string;
 }

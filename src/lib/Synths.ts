@@ -1,17 +1,17 @@
 import Asset from "./Asset";
 import { defaultAssetsConfig } from "./config";
-import { SynthsAssetsConfig } from "../types/assets.t";
+import { SynthsAssetsConfig, AssetsConfig } from "../types/assets.t";
 
 class Synths {
     #ethersProvider!: any;
-    contracts!: any;
-    asset?: any;
+    assets!: AssetsConfig;
+    asset?: Asset;
 
     /**
      * Creates an instance of the Synths SDK.
      * @param options - Ethers Synths configuration
      * @return The Synths SDK instance
-     * @throws "Synths contracts not found in the current network"
+     * @throws "Synths not found in the current network"
      */
     // @todo Add options type
     static async create(options: any): Promise<Synths> {
@@ -23,7 +23,7 @@ class Synths {
     /**
      * Initializes the Synths SDK instance.
      * @param options - Ethers Synths configuration
-     * @throws "Synths contracts not found in the current network"
+     * @throws "Synths not found in the current network"
      */
     // @todo Add options type
     private async init(options: any): Promise<void> {
@@ -36,10 +36,10 @@ class Synths {
         ...options.userAssetsConfig,
         };
 
-        this.contracts = synthsAssetsConfig[chainId];
+        this.assets = synthsAssetsConfig[chainId];
 
-        if (!this.contracts) {
-        throw new Error("Synths contracts not found in the current network");
+        if (!this.assets) {
+        throw new Error("Synths not found in the current network");
         }
     }
 
@@ -50,7 +50,7 @@ class Synths {
     async connectAsset(assetIdentifier: string): Promise<void> {
         this.asset = await Asset.connect({
             ethersProvider: this.#ethersProvider,
-            contracts: this.contracts,
+            assets: this.assets,
             assetIdentifier: assetIdentifier,
         });
     }
