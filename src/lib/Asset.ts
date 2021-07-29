@@ -1,7 +1,13 @@
 import { ethers, BigNumber } from "ethers";
+import { request } from 'graphql-request';
 import { AssetClassConfig, EmpState, AssetsConfig, AssetConfig } from "../types/assets.t";
 import { ExpiringMultiParty } from "../types/contracts"
 import EmpAbi from "../abi/emp.json";
+import ERC20Abi from "../abi/erc20.json";
+import UNIFactContract from "../abi/uniFactory.json";
+import UNIContract from "../abi/uni.json"
+import { WETH, USDC } from "./config"
+import { UNISWAP_ENDPOINT, SUSHISWAP_ENDPOINT, UNISWAP_PAIR_DATA, SUSHISWAP_PAIR_DATA } from "../utils/queries";
 
 class Asset {
     #ethersProvider!: any;
@@ -156,8 +162,10 @@ class Asset {
     async getPositionCR(): Promise<string | undefined> {
         try {
             const position = await this.getPosition();
-            const decimals = BigNumber.from(10).pow(BigNumber.from(this.#config.token.decimals));
-            const collateralRatio = BigNumber.from(position.rawCollateral['rawValue']).div(decimals).toString();
+            // @todo Look at alternatives for maintainability
+            const collateralAddress = this.#config.collateral == 'WETH' ? WETH : USDC; 
+            const collateralDecimals = BigNumber.from(10).pow(BigNumber.from(await this.getERC20Decimals(collateralAddress, this.#ethersProvider)));
+            const collateralRatio = BigNumber.from(position.rawCollateral['rawValue']).div(collateralDecimals).toString();
 
             return collateralRatio;
         } catch (e) {
@@ -193,6 +201,66 @@ class Asset {
         }
     }
 
+    /**
+     * Get asset global collateral ratio (GCR).
+     *
+     * @return A promise with the GCR
+     */
+     async getGCR(): Promise<any | undefined> {
+        try {
+            let gcr: string;
+            const empState = await this.getEmpState();
+
+            if (empState != undefined) {
+                const totalTokens = empState["totalTokensOutstanding"].div(BigNumber.from(10).pow(BigNumber.from(this.#config.token.decimals))).toNumber();
+                // @todo Look at alternatives for maintainability
+                const collateralAddress = this.#config.collateral == 'WETH' ? WETH : USDC; 
+                const collateralDecimals = BigNumber.from(10).pow(BigNumber.from(await this.getERC20Decimals(collateralAddress, this.#ethersProvider)));
+
+                /// @dev Get pool data from graph endpoints
+                const endpoint = this.#config.pool.location === 'uni' ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
+                const query = this.#config.pool.location === 'uni' ? UNISWAP_PAIR_DATA : SUSHISWAP_PAIR_DATA;
+                const poolData = await request(endpoint, query, {pairAddress: this.#config.pool.address});
+                let tokenPrice: number;
+
+                if (poolData['pair'].token0.id === this.#config.token.address) {
+                    tokenPrice = poolData['pair'].reserve0 / poolData['pair'].reserve1;
+                } else {
+                    tokenPrice = poolData['pair'].reserve1 / poolData['pair'].reserve0;
+                }
+
+                const feeMultiplier = Number(ethers.utils.formatEther(empState["cumulativeFeeMultiplier"]));
+                const totalCollateral = BigNumber.from(feeMultiplier).mul(empState["rawTotalPositionCollateral"].div(collateralDecimals)).toNumber();
+
+                gcr = totalTokens > 0 ? (totalCollateral / totalTokens / tokenPrice).toFixed(4) : '0';
+            } else {
+                throw new Error("Collateral not found");
+            }
+
+            return gcr;
+        } catch (e) {
+            console.error("error", e);
+        }
+    }
+
+    /**
+     * ----------------------------------------------------------------------------------
+     * @notice The following are on-chain helpers that will be moved to another directory
+     * ----------------------------------------------------------------------------------
+     */
+
+     async getERC20Decimals(address: string, ethersProvider: any): Promise<any | undefined> {
+        try {
+            const contract = new ethers.Contract(
+                address,
+                ERC20Abi,
+                ethersProvider) as any;
+            
+            return contract.decimals();
+        } catch (e) {
+            console.error("error", e);
+        }
+    }
 
 
 
@@ -226,10 +294,6 @@ class Asset {
 // getAPR = async (_aprMultiplier: string, _cr: string) => {
 //   return await this.methods.getAPR(_aprMultiplier, _cr);
 // }
-
-// getGCR = async () => {
-//   return await this.methods.getGCR(this.asset);
-// };
 
 // mint = async (tokenQty: string, collateralQty: string, onTxHash?: (txHash: string) => void) => {
 //   return await this.methods.mint(this.asset, tokenQty, collateralQty, onTxHash);
@@ -508,41 +572,6 @@ class Asset {
 //       return price
 //       // TODO get onchain price of the tokenAddress
 //     };
-
-//   /**
-//   * Get asset global collateral ratio (GCR)
-//   * @param {AssetModel} asset Asset object for the input
-//   * @public
-//   */
-//   getGCR = async (asset: AssetModel) => {
-//     const empState = await this.getEmpState(asset);
-
-//     try {
-//       if (empState != "bad" && empState != undefined) {
-//         const totalTokens = empState["totalTokensOutstanding"].div(new BigNumber(10).pow(new BigNumber(asset.token.decimals))).toNumber();
-//         let totalColl;
-//         let price;
-
-//         if (asset.collateral == "WETH") {
-//           const collDec = new BigNumber(10).pow(new BigNumber(18));
-//           price = await getUniPrice(this.options.provider, asset.token.address, WETH);
-//           totalColl = empState["cumulativeFeeMultiplier"].div(10 ** 18).times(empState["rawTotalPositionCollateral"].dividedBy(collDec)).toNumber();
-//         } else if (asset.collateral == "USDC") {
-//           const collDec = new BigNumber(10).pow(new BigNumber(6));
-//           price = await getUniPrice(this.options.provider, asset.token.address, USDC);
-//           totalColl = empState["cumulativeFeeMultiplier"].div(10 ** 18).times(empState["rawTotalPositionCollateral"].dividedBy(collDec)).toNumber();
-//         } else {
-//           throw "Collateral not found."
-//         }
-
-//         const gcr = totalTokens > 0 ? (totalColl / totalTokens / price).toFixed(4) : 0;
-//         return gcr;
-//       }
-//     } catch (e) {
-//       console.error("error", e)
-//       return {};
-//     }
-//   };
 
 //   /**
 //   * Mint token of an asset

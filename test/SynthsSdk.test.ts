@@ -82,6 +82,10 @@ describe("Synths SDK", function () {
         const positions: any = await synthsSDK.asset.getPositions();
         expect(positions).to.deep.include({ '0x86140A763077155964754968B6F6e243fE809cBe': BigNumber.from(0) });
       });
+      it("getGCR - success", async function () {
+        const gcr: any = await synthsSDK.asset.getGCR();
+        // console.log(gcr);
+      });
     });
   });
 });

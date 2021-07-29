@@ -3,14 +3,10 @@
 import Web3 from "web3";
 import { ethers } from "ethers";
 import WETHContract from "../abi/weth.json";
-import YAMContract from "../abi/yam.json";
-import BigNumber from "bignumber.js";
 import request from "request";
 import { provider, TransactionReceipt } from "web3-core";
 import { AbiItem } from "web3-utils";
-import { WETH, USDC } from "../lib/config/";
-import UNIFactContract from "../abi/uniFactory.json";
-import UNIContract from "../abi/uni.json"
+import { WETH } from "../lib/config/";
 
 export const sleep = (ms: number) => {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -41,23 +37,6 @@ const requestHttp = (url: any) => {
     });
   });
 };
-
-export const getERC20Contract = (provider: provider, address: string) => {
-  const web3 = new Web3(provider);
-  const contract = new web3.eth.Contract((YAMContract.abi as unknown) as AbiItem, address);
-  return contract;
-};
-
-// TODO update with custom ABIs (balanceOf)
-// export const getERC20Contract = async (provider: provider, address: string, abi: any) => {
-//   const abiContract = {
-//     [WETH]:1,
-//     [YAM]:1,
-//   }
-//   const web3 = new Web3(provider);
-//   const contractWETH = new web3.eth.Contract((abiContract as unknown) as AbiItem, address);
-//   return contractWETH;
-// };
 
 export const getAllowance = async (userAddress: string, spenderAddress: string, tokenAddress: string, provider: provider): Promise<string> => {
   try {
@@ -126,40 +105,6 @@ export async function getContractInfo(address: string) {
 export async function getPriceByContract(address: string, toCurrency?: string) {
   let result = await getContractInfo(address);
   return result && result.market_data && result.market_data.current_price[toCurrency || "usd"];
-}
-
-async function getUNIFact(provider: provider) {
-  const web3 = new Web3(provider);
-  const uniFactContract = new web3.eth.Contract((UNIFactContract.abi as unknown) as AbiItem, "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f");
-  return uniFactContract;
-}
-
-async function getUNI(provider: provider, address: string) {
-  const web3 = new Web3(provider)
-  const uniContract = new web3.eth.Contract((UNIContract.abi as unknown) as AbiItem, address);
-  return uniContract;
-}
-
-export async function getUniPrice(provider: provider, tokenA: string, tokenB: string) {
-  const uniFact = await getUNIFact(provider);
-  try {
-    const pair = await uniFact.methods.getPair(tokenA, tokenB).call();
-    const uniPair = await getUNI(provider, pair);
-    const token0 = await uniPair.methods.token0().call();
-    let reserves0: any = 0;
-    let reserves1: any = 0;
-    const res = await uniPair.methods.getReserves().call();
-    reserves0 = new BigNumber(res._reserve0);
-    reserves1 = new BigNumber(res._reserve1);
-    if (token0 == tokenA || token0.toLowerCase() == USDC) {
-      return reserves0.dividedBy(reserves1);
-    } else {
-      return reserves1.dividedBy(reserves0);
-    }
-  } catch (e) {
-    console.error("couldnt get uni price for:", tokenA, tokenB);
-    // console.log("user:", store.state.account, e);
-  }
 }
 
 export async function multiplyEach(arg1: any, arg2: any) {
