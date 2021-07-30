@@ -13,6 +13,8 @@ yarn-error.log*
 /src/types/contracts
 
 # Environment files
+/.vscode
+/.idea
 /.env
 
 # Hardhat files
