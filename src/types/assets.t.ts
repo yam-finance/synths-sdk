@@ -59,23 +59,16 @@ export interface TokenConfig {
   decimals: number;
 }
 
+/** AssetConfig - Asset specifications */
 export interface AssetConfig {
-  /** name - Name of the asset */
   name: string;
-  /** cycle - Cycle of the asset */
   cycle: string;
-  /** year - Year of the asset */
   year: string;
-  /** collateral - Collateral of the asset */
   collateral: string;
-  /** token - Token of the asset */
   token: TokenConfig;
-  /** emp - Emp of the asset */
   emp: EmpConfig;
-  /** pool - Pool of the asset */
   pool: PoolConfig;
-  /** expired - Identifier for the expiry of the asset */
-  expired: boolean;
+  expired: boolean; // Force expiration of the asset
 }
 
 export interface AssetsConfig {
