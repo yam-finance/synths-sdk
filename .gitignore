@@ -10,7 +10,6 @@ yarn-error.log*
 
 # Build files
 /dist 
-/src/types/contracts
 
 # Environment files
 /.vscode
