@@ -231,11 +231,12 @@ class Asset {
       const empState = await this.getEmpState();
 
       if (empState != undefined) {
-        const tokenDecimals = await this.getERC20Decimals(this.#config.token.address, this.#ethersProvider);
+        const tokenDecimals = await this.getERC20Decimals(
+          this.#config.token.address,
+          this.#ethersProvider
+        );
         const totalTokens = empState["totalTokensOutstanding"]
-          .div(
-            BigNumber.from(10).pow(BigNumber.from(tokenDecimals))
-          )
+          .div(BigNumber.from(10).pow(BigNumber.from(tokenDecimals)))
           .toNumber();
         // @todo Look at alternatives for maintainability
         const collateralAddress =
