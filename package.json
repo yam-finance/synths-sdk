@@ -7,7 +7,6 @@
   "author": "e",
   "license": "MIT",
   "scripts": {
-    "postinstall": "hardhat && hardhat compile",
     "build": "hardhat compile --force && tsc",
     "test": "hardhat test",
     "format": "prettier --write .",
