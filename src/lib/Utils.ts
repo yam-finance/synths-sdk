@@ -1,33 +1,37 @@
+// @todo Cleanup code
+
 /**
  * @notice The following is a sdk implementation of the tx stats calculation.
- * This code is not used in any test. To enable a test call, uncomment the
- * necessary lines in src/index.ts and add a test case.
+ * This code is not used in any test.
  */
- import { request } from 'graphql-request';
- import moment from 'moment';
- import axios from 'axios';
- import fetch from "node-fetch";
- import Assets from "../assets.json";
- import UNIContract from "../abi/uni.json";
- import EMPContract from "../../src/abi/emp.json";
- import erc20 from "@studydefi/money-legos/erc20";
- import { ISynth, DevMiningCalculatorParams, ILiquidityPool } from '../types/apr.t';
- import { BigNumber, ethers, utils  } from 'ethers';
- import { getTxStats } from "../utils/stats";
- import Web3 from "web3";
- import { provider } from "web3-core";
- import { JsonTxResult } from "../types/stats.t";
- import { sleep, multiplyEach } from '../utils/helpers'
- /* @ts-ignore */
- import sessionStorage from 'node-sessionstorage';
- import {
-   UNISWAP_ENDPOINT,
-   SUSHISWAP_ENDPOINT,
-   UNISWAP_MARKET_DATA_QUERY,
- } from '../utils/queries';
+import { request } from "graphql-request";
+import moment from "moment";
+import axios from "axios";
+import fetch from "node-fetch";
+import Assets from "../assets.json";
+import UNIContract from "../abi/uni.json";
+import EMPContract from "../abi/emp.json";
+import erc20 from "@studydefi/money-legos/erc20";
+import {
+  ISynth,
+  DevMiningCalculatorParams,
+  ILiquidityPool,
+} from "../types/apr.t";
+import { BigNumber, ethers, utils } from "ethers";
+import { getTxStats } from "../utils/stats";
+import Web3 from "web3";
+import { provider } from "web3-core";
+import { JsonTxResult } from "../types/stats.t";
+import { sleep, multiplyEach } from "../utils/helpers";
+/* @ts-ignore */
+import sessionStorage from "node-sessionstorage";
+import {
+  UNISWAP_ENDPOINT,
+  SUSHISWAP_ENDPOINT,
+  UNISWAP_MARKET_DATA_QUERY,
+} from "../utils/queries";
 
 export class Utils {
-
   private options;
   constructor(options: any) {
     this.options = options;
@@ -36,25 +40,47 @@ export class Utils {
   /** @title SDK implementation of transaction stats calculation */
 
   /**
-  * Fetch user transactions statistics
-  * @param {number} startTimestamp Start timestamp of the input
-  * @param {number} endTimestamp End timestamp of the input
-  * @public
-  * @methods
-  */
-  getUserStats = async (startTimestamp: number, endTimestamp: number, address: string) => {
-
-    const [txGasCostETH, averageTxPrice, txCount, failedTxCount, failedTxGasCostETH] = await getTxStats(
+   * Fetch user transactions statistics
+   * @param {number} startTimestamp Start timestamp of the input
+   * @param {number} endTimestamp End timestamp of the input
+   * @public
+   * @methods
+   */
+  getUserStats = async (
+    startTimestamp: number,
+    endTimestamp: number,
+    address: string
+  ) => {
+    const [
+      txGasCostETH,
+      averageTxPrice,
+      txCount,
+      failedTxCount,
+      failedTxGasCostETH,
+    ] = await getTxStats(
       this.options.provider,
       address,
       startTimestamp,
-      endTimestamp,
+      endTimestamp
     );
 
-    return [txGasCostETH, averageTxPrice, txCount, failedTxCount, failedTxGasCostETH];
+    return [
+      txGasCostETH,
+      averageTxPrice,
+      txCount,
+      failedTxCount,
+      failedTxGasCostETH,
+    ];
   };
 
-  fetchTxs = async (_type: string, _userAddress: string, _count: number, _endBlockNumber: number, _etherscanApiKey: string, _txs: any) => {
+  fetchTxs = async (
+    _type: string,
+    _userAddress: string,
+    _count: number,
+    _endBlockNumber: number,
+    _etherscanApiKey: string,
+    _txs: any
+  ) => {
     let url = "";
     while (_count === 10000) {
       await sleep(500);
@@ -85,31 +111,43 @@ export class Utils {
     return _txs;
   };
 
-  getBlockNumberByTimestamp = async (_timestamp: number, _etherscanApiKey: string) => {
-    let url = `https://api.etherscan.io/api?module=block&action=getblocknobytime&timestamp=${_timestamp}&closest=before&apikey=${_etherscanApiKey}`
+  getBlockNumberByTimestamp = async (
+    _timestamp: number,
+    _etherscanApiKey: string
+  ) => {
+    let url = `https://api.etherscan.io/api?module=block&action=getblocknobytime&timestamp=${_timestamp}&closest=before&apikey=${_etherscanApiKey}`;
     let response = await axios.get(url);
-    return response.data["result"]
-  }
+    return response.data["result"];
+  };
 
   getTxStats = async (
     provider: provider,
     userAddress: string,
     startTimeStamp: number,
-    endTimeStamp: number,
+    endTimeStamp: number
   ): Promise<string[]> => {
     const web3 = new Web3(provider);
-    const etherscanApiKey = process.env.ETHERSCAN_KEY || ""
+    const etherscanApiKey = process.env.ETHERSCAN_KEY || "";
     let gasFeeTotal = 0;
     let gasPriceTotal = 0;
     let gasFeeTotalFail = 0;
     let startBlockNumber = 0;
-    let endBlockNumber = await web3.eth.getBlockNumber(function (error, result) {
+    let endBlockNumber = await web3.eth.getBlockNumber(function (
+      error,
+      result
+    ) {
       if (!error) return result;
     });
 
     try {
-      startBlockNumber = await this.getBlockNumberByTimestamp(startTimeStamp, etherscanApiKey)
-      endBlockNumber = await this.getBlockNumberByTimestamp(endTimeStamp, etherscanApiKey)
+      startBlockNumber = await this.getBlockNumberByTimestamp(
+        startTimeStamp,
+        etherscanApiKey
+      );
+      endBlockNumber = await this.getBlockNumberByTimestamp(
+        endTimeStamp,
+        etherscanApiKey
+      );
 
       // Fetch a list of 'normal' unique outgoing transactions by address (maximum of 10000 records only).
       // Continue fetching if response >= 1000.
@@ -119,7 +157,14 @@ export class Utils {
       let json = await response.data;
       let txs = json["result"];
       let count = txs.length;
-      txs = await this.fetchTxs("ether", userAddress, count, endBlockNumber, etherscanApiKey, txs);
+      txs = await this.fetchTxs(
+        "ether",
+        userAddress,
+        count,
+        endBlockNumber,
+        etherscanApiKey,
+        txs
+      );
 
       // Fetch a list of "ERC20 - Token Transfer Events" by address (maximum of 10000 records only).
       // Continue fetching if response >= 1000.
@@ -130,10 +175,19 @@ export class Utils {
       const erc20Txs = json["result"];
       count = erc20Txs.length;
       txs.push(...erc20Txs);
-      txs = await this.fetchTxs("erc20", userAddress, count, endBlockNumber, etherscanApiKey, txs);
+      txs = await this.fetchTxs(
+        "erc20",
+        userAddress,
+        count,
+        endBlockNumber,
+        etherscanApiKey,
+        txs
+      );
 
       // Show only txs that come from the user address.
-      let txsOut: any = txs.filter((v: any) => v.from === userAddress.toLowerCase());
+      let txsOut: any = txs.filter(
+        (v: any) => v.from === userAddress.toLowerCase()
+      );
       txsOut = txsOut.map(({ confirmations, ...item }: any) => item);
       txsOut = new Set(txsOut.map(JSON.stringify));
       txsOut = Array.from(txsOut);
@@ -144,18 +198,37 @@ export class Utils {
       const txOutFail = txsOutFail.length;
 
       if (txsOutCount > 0) {
-        const gasUsedArray = txsOut.map((value: any) => parseInt(value.gasUsed));
-        const gasPriceArray = txsOut.map((value: any) => parseInt(value.gasPrice));
+        const gasUsedArray = txsOut.map((value: any) =>
+          parseInt(value.gasUsed)
+        );
+        const gasPriceArray = txsOut.map((value: any) =>
+          parseInt(value.gasPrice)
+        );
         const gasFee = await multiplyEach(gasPriceArray, gasUsedArray);
         gasFeeTotal = gasFee.reduce((partialSum, a) => partialSum + a, 0);
-        gasPriceTotal = gasPriceArray.reduce((partialSum: any, a: any) => partialSum + a, 0);
-        const gasUsedFailArray = txsOutFail.map((value: any) => parseInt(value.gasUsed));
-        const gasPriceFailArray = txsOutFail.map((value: any) => parseInt(value.gasPrice));
-        const gasFeeFail = await multiplyEach(gasPriceFailArray, gasUsedFailArray);
-        gasFeeTotalFail = gasFeeFail.reduce((partialSum, a) => partialSum + a, 0);
+        gasPriceTotal = gasPriceArray.reduce(
+          (partialSum: any, a: any) => partialSum + a,
+          0
+        );
+        const gasUsedFailArray = txsOutFail.map((value: any) =>
+          parseInt(value.gasUsed)
+        );
+        const gasPriceFailArray = txsOutFail.map((value: any) =>
+          parseInt(value.gasPrice)
+        );
+        const gasFeeFail = await multiplyEach(
+          gasPriceFailArray,
+          gasUsedFailArray
+        );
+        gasFeeTotalFail = gasFeeFail.reduce(
+          (partialSum, a) => partialSum + a,
+          0
+        );
       }
 
-      const txGasCostETH = BigNumber.from(web3.utils.fromWei(gasFeeTotal.toString(), "ether"));
+      const txGasCostETH = BigNumber.from(
+        web3.utils.fromWei(gasFeeTotal.toString(), "ether")
+      );
       let averageTxPrice = BigNumber.from(0);
 
       if (txsOutCount != 0) {
@@ -164,10 +237,20 @@ export class Utils {
 
       const txCount = txsOutCount.toString();
       const failedTxCount = txOutFail.toString();
-      const failedTxGasCostETH = BigNumber.from(web3.utils.fromWei(gasFeeTotalFail.toString(), "ether"));
-      return [txGasCostETH.toString(), averageTxPrice.toString(), txCount, failedTxCount, failedTxGasCostETH.toString()];
+      const failedTxGasCostETH = BigNumber.from(
+        web3.utils.fromWei(gasFeeTotalFail.toString(), "ether")
+      );
+      return [
+        txGasCostETH.toString(),
+        averageTxPrice.toString(),
+        txCount,
+        failedTxCount,
+        failedTxGasCostETH.toString(),
+      ];
     } catch (e) {
-      console.log("An error occurred while retrieving your transaction data.\nPlease submit it as an issue.");
+      console.log(
+        "An error occurred while retrieving your transaction data.\nPlease submit it as an issue."
+      );
       return ["...", "...", "...", "...", "..."];
     }
   };
@@ -186,10 +269,11 @@ export class Utils {
   getMiningRewards = async (
     assetName: string,
     asset: ISynth,
-    assetPrice: number,
+    assetPrice: number
   ) => {
-    const ethersProvider: ethers.providers.JsonRpcProvider = new ethers.providers.JsonRpcProvider(process.env.INFURA_URL_HTTP || "");
-    const network = 'mainnet';
+    const ethersProvider: ethers.providers.JsonRpcProvider =
+      new ethers.providers.JsonRpcProvider(process.env.INFURA_URL_HTTP || "");
+    const network = "mainnet";
 
     /// @dev Check if params are set
     if (!assetName || !asset) {
@@ -197,7 +281,11 @@ export class Utils {
     }
 
     try {
-      const contractLp = new ethers.Contract(asset.pool.address, UNIContract.abi, ethersProvider);
+      const contractLp = new ethers.Contract(
+        asset.pool.address,
+        UNIContract.abi,
+        ethersProvider
+      );
 
       /// @dev Construct devMiningCalculator
       const devmining = this.devMiningCalculator({
@@ -208,22 +296,17 @@ export class Utils {
         erc20Abi: erc20.abi,
       });
 
-      const [
-          jsonEmpData,
-          contractLpCall,
-          ethPrice,
-          umaPrice,
-          yamPrice
-      ] = await Promise.all([
+      const [jsonEmpData, contractLpCall, ethPrice, umaPrice, yamPrice] =
+        await Promise.all([
           this.getEmpData(devmining, ethersProvider, network),
           contractLp.getReserves(),
           this.getUsdPrice("weth"),
           this.getUsdPrice("uma"),
           this.getUsdPrice("yam-2"),
-      ]);
+        ]);
 
-      const jsonEmpObject = JSON.parse(jsonEmpData)
-      const { rewards, whitelistedTVM } = jsonEmpObject
+      const jsonEmpObject = JSON.parse(jsonEmpData);
+      const { rewards, whitelistedTVM } = jsonEmpObject;
 
       /// @dev Get emp info from devMiningCalculator
       const getEmpInfo: any = await devmining.utils.getEmpInfo(
@@ -259,7 +342,7 @@ export class Utils {
       let umaWeekRewards = 0;
       if (assetName.toLowerCase() === "upunks-0921") {
         if (current <= week1UntilWeek2 && current >= startRewardsTs) {
-          umaWeekRewards += 5000
+          umaWeekRewards += 5000;
         } else if (current <= week3UntilWeek4 && current > week1UntilWeek2) {
           yamWeekRewards += 5000;
         }
@@ -268,88 +351,105 @@ export class Utils {
       /// @dev Calculate rewards
       let calcAsset = 0;
       let calcCollateral = 0;
-      const additionalWeekRewards = umaWeekRewards * umaPrice + yamWeekRewards * yamPrice;
-      const assetReserve0 = BigNumber.from(contractLpCall._reserve0).div(baseAsset).toNumber();
-      const assetReserve1 = BigNumber.from(contractLpCall._reserve1).div(baseCollateral).toNumber();
+      const additionalWeekRewards =
+        umaWeekRewards * umaPrice + yamWeekRewards * yamPrice;
+      const assetReserve0 = BigNumber.from(contractLpCall._reserve0)
+        .div(baseAsset)
+        .toNumber();
+      const assetReserve1 = BigNumber.from(contractLpCall._reserve1)
+        .div(baseCollateral)
+        .toNumber();
 
       calcAsset = assetReserve0 * tokenPrice;
-      calcCollateral = assetReserve1 * (asset.collateral == "WETH" ? ethPrice : 1);
+      calcCollateral =
+        assetReserve1 * (asset.collateral == "WETH" ? ethPrice : 1);
 
       /// @dev Prepare calculation
-      console.log("assetName", assetName)
+      console.log("assetName", assetName);
       // getEmpInfo.tokenCount
       let _tokenCount: number;
       if (assetName.toLowerCase().includes("ustonks")) {
-        _tokenCount = Number(utils.formatUnits(getEmpInfo.tokenCount, 6))
+        _tokenCount = Number(utils.formatUnits(getEmpInfo.tokenCount, 6));
       } else {
-        _tokenCount = Number(utils.formatUnits(getEmpInfo.tokenCount, 18))
+        _tokenCount = Number(utils.formatUnits(getEmpInfo.tokenCount, 18));
       }
-      console.log("_tokenCount", _tokenCount.toString())
+      console.log("_tokenCount", _tokenCount.toString());
       // tokenPrice
-      const _tokenPrice: number = tokenPrice
-      console.log("_tokenPrice", _tokenPrice)
+      const _tokenPrice: number = tokenPrice;
+      console.log("_tokenPrice", _tokenPrice);
       // whitelistedTVM
-      const _whitelistedTVM: number = Number(whitelistedTVM)
-      console.log("_whitelistedTVM", _whitelistedTVM)
+      const _whitelistedTVM: number = Number(whitelistedTVM);
+      console.log("_whitelistedTVM", _whitelistedTVM);
       // 50_000
       /// @TODO Check why umaRewards != 50_000
-      const _umaRewards: number = 50_000
-      console.log("_umaRewards", _umaRewards)
+      const _umaRewards: number = 50_000;
+      console.log("_umaRewards", _umaRewards);
       // umaPrice
-      const _umaPrice: number = umaPrice
-      console.log("_umaPrice", _umaPrice)
+      const _umaPrice: number = umaPrice;
+      console.log("_umaPrice", _umaPrice);
       // 0.82
-      const _developerRewardsPercentage: number = 0.82
-      console.log("_developerRewardsPercentage", _developerRewardsPercentage)
+      const _developerRewardsPercentage: number = 0.82;
+      console.log("_developerRewardsPercentage", _developerRewardsPercentage);
       // additionalWeekRewards
-      const _additionalWeekRewards: number = additionalWeekRewards
-      console.log("_additionalWeekRewards", _additionalWeekRewards)
+      const _additionalWeekRewards: number = additionalWeekRewards;
+      console.log("_additionalWeekRewards", _additionalWeekRewards);
       // calcAsset
-      const _calcAsset: number = calcAsset
-      console.log("_calcAsset", _calcAsset)
+      const _calcAsset: number = calcAsset;
+      console.log("_calcAsset", _calcAsset);
       // 1
-      const _one: number = 1
-      console.log("_one", _one)
+      const _one: number = 1;
+      console.log("_one", _one);
       // 52
-      const _numberOfWeeksInYear: number = 52
-      console.log("_numberOfWeeksInYear", _numberOfWeeksInYear)
+      const _numberOfWeeksInYear: number = 52;
+      console.log("_numberOfWeeksInYear", _numberOfWeeksInYear);
       // cr
       // const _cr: number = cr
       // console.log("_cr", _cr)
 
-
       // @notice New calculation based on the doc
       // umaRewardsPercentage = (`totalTokensOutstanding` * synthPrice) / whitelistedTVM
-      let umaRewardsPercentage: number = (_tokenCount * _tokenPrice) / _whitelistedTVM;
-      console.log("umaRewardsPercentage", umaRewardsPercentage.toString())
+      let umaRewardsPercentage: number =
+        (_tokenCount * _tokenPrice) / _whitelistedTVM;
+      console.log("umaRewardsPercentage", umaRewardsPercentage.toString());
 
       // dynamicAmountPerWeek = 50,000 * umaRewardsPercentage
       const dynamicAmountPerWeek: number = _umaRewards * umaRewardsPercentage;
-      console.log("dynamicAmountPerWeek", dynamicAmountPerWeek.toString())
+      console.log("dynamicAmountPerWeek", dynamicAmountPerWeek.toString());
 
       // dynamicAmountPerWeekInDollars = dynamicAmountPerWeek * UMA price
-      const dynamicAmountPerWeekInDollars: number = dynamicAmountPerWeek * _umaPrice;
-      console.log("dynamicAmountPerWeekInDollars", dynamicAmountPerWeekInDollars.toString())
+      const dynamicAmountPerWeekInDollars: number =
+        dynamicAmountPerWeek * _umaPrice;
+      console.log(
+        "dynamicAmountPerWeekInDollars",
+        dynamicAmountPerWeekInDollars.toString()
+      );
 
       // standardWeeklyRewards = dynamicAmountPerWeekInDollars * developerRewardsPercentage
-      const standardWeeklyRewards: number = dynamicAmountPerWeekInDollars * _developerRewardsPercentage;
-      console.log("standardWeeklyRewards", standardWeeklyRewards.toString())
+      const standardWeeklyRewards: number =
+        dynamicAmountPerWeekInDollars * _developerRewardsPercentage;
+      console.log("standardWeeklyRewards", standardWeeklyRewards.toString());
 
       // totalWeeklyRewards = (standardRewards) + (Additional UMA * UMA price) + (Additional Yam * Yam Price)
-      const totalWeeklyRewards: number = standardWeeklyRewards + _additionalWeekRewards;
-      console.log("totalWeeklyRewards", totalWeeklyRewards.toString())
+      const totalWeeklyRewards: number =
+        standardWeeklyRewards + _additionalWeekRewards;
+      console.log("totalWeeklyRewards", totalWeeklyRewards.toString());
 
       // sponsorAmountPerDollarMintedPerWeek = totalWeeklyRewards / (Synth in AMM pool * synth price)
-      const sponsorAmountPerDollarMintedPerWeek: number = totalWeeklyRewards / _calcAsset;
-      console.log("sponsorAmountPerDollarMintedPerWeek", sponsorAmountPerDollarMintedPerWeek.toString())
+      const sponsorAmountPerDollarMintedPerWeek: number =
+        totalWeeklyRewards / _calcAsset;
+      console.log(
+        "sponsorAmountPerDollarMintedPerWeek",
+        sponsorAmountPerDollarMintedPerWeek.toString()
+      );
 
       // collateralEfficiency = 1 / (CR + 1)
       // const collateralEfficiency: number = 1 / (_cr + 1)
       // console.log("collateralEfficiency", collateralEfficiency)
 
       // General APR = (sponsorAmountPerDollarMintedPerWeek * chosen collateralEfficiency * 52)
-      let aprMultiplier: number = sponsorAmountPerDollarMintedPerWeek * _numberOfWeeksInYear * 100;
-      console.log("aprMultiplier", aprMultiplier.toString())
+      let aprMultiplier: number =
+        sponsorAmountPerDollarMintedPerWeek * _numberOfWeeksInYear * 100;
+      console.log("aprMultiplier", aprMultiplier.toString());
 
       if (aprMultiplier === Infinity || _tokenPrice === undefined) {
         aprMultiplier = 0;
@@ -363,9 +463,12 @@ export class Utils {
   };
 
   getPoolData = async (pool: ILiquidityPool) => {
-    const endpoint = pool.location === 'uni' ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
+    const endpoint =
+      pool.location === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
     try {
-      const data = await request(endpoint, UNISWAP_MARKET_DATA_QUERY, { poolAddress: pool.address });
+      const data = await request(endpoint, UNISWAP_MARKET_DATA_QUERY, {
+        poolAddress: pool.address,
+      });
       return data.pair;
     } catch (err) {
       console.log(err);
@@ -378,7 +481,9 @@ export class Utils {
     if (cached) return Promise.resolve(Number(cached));
 
     try {
-      const res = await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${cgId}&vs_currencies=usd`);
+      const res = await axios.get(
+        `https://api.coingecko.com/api/v3/simple/price?ids=${cgId}&vs_currencies=usd`
+      );
       const price = Number(res.data[cgId].usd);
       sessionStorage.setItem(cgId, price.toString());
       return Promise.resolve(price);
@@ -387,7 +492,11 @@ export class Utils {
     }
   };
 
-  getEmpData = async (devmining: any, ethersProvider: ethers.providers.JsonRpcProvider, network: string) => {
+  getEmpData = async (
+    devmining: any,
+    ethersProvider: ethers.providers.JsonRpcProvider,
+    network: string
+  ) => {
     const cached = sessionStorage.getItem("empData");
     if (cached) return cached;
 
@@ -395,28 +504,28 @@ export class Utils {
     const devMiningEmp = await this.getDevMiningEmps(network);
 
     /// @dev Get dev mining reward estimation from devMiningCalculator
-    const estimateDevMiningRewards = await devmining.estimateDevMiningRewards(
-      {
-        /* @ts-ignore */
-        totalRewards: devMiningEmp["totalReward"],
-        /* @ts-ignore */
-        empWhitelist: devMiningEmp["empWhitelist"],
-      }
-    );
+    const estimateDevMiningRewards = await devmining.estimateDevMiningRewards({
+      /* @ts-ignore */
+      totalRewards: devMiningEmp["totalReward"],
+      /* @ts-ignore */
+      empWhitelist: devMiningEmp["empWhitelist"],
+    });
 
     /// @dev Structure rewards
     const rewards: any = {};
     let whitelistedTVM: string = "";
     for (let i = 0; i < estimateDevMiningRewards.length; i++) {
-      rewards[estimateDevMiningRewards[i][0]] =
-        estimateDevMiningRewards[i][1];
+      rewards[estimateDevMiningRewards[i][0]] = estimateDevMiningRewards[i][1];
       whitelistedTVM = estimateDevMiningRewards[i][2];
     }
 
-    sessionStorage.setItem("empData", JSON.stringify({ rewards, whitelistedTVM }));
+    sessionStorage.setItem(
+      "empData",
+      JSON.stringify({ rewards, whitelistedTVM })
+    );
 
-    return JSON.stringify({ rewards, whitelistedTVM })
-  }
+    return JSON.stringify({ rewards, whitelistedTVM });
+  };
 
   mergeUnique = (arr1: any, arr2: any) => {
     return arr1.concat(
@@ -471,12 +580,12 @@ export class Utils {
   };
 
   getPriceByContract = async (address: string, toCurrency?: string) => {
-    let loopCount = 0
+    let loopCount = 0;
     let result = await this.getContractInfo(address);
 
     while (!result && loopCount < 10) {
       result = await this.getContractInfo(address);
-      loopCount += 1
+      loopCount += 1;
     }
 
     return (
@@ -498,7 +607,11 @@ export class Utils {
     async function getEmpInfo(address: string, toCurrency = "usd") {
       const emp = new ethers.Contract(address, empAbi, provider);
       const tokenAddress = await emp.tokenCurrency();
-      const tokenContract = new ethers.Contract(tokenAddress, erc20Abi, provider);
+      const tokenContract = new ethers.Contract(
+        tokenAddress,
+        erc20Abi,
+        provider
+      );
       const tokenCount = (await emp.totalTokensOutstanding()).toString();
       const tokenDecimals = (await tokenContract.decimals()).toString();
 
@@ -509,11 +622,14 @@ export class Utils {
         provider
       );
       /// @dev Fetches the collateral price from coingecko using getPriceByContract (getPrice == getPriceByContract)
-      const collateralPrice = await getPrice(collateralAddress, toCurrency).catch(
-        () => null
-      );
+      const collateralPrice = await getPrice(
+        collateralAddress,
+        toCurrency
+      ).catch(() => null);
       const collateralCount = (await emp.totalPositionCollateral()).toString();
-      const collateralDecimals = (await collateralContract.decimals()).toString();
+      const collateralDecimals = (
+        await collateralContract.decimals()
+      ).toString();
       const collateralRequirement = (
         await emp.collateralRequirement()
       ).toString();
@@ -547,7 +663,7 @@ export class Utils {
       collateralCount: number;
       collateralRequirement: number;
     }) {
-      const fallbackCr = "2000000000000000000"
+      const fallbackCr = "2000000000000000000";
       const fixedPrice = FixedNumber.from(collateralPrice.toString());
       const collFixedSize = FixedNumber.fromValue(
         collateralCount,
@@ -602,7 +718,7 @@ export class Utils {
       const values: any[] = [];
       /// @dev Returns the whitelisted TVM
       const totalValue = allInfo.reduce((totalValue, info) => {
-        console.log(info)
+        console.log(info);
         const value = calculateEmpValue(info);
         values.push(value);
         return totalValue.addUnsafe(value);
@@ -615,7 +731,7 @@ export class Utils {
             .mulUnsafe(FixedNumber.from(totalRewards))
             .divUnsafe(totalValue)
             .toString(),
-          totalValue.toString()
+          totalValue.toString(),
         ];
       });
     }
@@ -627,5 +743,5 @@ export class Utils {
         calculateEmpValue,
       },
     };
-  }
+  };
 }

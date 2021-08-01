@@ -1,61 +1,82 @@
-import Web3 from "web3/types";
+import { ethers } from "ethers";
 
-export interface AssetGroupModel {
-  name: string;
-  AssetModel: AssetModel[];
+/// @notice Asset class interfaces
+
+export interface AssetClassConfig {
+  /** ethersProvider - ethers.js provider */
+  ethersProvider: any;
+  /** assets - Official contracts of the selected network */
+  assets: AssetsConfig;
+  /** assetIdentifier - The identifier of the asset contract to use */
+  assetIdentifier: string;
 }
 
-export interface AssetModel {
+export interface EmpState {
+  expirationTimestamp: ethers.BigNumber;
+  collateralCurrency: string;
+  priceIdentifier: string;
+  tokenCurrency: string;
+  collateralRequirement: ethers.BigNumber;
+  disputeBondPercentage: ethers.BigNumber;
+  disputerDisputeRewardPercentage: ethers.BigNumber;
+  sponsorDisputeRewardPercentage: ethers.BigNumber;
+  minSponsorTokens: ethers.BigNumber;
+  timerAddress: string;
+  cumulativeFeeMultiplier: ethers.BigNumber;
+  rawTotalPositionCollateral: ethers.BigNumber;
+  totalTokensOutstanding: ethers.BigNumber;
+  liquidationLiveness: ethers.BigNumber;
+  withdrawalLiveness: ethers.BigNumber;
+  currentTime: ethers.BigNumber;
+  isExpired: boolean;
+  contractState: number;
+  finderAddress: string;
+  expiryPrice: ethers.BigNumber;
+}
+
+/// @notice assets.json interfaces
+
+export interface PoolConfig {
+  /** address - Address of the pool contract */
+  address: string;
+  /** location - Location of the pool contract */
+  location: string;
+}
+
+export interface EmpConfig {
+  /** address - Address of the emp contract */
+  address: string;
+  /** new - Identifier to distinguish between the new and the old emp contracts */
+  new: boolean;
+  /** type - Identifier to clarify the emp contract type */
+  type?: string;
+}
+
+export interface TokenConfig {
+  /** address - Address of the token contract */
+  address: string;
+  /** decimals - Decimals of the token contract */
+  decimals: number;
+}
+
+/** AssetConfig - Asset specifications */
+export interface AssetConfig {
   name: string;
   cycle: string;
   year: string;
   collateral: string;
-  token: TokenModel;
-  emp: EmpModel;
-  pool: PoolModel;
-  apr?: AprModel;
+  token: TokenConfig;
+  emp: EmpConfig;
+  pool: PoolConfig;
+  expired: boolean; // Force expiration of the asset
 }
 
-export interface TokenModel {
-  address: string;
-  decimals: number;
+export interface AssetsConfig {
+  /** assetType - Object of all official asset contracts of a type in a network */
+  [assetType: string]: AssetConfig[];
 }
 
-export interface EmpModel {
-  address: string;
-  new: boolean;
-}
-
-export interface PoolModel {
-  address: string;
-}
-
-export interface AprModel {
-  force: number;
-  extra: number;
-}
-
-export interface Synths {
-  web3: Web3;
-  contracts: any;
-  addresses: any;
-}
-
-export interface Protection {
-  coverageAmount: string;
-  paid: string;
-  holder: string;
-  start: number;
-  expiry: number;
-  conceptIndex: number;
-  status: number;
-}
-
-export interface ProtectionProvider {
-  totalTokenSecondsProvided: string;
-  premiumIndex: string;
-  curTokens: string;
-  lastUpdate: number;
-  lastProvide: number;
-  withdrawInitiated: number;
+export interface SynthsAssetsConfig {
+  /** id - Network name */
+  [id: string]: AssetsConfig;
 }
