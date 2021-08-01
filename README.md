@@ -54,7 +54,7 @@ const provider = new ethers.providers.Web3Provider(web3Provider);
 //   },
 // };
 
-synthsSDK = await Synths.create({
+const synthsSDK = await Synths.create({
   ethersProvider: provider,
   // userAssetsConfig: userAssetsConfig
 });
