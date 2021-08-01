@@ -5,7 +5,6 @@ import { SynthsAssetsConfig, AssetsConfig } from "../types/assets.t";
 class Synths {
   #ethersProvider!: any;
   assets!: AssetsConfig;
-  asset?: Asset;
 
   /**
    * Creates an instance of the Synths SDK.
@@ -47,12 +46,14 @@ class Synths {
    * Connects the SDK to an asset.
    * @param config - Ethers Asset configuration
    */
-  async connectAsset(assetIdentifier: string): Promise<void> {
-    this.asset = await Asset.connect({
+  async connectAsset(assetIdentifier: string): Promise<Asset> {
+    const asset = await Asset.connect({
       ethersProvider: this.#ethersProvider,
       assets: this.assets,
       assetIdentifier: assetIdentifier,
     });
+
+    return asset;
   }
 }
 

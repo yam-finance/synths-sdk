@@ -22,7 +22,7 @@ describe("Synths SDK", function () {
   // });
 
   describe("Ethereum Mainnet tests", function () {
-    let synthsSDK: any;
+    let upunksAsset: any;
 
     before(async function () {
       // provider = waffle.provider;
@@ -58,38 +58,38 @@ describe("Synths SDK", function () {
         },
       };
 
-      synthsSDK = await Synths.create({
+      const synthsSDK = await Synths.create({
         ethersProvider: provider,
         userAssetsConfig: userAssetsConfig,
       });
 
-      synthsSDK.connectAsset("upunks-0921");
+      upunksAsset = await synthsSDK.connectAsset("upunks-0921");
     });
 
     // @todo Add tests
     describe("Interact with asset", function () {
       it("getEmpState - success", async function () {
-        const empState: EmpState = await synthsSDK.asset.getEmpState();
+        const empState: EmpState = await upunksAsset.getEmpState();
         expect(empState).to.deep.include({
           collateralCurrency: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         });
       });
       it("getPosition - success", async function () {
-        const position: any = await synthsSDK.asset.getPosition();
+        const position: any = await upunksAsset.getPosition();
         expect(position.rawCollateral["rawValue"]).to.equal(BigNumber.from(0));
       });
       it("getPositionCR - success", async function () {
-        const positionCR: any = await synthsSDK.asset.getPositionCR();
+        const positionCR: any = await upunksAsset.getPositionCR();
         expect(positionCR).to.equal("0");
       });
       it("getPositions - success", async function () {
-        const positions: any = await synthsSDK.asset.getPositions();
+        const positions: any = await upunksAsset.getPositions();
         expect(positions).to.deep.include({
           "0x86140A763077155964754968B6F6e243fE809cBe": BigNumber.from(0),
         });
       });
       it("getGCR - success", async function () {
-        const gcr: any = await synthsSDK.asset.getGCR();
+        const gcr: any = await upunksAsset.getGCR();
         // console.log(gcr);
       });
     });

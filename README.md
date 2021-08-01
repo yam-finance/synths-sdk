@@ -58,8 +58,8 @@ const synthsSDK = await Synths.create({
   // userAssetsConfig: userAssetsConfig
 });
 
-synthsSDK.connectAsset("upunks-0921");
+const upunksAsset = await synthsSDK.connectAsset("upunks-0921");
 
 /// @notice Example method calls
-const gcr: any = await synthsSDK.asset.getGCR();
+const gcr: any = await upunksAsset.getGCR();
 ```
