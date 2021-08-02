@@ -1,6 +1,6 @@
 {
   "name": "synths-sdk",
-  "version": "1.0.3",
+  "version": "1.0.7",
   "description": "Yam Uma Synths SDK",
   "main": "./src/index.ts",
   "author": "e",
