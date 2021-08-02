@@ -21,6 +21,7 @@ const synthsSDK = await Synths.create({
 const upunksAsset = await synthsSDK.connectAsset("upunks-0921");
 
 // User implementation for a local development environment
+// Passing this object in the initialization is optional
 const chainId = 1;
 const userAssetsConfig: SynthsAssetsConfig = {
   [chainId]: {
