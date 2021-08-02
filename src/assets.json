@@ -75,7 +75,7 @@
           "address": "0x2b5dfb7874f685bea30b7d8426c9643a4bcf5873",
           "location": "uniswap"
         },
-        "expired": false
+        "expired": true
       }
     ],
     "ustonks": [
