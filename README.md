@@ -21,7 +21,6 @@ const synthsSDK = await Synths.create({
 const upunksAsset = await synthsSDK.connectAsset("upunks-0921");
 
 // User implementation for a local development environment
-// Passing this object in the initialization is optional
 const chainId = 1;
 const userAssetsConfig: SynthsAssetsConfig = {
   [chainId]: {
@@ -53,6 +52,7 @@ const userAssetsConfig: SynthsAssetsConfig = {
 // Use the official development environment
 const synthsSDK = await Synths.create({
   ethersProvider: provider,
+  // Passing this object in the initialization is optional
   userAssetsConfig: userAssetsConfig
 });
 const upunksAsset = await synthsSDK.connectAsset("upunks-0921");
