@@ -1,5 +1,5 @@
 {
-  "mainnet": {
+  "1": {
     "ugas": [
       {
         "name": "January",
@@ -75,7 +75,7 @@
           "address": "0x2b5dfb7874f685bea30b7d8426c9643a4bcf5873",
           "location": "uniswap"
         },
-        "expired": null
+        "expired": false
       }
     ],
     "ustonks": [
@@ -134,7 +134,7 @@
           "address": "0xb9292b40cab08e5208b863ea9c4c4927a2308eee",
           "location": "sushiswap"
         },
-        "expired": null
+        "expired": false
       }
     ],
     "upunks": [
@@ -156,11 +156,11 @@
           "address": "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
           "location": "sushiswap"
         },
-        "expired": null
+        "expired": false
       }
     ]
   },
-  "kovan": {
+  "42": {
     "ugas": [
       {
         "name": "December",
@@ -179,7 +179,7 @@
           "address": "0x8cf2123ec57bbd05709cbde9024d90d3ab46d4c7",
           "location": "uniswap"
         },
-        "expired": null
+        "expired": false
       }
     ],
     "uvolbtc": [
@@ -200,7 +200,7 @@
           "address": "0xb4556914684e50F3d4491d7C8d338304e7e40387",
           "location": "uniswap"
         },
-        "expired": null
+        "expired": false
       }
     ],
     "yamdollar": [
@@ -221,7 +221,7 @@
           "address": "0xa56b0c3cc9cc98873f07587f9b2ecdcfa33ad629",
           "location": "uniswap"
         },
-        "expired": null
+        "expired": false
       }
     ]
   }
