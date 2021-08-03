@@ -5,7 +5,8 @@ import { expect, assert } from "chai";
 import LinearLSPFPLAbi from "../src/abi/llspfpl.json";
 import web3 from "web3";
 
-/** @notice To test LSP libraries we simply need a financial
+/**
+ * @notice To test LSP libraries we simply need a financial
  * contract with an `expirationTimestamp` method.
  */
 
@@ -30,8 +31,14 @@ describe("Synths", function () {
     const lowerBound = BigNumber.from("1000000000000000000000");
     const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
+    /**
+     * @notice In order to be able to test the contract we deploy it before each test.
+     */
     beforeEach(async function () {
       linearLSPFPL = await deploy("LinearLongShortPairFinancialProductLibrary");
+      /**
+       * @notice In order to deploy the contract we pass some parameters for the contract constructor.
+       */
       expiringContractMock = await deploy(
         "ExpiringMultiPartyMock",
         ZERO_ADDRESS,
@@ -45,6 +52,9 @@ describe("Synths", function () {
       );
     });
 
+    /**
+     * @notice The following lines setup tests for the parameterization of the linear lspfpl contract.
+     */
     describe("Long Short Pair Parameterization", () => {
       it("Can set and fetch valid values", async () => {
         await linearLSPFPL.setLongShortPairParameters(
@@ -104,6 +114,9 @@ describe("Synths", function () {
     describe("Compute expiry tokens for collateral", () => {
       let linearLSPFPLWithoutSigner: Contract;
 
+      /**
+       * @notice In order to test the synth expiry we need to parameterize the linear lspfpl contract before each test.
+       */
       beforeEach(async () => {
         await linearLSPFPL.setLongShortPairParameters(
           expiringContractMock.address,
@@ -116,6 +129,7 @@ describe("Synths", function () {
           provider
         );
       });
+
       it("Lower than lower bound should return 0", async () => {
         const expiryTokensForCollateral =
           await linearLSPFPLWithoutSigner.percentageLongCollateralAtExpiry(

@@ -41,7 +41,7 @@ describe("Synths SDK", function () {
               collateral: "WETH",
               token: {
                 address: "0x86140A763077155964754968B6F6e243fE809cBe",
-                decimals: 18
+                decimals: 18,
               },
               emp: {
                 address: "0xF8eF02C10C473CA5E48b10c62ba4d46115dd2288",
