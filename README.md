@@ -1,5 +1,5 @@
-# synths-sdk
-
+# synths-sdk 
+[![CI](https://github.com/yam-finance/synths-sdk/actions/workflows/main.yml/badge.svg)](https://github.com/yam-finance/synths-sdk/actions/workflows/main.yml)
 # Using the Yam Uma Synths SDK
 
 ## Install
