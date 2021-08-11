@@ -11,7 +11,7 @@ import EmpAbi from "../abi/emp.json";
 import ERC20Abi from "../abi/erc20.json";
 import UNIFactContract from "../abi/uniFactory.json";
 import UNIContract from "../abi/uni.json";
-import { WETH, USDC } from "./config";
+import { WETH, USDC } from "./config/contracts";
 import {
   UNISWAP_ENDPOINT,
   SUSHISWAP_ENDPOINT,
@@ -151,7 +151,7 @@ class Asset {
    *
    * @return A promise with the user position
    */
-  async getPosition(): Promise<any | undefined> {
+  async getPosition() {
     try {
       const address = await this.#signer.getAddress();
       return this.#contract.positions(address);
@@ -181,7 +181,7 @@ class Asset {
           await this.getERC20Decimals(collateralAddress, this.#ethersProvider)
         )
       );
-      const collateralRatio = BigNumber.from(position.rawCollateral["rawValue"])
+      const collateralRatio = BigNumber.from(position?.rawCollateral["rawValue"])
         .div(collateralDecimals)
         .toString();
 
@@ -210,7 +210,7 @@ class Asset {
 
           const position = await this.getPosition();
           positions[this.#assets[assetCycles][asset].token.address] =
-            position.tokensOutstanding["rawValue"];
+            position?.tokensOutstanding["rawValue"];
         }
       }
 
@@ -225,7 +225,7 @@ class Asset {
    *
    * @return A promise with the GCR
    */
-  async getGCR(): Promise<any | undefined> {
+  async getGCR(){
     try {
       let gcr: string;
       const empState = await this.getEmpState();
