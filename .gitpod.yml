@@ -1,7 +1,2 @@
 tasks:
   - init: yarn install
-    command: yarn test
-
-ports:
-  - port: 3000
-    onOpen: open-preview
