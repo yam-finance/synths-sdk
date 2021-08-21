@@ -10,7 +10,8 @@
     "test": "hardhat test",
     "format": "prettier --write .",
     "cover": "nyc yarn test",
-    "test:w": "hardhat watch test"
+    "test:w": "hardhat watch test",
+    "lint": "yarn eslint --fix ."
   },
   "keywords": [
     "yam",
