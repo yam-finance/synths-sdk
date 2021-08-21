@@ -2,7 +2,6 @@ name: CI
 on:
   pull_request:
     branches:
-      - develop
       - master
   push:
   workflow_dispatch:
@@ -10,8 +9,8 @@ on:
 jobs:
   test:
     env:
-      INFURA_API_KEY: a6820824c76c4458af1d67599e3d5f7c #TODO change to ${{ secrets.INFURA_API_KEY }}
-      ETHERSCAN_API_KEY: C5FMJWYPA4EN2DEHVSDRIQRTDKF5279AH8 #TODO change to ${{ secrets.INFURA_API_KEY }}
+      INFURA_API_KEY: ${{ secrets.INFURA_API_KEY }}
+      ETHERSCAN_API_KEY:  ${{ secrets.ETHERSCAN_API_KEY }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
