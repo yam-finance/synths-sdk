@@ -1,8 +1,8 @@
 /* istanbul ignore file */
 import {
-    INFURA_API_KEY,
-    ETHERSCAN_API_KEY,
-    COINMARKETCAP_PUBLIC_KEY,
+  INFURA_API_KEY,
+  ETHERSCAN_API_KEY,
+  COINMARKETCAP_PUBLIC_KEY,
 } from "./src/lib/config";
 import "tsconfig-paths/register";
 import { HardhatUserConfig } from "hardhat/config";
@@ -33,39 +33,38 @@ const settings = {
 };
 
 const config: HardhatUserConfig = {
-    networks: {
-        hardhat: {
-            forking: {
-                url: `https://mainnet.infura.io/v3/${INFURA_API_KEY}`
-            },
-        },
+  networks: {
+    hardhat: {
+      forking: {
+        url: `https://mainnet.infura.io/v3/${INFURA_API_KEY || ""}`,
+      },
     },
-    namedAccounts: {
-        deployer: 0,
+  },
+  namedAccounts: {
+    deployer: 0,
+  },
+  solidity: {
+    compilers: [{ version: "0.8.0", settings }],
+  },
+  typechain: {
+    outDir: "./src/types/contracts",
+    target: "ethers-v5",
+  },
+  etherscan: {
+    apiKey: ETHERSCAN_API_KEY,
+  },
+  gasReporter: {
+    currency: "USD",
+    coinmarketcap: COINMARKETCAP_PUBLIC_KEY,
+    gasPrice: 200,
+  },
+  watcher: {
+    test: {
+      tasks: [{ command: "test", params: { testFiles: ["{path}"] } }],
+      files: ["./test/**/*"],
+      verbose: true,
     },
-    solidity: {
-        compilers: [{version: "0.8.0", settings}],
-    },
-    typechain: {
-        outDir: "./src/types/contracts",
-        target: "ethers-v5",
-    },
-    etherscan: {
-        apiKey: ETHERSCAN_API_KEY,
-    },
-    gasReporter: {
-        currency: "USD",
-        coinmarketcap: COINMARKETCAP_PUBLIC_KEY,
-        gasPrice: 200,
-    },
-    watcher: {
-        test: {
-            tasks: [{ command: 'test', params: { testFiles: ['{path}'] } }],
-            files: ['./test/**/*'],
-            verbose: true
-        }
-    }
-
+  },
 };
 
 export default config;

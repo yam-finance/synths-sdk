@@ -181,7 +181,9 @@ class Asset {
           await this.getERC20Decimals(collateralAddress, this.#ethersProvider)
         )
       );
-      const collateralRatio = BigNumber.from(position?.rawCollateral["rawValue"])
+      const collateralRatio = BigNumber.from(
+        position?.rawCollateral["rawValue"]
+      )
         .div(collateralDecimals)
         .toString();
 
@@ -198,7 +200,7 @@ class Asset {
    */
   async getPositions(): Promise<{ string: ethers.BigNumber } | undefined> {
     try {
-      let positions: any = {};
+      const positions: any = {};
 
       for (const assetCycles in this.#assets) {
         for (const asset in this.#assets[assetCycles]) {
@@ -225,7 +227,7 @@ class Asset {
    *
    * @return A promise with the GCR
    */
-  async getGCR(){
+  async getGCR() {
     try {
       let gcr: string;
       const empState = await this.getEmpState();

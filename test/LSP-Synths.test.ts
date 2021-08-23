@@ -177,7 +177,9 @@ describe("Synths", function () {
           const expiryTokensForCollateral =
             await linearLSPFPLWithoutSigner.percentageLongCollateralAtExpiry(
               price,
-              { from: expiringContractMock.address }
+              {
+                from: expiringContractMock.address,
+              }
             );
           const numerator = BigNumber.from(price).sub(
             BigNumber.from(lowerBound)

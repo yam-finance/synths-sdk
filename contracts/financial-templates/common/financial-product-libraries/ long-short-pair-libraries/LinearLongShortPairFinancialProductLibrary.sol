@@ -20,7 +20,10 @@ import "../../../../common/implementation/Lockable.sol";
  * (each long is worthless and each short is worth 1000). If between the two (say 3500) then expiryPercentLong
  * = (3500 - 2000) / (4000 - 2000) = 0.75. Therefore each long is worth 750 and each short is worth 250.
  */
-contract LinearLongShortPairFinancialProductLibrary is LongShortPairFinancialProductLibrary, Lockable {
+contract LinearLongShortPairFinancialProductLibrary is
+    LongShortPairFinancialProductLibrary,
+    Lockable
+{
     using FixedPoint for FixedPoint.Unsigned;
     using SignedSafeMath for int256;
 
@@ -29,7 +32,8 @@ contract LinearLongShortPairFinancialProductLibrary is LongShortPairFinancialPro
         int256 lowerBound;
     }
 
-    mapping(address => LinearLongShortPairParameters) public longShortPairParameters;
+    mapping(address => LinearLongShortPairParameters)
+        public longShortPairParameters;
 
     /**
      * @notice Enables any address to set the parameters for an associated financial product.
@@ -46,12 +50,20 @@ contract LinearLongShortPairFinancialProductLibrary is LongShortPairFinancialPro
         address longShortPair,
         int256 upperBound,
         int256 lowerBound
-    ) public nonReentrant() {
-        require(ExpiringContractInterface(longShortPair).expirationTimestamp() != 0, "Invalid LSP address");
+    ) public nonReentrant {
+        require(
+            ExpiringContractInterface(longShortPair).expirationTimestamp() != 0,
+            "Invalid LSP address"
+        );
         require(upperBound > lowerBound, "Invalid bounds");
 
-        LinearLongShortPairParameters memory params = longShortPairParameters[longShortPair];
-        require(params.upperBound == 0 && params.lowerBound == 0, "Parameters already set");
+        LinearLongShortPairParameters memory params = longShortPairParameters[
+            longShortPair
+        ];
+        require(
+            params.upperBound == 0 && params.lowerBound == 0,
+            "Parameters already set"
+        );
 
         longShortPairParameters[longShortPair] = LinearLongShortPairParameters({
             upperBound: upperBound,
@@ -69,21 +81,32 @@ contract LinearLongShortPairFinancialProductLibrary is LongShortPairFinancialPro
         public
         view
         override
-        nonReentrantView()
+        nonReentrantView
         returns (uint256)
     {
-        LinearLongShortPairParameters memory params = longShortPairParameters[msg.sender];
-        require(params.upperBound != 0 || params.lowerBound != 0, "Params not set for calling LSP");
+        LinearLongShortPairParameters memory params = longShortPairParameters[
+            msg.sender
+        ];
+        require(
+            params.upperBound != 0 || params.lowerBound != 0,
+            "Params not set for calling LSP"
+        );
 
-        if (expiryPrice >= params.upperBound) return FixedPoint.fromUnscaledUint(1).rawValue;
+        if (expiryPrice >= params.upperBound)
+            return FixedPoint.fromUnscaledUint(1).rawValue;
 
-        if (expiryPrice <= params.lowerBound) return FixedPoint.fromUnscaledUint(0).rawValue;
+        if (expiryPrice <= params.lowerBound)
+            return FixedPoint.fromUnscaledUint(0).rawValue;
 
         // if not exceeding bounds, expiryPercentLong = (expiryPrice - lowerBound) / (upperBound - lowerBound)
         return
             FixedPoint
                 .Unsigned(uint256(expiryPrice - params.lowerBound))
-                .div(FixedPoint.Unsigned(uint256(params.upperBound - params.lowerBound)))
+                .div(
+                    FixedPoint.Unsigned(
+                        uint256(params.upperBound - params.lowerBound)
+                    )
+                )
                 .rawValue;
     }
 }
