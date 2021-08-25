@@ -1,13 +1,15 @@
-
 # synths-sdk
 
 # Using the Yam Uma Synths SDK
 
 ## Install
+
 ```
 yarn add synths-sdk
 ```
+
 ## Use
+
 ```ts
 import Synths from "synths-sdk";
 import { ethers } from "ethers";
@@ -24,26 +26,27 @@ const upunksAsset = await synthsSDK.connectAsset("upunks-0921");
 const chainId = 1;
 const userAssetsConfig: SynthsAssetsConfig = {
   [chainId]: {
-    "upunks": [
+    upunks: [
       {
-        "name": "September",
-        "cycle": "09",
-        "year": "21",
-        "collateral": "WETH",
-        "token": {
-          "address": "0x86140A763077155964754968B6F6e243fE809cBe"
+        name: "September",
+        cycle: "09",
+        year: "21",
+        collateral: "WETH",
+        token: {
+          address: "0x86140A763077155964754968B6F6e243fE809cBe",
+          token: 18,
         },
-        "emp": {
-          "address": "0xF8eF02C10C473CA5E48b10c62ba4d46115dd2288",
-          "new": true,
-          "type": "finlib"
+        emp: {
+          address: "0xF8eF02C10C473CA5E48b10c62ba4d46115dd2288",
+          new: true,
+          type: "finlib",
         },
-        "pool": {
-          "address": "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
-          "location": "sushiswap"
+        pool: {
+          address: "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
+          location: "sushiswap",
         },
-        "expired": false
-      }
+        expired: false,
+      },
     ],
   },
 };
@@ -51,7 +54,8 @@ const userAssetsConfig: SynthsAssetsConfig = {
 // Use the official development environment
 const synthsSDK = await Synths.create({
   ethersProvider: provider,
-  userAssetsConfig: userAssetsConfig
+  // Passing this object in the initialization is optional
+  userAssetsConfig: userAssetsConfig,
 });
 const upunksAsset = await synthsSDK.connectAsset("upunks-0921");
 
@@ -60,7 +64,9 @@ const gcr: any = await upunksAsset.getGCR();
 ```
 
 # Development
+
 After cloning the synths repo
+
 ```
 yarn install
 yarn test
