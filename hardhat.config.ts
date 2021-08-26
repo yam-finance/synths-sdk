@@ -3,6 +3,7 @@ import {
   INFURA_API_KEY,
   ETHERSCAN_API_KEY,
   COINMARKETCAP_PUBLIC_KEY,
+  //WALLET_PRIVATE_KEY
 } from "./src/lib/config";
 import "tsconfig-paths/register";
 import { HardhatUserConfig } from "hardhat/config";
@@ -39,6 +40,10 @@ const config: HardhatUserConfig = {
         url: `https://mainnet.infura.io/v3/${INFURA_API_KEY || ""}`,
       },
     },
+    // ropsten: {
+    //   url: `https://ropsten.infura.io/v3/${INFURA_API_KEY || ""}`,
+    //   accounts: [`0x${WALLET_PRIVATE_KEY || ""}`],
+    // },
   },
   namedAccounts: {
     deployer: 0,
