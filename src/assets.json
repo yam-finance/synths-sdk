@@ -87,7 +87,8 @@
           "decimals": 18
         },
         "emp": {
-          "address": "0xca2531b9cd04daf0c9114d853e7a83d8528f20bd"
+          "address": "0xca2531b9cd04daf0c9114d853e7a83d8528f20bd",
+          "new": true
         },
         "pool": {
           "address": "0x5ccd155ad26b74913ed6266a516a085a2343d426",
