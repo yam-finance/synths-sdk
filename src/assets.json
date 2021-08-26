@@ -91,8 +91,8 @@
         },
         "pool": {
           "address": "0x5ccd155ad26b74913ed6266a516a085a2343d426",
-          "location": "sushi"
-        }
+          "location": "sushiswap"
+        },
         "expired": false
       }
     ],
