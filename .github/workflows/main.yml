@@ -22,10 +22,10 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm install --global yarn
       - run: yarn install --frozen-lockfile
-      - name: Run Unit tests
+      - name: Run unit/intergration tests
         run: yarn test
-      - name: Test Linting
-        run: yarn lint
+      - name: Test linting without fixings
+        run: yarn eslint .
         continue-on-error: true
       - name: Save code linting report to json
         run: yarn lint:report
@@ -35,4 +35,9 @@ jobs:
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           report-json: "eslint_report.json"
-
+        continue-on-error: true
+      - name: Upload ESLint report
+        uses: actions/upload-artifact@v2
+        with:
+          name: eslint_report.json
+          path: eslint_report.json
