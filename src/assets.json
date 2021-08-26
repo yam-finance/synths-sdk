@@ -76,6 +76,25 @@
           "location": "uniswap"
         },
         "expired": true
+      },
+      {
+        "name": "September",
+        "cycle": "09",
+        "year": "21",
+        "collateral": "WETH",
+        "token": {
+          "address": "0xfc10b3A8011B00489705EF1Fc00D0e501106cB1D",
+          "decimals": 18
+        },
+        "emp": {
+          "address": "0xcA2531b9CD04daf0c9114D853e7A83D8528f20bD",
+          "new": true
+        },
+        "pool": {
+          "address": "0x5CCD155ad26B74913ed6266A516A085A2343D426",
+          "location": "sushiswap"
+        },
+        "expired": false
       }
     ],
     "ustonks": [
