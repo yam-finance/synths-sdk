@@ -1,0 +1,48 @@
+# CSS Files
+*.css
+
+# Markdown Files
+*.md
+
+# Yaml Files
+*.yml
+
+# HTML files
+*.html
+
+# Javascript
+*.js
+
+# Lock files
+*.lock
+
+# Solidity
+*.sol
+
+# Json
+*.json
+
+# IntelliJ project files
+.idea
+*.iml
+out
+gen
+
+### VisualStudioCode template
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Local History for Visual Studio Code
+.history/
+
+.github/
+
+# Ignore types data for linting
+src/types/*
+
+# Hardhat Cache
+cache/*

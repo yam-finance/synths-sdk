@@ -1,5 +1,5 @@
 import { ethers, waffle } from "hardhat";
-import { Signer, Contract, BigNumber } from "ethers";
+import { Contract, BigNumber } from "ethers";
 import { MockProvider } from "@ethereum-waffle/provider";
 import { expect, assert } from "chai";
 import LinearLSPFPLAbi from "../src/abi/llspfpl.json";
@@ -17,11 +17,9 @@ async function deploy(name: string, ...params: any) {
 
 describe("Synths", function () {
   let provider: MockProvider;
-  let accounts: Signer[];
 
   before(async function () {
     provider = waffle.provider;
-    accounts = await ethers.getSigners();
   });
 
   describe("LinearLongShortPairFinancialProductLibrary hardhat node tests", function () {
@@ -179,7 +177,9 @@ describe("Synths", function () {
           const expiryTokensForCollateral =
             await linearLSPFPLWithoutSigner.percentageLongCollateralAtExpiry(
               price,
-              { from: expiringContractMock.address }
+              {
+                from: expiringContractMock.address,
+              }
             );
           const numerator = BigNumber.from(price).sub(
             BigNumber.from(lowerBound)

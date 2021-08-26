@@ -1,7 +1,5 @@
-// src/lib/config.ts
-import { SynthsAssetsConfig } from "../../types/assets.t";
+import { SynthsAssetsConfig } from "~/types/assets.t";
 import assets from "../../assets.json";
-import { WETH, YAM, UMA, DAI, USDC } from "./contracts";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -13,5 +11,3 @@ export const COINMARKETCAP_PUBLIC_KEY = process.env["COINMARKETCAP_PUBLIC_KEY"];
 
 // @todo Check type error
 export const defaultAssetsConfig: SynthsAssetsConfig = assets;
-
-export { WETH, YAM, UMA, DAI, USDC };

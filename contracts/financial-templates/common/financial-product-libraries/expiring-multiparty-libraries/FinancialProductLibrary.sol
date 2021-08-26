@@ -20,12 +20,10 @@ abstract contract FinancialProductLibrary {
      * @param requestTime timestamp the oraclePrice was requested at.
      * @return transformedOraclePrice input oraclePrice with the transformation function applied.
      */
-    function transformPrice(FixedPoint.Unsigned memory oraclePrice, uint256 requestTime)
-        public
-        view
-        virtual
-        returns (FixedPoint.Unsigned memory)
-    {
+    function transformPrice(
+        FixedPoint.Unsigned memory oraclePrice,
+        uint256 requestTime
+    ) public view virtual returns (FixedPoint.Unsigned memory) {
         return oraclePrice;
     }
 
@@ -48,12 +46,10 @@ abstract contract FinancialProductLibrary {
      * @param requestTime timestamp the identifier is to be used at. EG the time that a price request would be sent using this identifier.
      * @return transformedPriceIdentifier input price identifier with the transformation function applied.
      */
-    function transformPriceIdentifier(bytes32 priceIdentifier, uint256 requestTime)
-        public
-        view
-        virtual
-        returns (bytes32)
-    {
+    function transformPriceIdentifier(
+        bytes32 priceIdentifier,
+        uint256 requestTime
+    ) public view virtual returns (bytes32) {
         return priceIdentifier;
     }
 }
