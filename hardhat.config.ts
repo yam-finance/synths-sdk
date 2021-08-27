@@ -33,7 +33,8 @@ const settings = {
   },
 };
 
-const config: HardhatUserConfig = {
+// const config: HardhatUserConfig = {
+const config = {
   networks: {
     hardhat: {
       forking: {
