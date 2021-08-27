@@ -7,9 +7,10 @@
     "outDir": "dist",
     "resolveJsonModule": true,
     "baseUrl": ".",
-    "paths": { "~/*": ["./src/*"] }
+    "paths": { "~/*": ["./src/*"] },
+    "moduleResolution": "node"
   },
   "include": ["./scripts", "./test", "./src"],
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules", "dist"],
   "files": ["./hardhat.config.ts"]
 }

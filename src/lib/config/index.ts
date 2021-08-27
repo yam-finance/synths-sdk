@@ -1,4 +1,4 @@
-import { SynthsAssetsConfig } from "../../types/assets.t";
+import type { SynthsAssetsConfig } from "../../types/assets.t";
 import assets from "../../assets.json";
 import dotenv from "dotenv";
 
