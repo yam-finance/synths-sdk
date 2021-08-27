@@ -143,6 +143,7 @@ class Asset {
       return data;
     } catch (e) {
       console.error("error", e);
+      return undefined;
     }
   }
 
@@ -157,6 +158,7 @@ class Asset {
       return this.#contract.positions(address);
     } catch (e) {
       console.error("error", e);
+      return undefined;
     }
   }
 
@@ -190,6 +192,7 @@ class Asset {
       return collateralRatio;
     } catch (e) {
       console.error("error", e);
+      return undefined;
     }
   }
 
@@ -219,6 +222,7 @@ class Asset {
       return positions;
     } catch (e) {
       console.error("error", e);
+      return undefined;
     }
   }
 
@@ -287,6 +291,7 @@ class Asset {
       return gcr;
     } catch (e) {
       console.error("error", e);
+      return undefined;
     }
   }
 
