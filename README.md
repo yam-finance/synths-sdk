@@ -19,12 +19,22 @@ import { ethers } from "ethers";
 // Create an ethers provider instance
 const provider = new ethers.providers.Web3Provider(web3Provider);
 
+// Initialize the sdk with the official yam synths
 const synthsSDK = await Synths.create({
-  ethersProvider: provider,
+  ethersProvider: provider
 });
+
+// Connect the sdk a synth
 const upunksAsset = await synthsSDK.connectAsset("upunks-0921");
 
-// User implementation for a local development environment
+// Example method calls
+const gcr: any = await upunksAsset.getGCR();
+
+/** 
+ * @notice Alternatively you can pass your own synth object or modify the existing synths
+ * for a local test network deployment
+ * @dev Official synths: https://github.com/yam-finance/synths-sdk/blob/master/src/assets.json
+ */
 const chainId = 1;
 const userAssetsConfig: SynthsAssetsConfig = {
   [chainId]: {
@@ -53,16 +63,10 @@ const userAssetsConfig: SynthsAssetsConfig = {
   },
 };
 
-// Use the official development environment
 const synthsSDK = await Synths.create({
   ethersProvider: provider,
-  // Passing this object in the initialization is optional
-  userAssetsConfig: userAssetsConfig,
+  userAssetsConfig: userAssetsConfig
 });
-const upunksAsset = await synthsSDK.connectAsset("upunks-0921");
-
-// Example method calls
-const gcr: any = await upunksAsset.getGCR();
 ```
 
 # Development
