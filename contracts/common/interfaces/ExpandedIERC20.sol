@@ -18,7 +18,10 @@ abstract contract ExpandedIERC20 is IERC20 {
      * @param recipient address to burn tokens from.
      * @param value amount of tokens to burn.
      */
-    function burnFrom(address recipient, uint256 value) external virtual returns (bool);
+    function burnFrom(address recipient, uint256 value)
+        external
+        virtual
+        returns (bool);
 
     /**
      * @notice Mints tokens and adds them to the balance of the `to` address.

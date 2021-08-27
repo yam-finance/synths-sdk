@@ -15,6 +15,7 @@ yarn-error.log*
 /.vscode
 /.idea
 /.env
+/.cache
 
 # Hardhat files
 /cache
@@ -22,3 +23,7 @@ yarn-error.log*
 
 # OSX files
 .DS_Store
+
+# Coverage files
+/.nyc_output
+/coverage

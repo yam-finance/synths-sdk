@@ -1,0 +1,18 @@
+#Coverage
+.nyc_output
+
+# Hardhat
+artifacts
+cache
+
+
+# IDE files
+.idea/
+.vscode/
+.history/
+
+# Generated Types
+src/types/contracts
+
+# Build Files
+dist
