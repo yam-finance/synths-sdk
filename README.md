@@ -30,11 +30,7 @@ const upunksAsset = await synthsSDK.connectAsset("upunks-0921");
 // Example method calls
 const gcr: any = await upunksAsset.getGCR();
 
-/**
- * @notice Alternatively you can pass your own synth object or modify the existing synths
- * for a local test network deployment
- * @dev Official synths: https://github.com/yam-finance/synths-sdk/blob/master/src/assets.json
- */
+// Alternatively you can pass your own synth object or modify the existing synths for a local test network deployment
 const chainId = 1;
 const userAssetsConfig: SynthsAssetsConfig = {
   [chainId]: {
