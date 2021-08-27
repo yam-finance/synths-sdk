@@ -1,65 +1,77 @@
 # synths-sdk
 
+[![CI](https://github.com/yam-finance/synths-sdk/actions/workflows/main.yml/badge.svg)](https://github.com/yam-finance/synths-sdk/actions/workflows/main.yml)
+
+# Using the Yam Uma Synths SDK
+
+### **Official assets:** [File](https://github.com/yam-finance/synths-sdk/blob/master/src/assets.json) and [Raw file](https://raw.githubusercontent.com/yam-finance/synths-sdk/master/src/assets.json)
+
 ## Install
 
 ```
 yarn add synths-sdk
 ```
 
-### Synths contract and sdk tests
-
-```
-yarn install
-```
-
-```
-yarn test
-```
-
-# Code
+## Use
 
 ```ts
 import Synths from "synths-sdk";
 import { ethers } from "ethers";
 
-/// @dev Create an ethers provider instance
+// Create an ethers provider instance
 const provider = new ethers.providers.Web3Provider(web3Provider);
 
-/// @dev User params for a local / not supported chain or asset
-// const chainId = 1;
-// const userAssetsConfig: SynthsAssetsConfig = {
-//   [chainId]: {
-//     "upunks": [
-//       {
-//         "name": "September",
-//         "cycle": "09",
-//         "year": "21",
-//         "collateral": "WETH",
-//         "token": {
-//           "address": "0x86140A763077155964754968B6F6e243fE809cBe"
-//         },
-//         "emp": {
-//           "address": "0xF8eF02C10C473CA5E48b10c62ba4d46115dd2288",
-//           "new": true,
-//           "type": "finlib"
-//         },
-//         "pool": {
-//           "address": "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
-//           "location": "sushiswap"
-//         },
-//         "expired": false
-//       }
-//     ],
-//   },
-// };
+// Initialize the sdk with the official yam synths
+const synthsSDK = await Synths.create({
+  ethersProvider: provider,
+});
+
+// Connect the sdk a synth
+const upunksAsset = await synthsSDK.connectAsset("upunks-0921");
+
+// Example method calls
+const gcr: any = await upunksAsset.getGCR();
+
+// Alternatively you can pass your own synth object or modify the existing synths for a local test network deployment
+const chainId = 1;
+const userAssetsConfig: SynthsAssetsConfig = {
+  [chainId]: {
+    upunks: [
+      {
+        name: "September",
+        cycle: "09",
+        year: "21",
+        collateral: "WETH",
+        token: {
+          address: "0x86140A763077155964754968B6F6e243fE809cBe",
+          token: 18,
+        },
+        emp: {
+          address: "0xF8eF02C10C473CA5E48b10c62ba4d46115dd2288",
+          new: true,
+          type: "finlib",
+        },
+        pool: {
+          address: "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
+          location: "sushiswap",
+        },
+        expired: false,
+      },
+    ],
+  },
+};
 
 const synthsSDK = await Synths.create({
   ethersProvider: provider,
-  // userAssetsConfig: userAssetsConfig
+  userAssetsConfig: userAssetsConfig,
 });
+```
 
-const upunksAsset = await synthsSDK.connectAsset("upunks-0921");
+# Development
 
-/// @notice Example method calls
-const gcr: any = await upunksAsset.getGCR();
+After cloning the synths repo
+
+```
+yarn install
+yarn test
 ```

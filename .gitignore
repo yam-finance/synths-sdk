@@ -23,3 +23,7 @@ yarn-error.log*
 
 # OSX files
 .DS_Store
+
+# Coverage files
+/.nyc_output
+/coverage

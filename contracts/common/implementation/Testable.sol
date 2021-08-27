@@ -23,7 +23,7 @@ abstract contract Testable {
     /**
      * @notice Reverts if not running in test mode.
      */
-    modifier onlyIfTest {
+    modifier onlyIfTest() {
         require(timerAddress != address(0x0));
         _;
     }

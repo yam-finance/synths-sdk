@@ -1,11 +1,11 @@
 import { ethers, waffle } from "hardhat";
-import { Signer, Contract, BigNumber } from "ethers";
+import { Contract, BigNumber, utils } from "ethers";
 import { MockProvider } from "@ethereum-waffle/provider";
 import { expect, assert } from "chai";
 import LinearLSPFPLAbi from "../src/abi/llspfpl.json";
-import web3 from "web3";
 
-/** @notice To test LSP libraries we simply need a financial
+/**
+ * @notice To test LSP libraries we simply need a financial
  * contract with an `expirationTimestamp` method.
  */
 
@@ -16,11 +16,9 @@ async function deploy(name: string, ...params: any) {
 
 describe("Synths", function () {
   let provider: MockProvider;
-  let accounts: Signer[];
 
   before(async function () {
     provider = waffle.provider;
-    accounts = await ethers.getSigners();
   });
 
   describe("LinearLongShortPairFinancialProductLibrary hardhat node tests", function () {
@@ -30,8 +28,14 @@ describe("Synths", function () {
     const lowerBound = BigNumber.from("1000000000000000000000");
     const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
+    /**
+     * @notice In order to be able to test the contract we deploy it before each test.
+     */
     beforeEach(async function () {
       linearLSPFPL = await deploy("LinearLongShortPairFinancialProductLibrary");
+      /**
+       * @notice In order to deploy the contract we pass some parameters for the contract constructor.
+       */
       expiringContractMock = await deploy(
         "ExpiringMultiPartyMock",
         ZERO_ADDRESS,
@@ -45,6 +49,9 @@ describe("Synths", function () {
       );
     });
 
+    /**
+     * @notice The following lines setup tests for the parameterization of the linear lspfpl contract.
+     */
     describe("Long Short Pair Parameterization", () => {
       it("Can set and fetch valid values", async () => {
         await linearLSPFPL.setLongShortPairParameters(
@@ -104,6 +111,9 @@ describe("Synths", function () {
     describe("Compute expiry tokens for collateral", () => {
       let linearLSPFPLWithoutSigner: Contract;
 
+      /**
+       * @notice In order to test the synth expiry we need to parameterize the linear lspfpl contract before each test.
+       */
       beforeEach(async () => {
         await linearLSPFPL.setLongShortPairParameters(
           expiringContractMock.address,
@@ -116,56 +126,59 @@ describe("Synths", function () {
           provider
         );
       });
+
       it("Lower than lower bound should return 0", async () => {
         const expiryTokensForCollateral =
           await linearLSPFPLWithoutSigner.percentageLongCollateralAtExpiry(
-            web3.utils.toWei("900"),
+            utils.parseUnits("900", "ether"),
             { from: expiringContractMock.address }
           );
 
         assert.equal(
           expiryTokensForCollateral.toString(),
-          web3.utils.toWei("0")
+          utils.parseUnits("0", "ether")
         );
       });
       it("Higher than upper bound should return 1", async () => {
         const expiryTokensForCollateral =
           await linearLSPFPLWithoutSigner.percentageLongCollateralAtExpiry(
-            web3.utils.toWei("2100"),
+            utils.parseUnits("2100", "ether"),
             { from: expiringContractMock.address }
           );
 
         assert.equal(
           expiryTokensForCollateral.toString(),
-          web3.utils.toWei("1")
+          utils.parseUnits("1", "ether")
         );
       });
       it("Midway between bounds should return 0.5", async () => {
         const expiryTokensForCollateral =
           await linearLSPFPLWithoutSigner.percentageLongCollateralAtExpiry(
-            web3.utils.toWei("1500"),
+            utils.parseUnits("1500", "ether"),
             { from: expiringContractMock.address }
           );
 
         assert.equal(
           expiryTokensForCollateral.toString(),
-          web3.utils.toWei("0.5")
+          utils.parseUnits("0.5", "ether")
         );
       });
 
       it("Arbitrary price between bounds should return correctly", async () => {
         for (const price of [
-          web3.utils.toWei("1000"),
-          web3.utils.toWei("1200"),
-          web3.utils.toWei("1400"),
-          web3.utils.toWei("1600"),
-          web3.utils.toWei("1800"),
-          web3.utils.toWei("2000"),
+          utils.parseUnits("1000", "ether"),
+          utils.parseUnits("1200", "ether"),
+          utils.parseUnits("1400", "ether"),
+          utils.parseUnits("1600", "ether"),
+          utils.parseUnits("1800", "ether"),
+          utils.parseUnits("2000", "ether"),
         ]) {
           const expiryTokensForCollateral =
             await linearLSPFPLWithoutSigner.percentageLongCollateralAtExpiry(
               price,
-              { from: expiringContractMock.address }
+              {
+                from: expiringContractMock.address,
+              }
             );
           const numerator = BigNumber.from(price).sub(
             BigNumber.from(lowerBound)
@@ -174,7 +187,7 @@ describe("Synths", function () {
             BigNumber.from(lowerBound)
           );
           const expectedPrice = numerator
-            .mul(BigNumber.from(web3.utils.toWei("1")))
+            .mul(BigNumber.from(utils.parseUnits("1", "ether")))
             .div(denominator);
           assert.equal(
             expiryTokensForCollateral.toString(),
