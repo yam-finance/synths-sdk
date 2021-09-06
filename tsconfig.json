@@ -1,47 +1,30 @@
-// {
-//   "compilerOptions": {
-//     "target": "es2020",
-//     "module": "commonjs",
-//     "strict": true,
-//     "esModuleInterop": true,
-//     "outDir": "dist",
-//     "resolveJsonModule": true,
-//     "baseUrl": ".",
-//     "paths": { "~/*": ["./src/*"] },
-//     "moduleResolution": "node"
-//   },
-//   "include": ["./scripts", "./test", "./src"],
-//   "exclude": ["node_modules", "dist"],
-//   "files": ["./hardhat.config.ts"]
-// }
-
 {
   "compilerOptions": {
     "baseUrl": ".",
     "paths": { "~/*": ["./src/*"] },
     "outDir": "dist",
-    "target": "ES2019", 
+    "target": "ES2019",
     "module": "CommonJS",
-    "allowJs": false, 
+    "allowJs": false,
     "declaration": true,
-    "sourceMap": true, 
-    "strict": true, 
+    "sourceMap": true,
+    "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
     "strictFunctionTypes": true,
-    "strictBindCallApply": true, 
+    "strictBindCallApply": true,
     "strictPropertyInitialization": true,
     "noImplicitThis": true,
-    "alwaysStrict": true, 
+    "alwaysStrict": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true, 
+    "noFallthroughCasesInSwitch": true,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true, 
+    "esModuleInterop": true,
     "experimentalDecorators": true,
-    "skipLibCheck": true, 
-    "forceConsistentCasingInFileNames": true, 
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true
   }
 }

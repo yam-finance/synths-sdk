@@ -4,7 +4,7 @@
   "description": "Yam Uma Synths SDK",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
-  "files":[
+  "files": [
     "dist/**"
   ],
   "author": "e, byterose",
