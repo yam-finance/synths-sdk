@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "composite": true,
     "outDir": "dist",
     "baseUrl": "src",
     "target": "ES2019",
