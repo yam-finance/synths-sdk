@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "paths": { "~/*": ["./src/*"] },
+    "paths": { "~/*": ["./*"] },
     "outDir": "dist",
     "target": "ES2019",
     "module": "CommonJS",
