@@ -2,7 +2,11 @@
   "name": "synths-sdk",
   "version": "1.0.8",
   "description": "Yam Uma Synths SDK",
-  "main": "./src/index.ts",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "dist/**"
+  ],
   "author": "e, byterose",
   "contributors": [
     "snake"
