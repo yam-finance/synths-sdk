@@ -1,8 +1,7 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": { "~/*": ["./src/*"] },
     "outDir": "dist",
+    "baseUrl": "src",
     "target": "ES2019",
     "module": "CommonJS",
     "allowJs": false,
@@ -26,5 +25,6 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true
-  }
+  },
+  "include": ["src"]
 }
