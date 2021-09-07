@@ -1,10 +1,4 @@
 /* istanbul ignore file */
-import {
-  INFURA_API_KEY,
-  ETHERSCAN_API_KEY,
-  COINMARKETCAP_PUBLIC_KEY,
-  //WALLET_PRIVATE_KEY
-} from "./src/lib/config";
 import "tsconfig-paths/register";
 import { HardhatUserConfig } from "hardhat/config";
 import { task } from "hardhat/config";
@@ -15,6 +9,14 @@ import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "hardhat-deploy";
 import "hardhat-watcher";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const INFURA_API_KEY = process.env["INFURA_API_KEY"];
+const WALLET_PRIVATE_KEY = process.env["WALLET_PRIVATE_KEY"];
+const ETHERSCAN_API_KEY = process.env["ETHERSCAN_API_KEY"];
+const COINMARKETCAP_PUBLIC_KEY = process.env["COINMARKETCAP_PUBLIC_KEY"];
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
