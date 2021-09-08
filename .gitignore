@@ -27,3 +27,7 @@ yarn-error.log*
 # Coverage files
 /.nyc_output
 /coverage
+
+# Typechain files
+src/types/contracts/*
+src/types/abi/*

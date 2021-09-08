@@ -6,7 +6,7 @@ import {
   AssetsConfig,
   AssetConfig,
 } from "../types/assets.t";
-import { ExpiringMultiParty } from "../types/contracts";
+import { Emp as ExpiringMultiParty } from "../types/abi";
 import EmpAbi from "../abi/emp.json";
 import ERC20Abi from "../abi/erc20.json";
 import UNIFactContract from "../abi/uniFactory.json";

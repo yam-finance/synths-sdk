@@ -13,10 +13,6 @@ import * as Contracts from ".";
 declare module "hardhat/types/runtime" {
   interface HardhatEthersHelpers extends HardhatEthersHelpersBase {
     getContractFactory(
-      name: "IERC20",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IERC20__factory>;
-    getContractFactory(
       name: "Lockable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Lockable__factory>;
@@ -29,21 +25,13 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Timer__factory>;
     getContractFactory(
-      name: "ExpandedIERC20",
+      name: "ExpiringContractInterface",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.ExpandedIERC20__factory>;
+    ): Promise<Contracts.ExpiringContractInterface__factory>;
     getContractFactory(
-      name: "IERC20Standard",
+      name: "FinancialProductLibrary",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IERC20Standard__factory>;
-    getContractFactory(
-      name: "FeePayer",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.FeePayer__factory>;
-    getContractFactory(
-      name: "LinearLongShortPairFinancialProductLibrary",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.LinearLongShortPairFinancialProductLibrary__factory>;
+    ): Promise<Contracts.FinancialProductLibrary__factory>;
     getContractFactory(
       name: "ExpiringContractInterface",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -53,61 +41,29 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.LongShortPairFinancialProductLibrary__factory>;
     getContractFactory(
-      name: "ExpiringContractInterface",
+      name: "ExpiringMultiPartyMock",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.ExpiringContractInterface__factory>;
+    ): Promise<Contracts.ExpiringMultiPartyMock__factory>;
     getContractFactory(
-      name: "FinancialProductLibrary",
+      name: "FloatiesLongShortPairFinancialProductLibrary",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.FinancialProductLibrary__factory>;
-    getContractFactory(
-      name: "ExpiringMultiParty",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.ExpiringMultiParty__factory>;
-    getContractFactory(
-      name: "Liquidatable",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.Liquidatable__factory>;
-    getContractFactory(
-      name: "PricelessPositionManager",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.PricelessPositionManager__factory>;
+    ): Promise<Contracts.FloatiesLongShortPairFinancialProductLibrary__factory>;
     getContractFactory(
       name: "Greeter",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Greeter__factory>;
     getContractFactory(
-      name: "ExpiringMultiPartyMock",
+      name: "ImpermanentLossLongShortPairFinancialProductLibrary",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.ExpiringMultiPartyMock__factory>;
+    ): Promise<Contracts.ImpermanentLossLongShortPairFinancialProductLibrary__factory>;
     getContractFactory(
-      name: "OracleInterfaces",
+      name: "LinearLongShortPairFinancialProductLibrary",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.OracleInterfaces__factory>;
+    ): Promise<Contracts.LinearLongShortPairFinancialProductLibrary__factory>;
     getContractFactory(
-      name: "AdministrateeInterface",
+      name: "YamExpiringMultiPartyMock",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.AdministrateeInterface__factory>;
-    getContractFactory(
-      name: "FinderInterface",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.FinderInterface__factory>;
-    getContractFactory(
-      name: "IdentifierWhitelistInterface",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IdentifierWhitelistInterface__factory>;
-    getContractFactory(
-      name: "OptimisticOracleInterface",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.OptimisticOracleInterface__factory>;
-    getContractFactory(
-      name: "OracleInterface",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.OracleInterface__factory>;
-    getContractFactory(
-      name: "StoreInterface",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.StoreInterface__factory>;
+    ): Promise<Contracts.YamExpiringMultiPartyMock__factory>;
 
     // default types
     getContractFactory(
