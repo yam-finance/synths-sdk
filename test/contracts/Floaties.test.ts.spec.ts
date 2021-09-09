@@ -1,4 +1,4 @@
-import { ethers, run, deployments, getNamedAccounts } from "hardhat";
+import { deployments } from "hardhat";
 import { expect } from "chai";
 import { FloatiesLongShortPairFinancialProductLibrary__factory } from "types/contracts";
 import { BigNumber } from "ethers";
