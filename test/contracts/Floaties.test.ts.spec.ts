@@ -1,6 +1,5 @@
 import { deployments } from "hardhat";
 import { expect } from "chai";
-import { FloatiesLongShortPairFinancialProductLibrary__factory } from "types/contracts";
 import { BigNumber } from "ethers";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
@@ -8,7 +7,7 @@ const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const runDefaultFixture = deployments.createFixture(
   async ({ deployments, getNamedAccounts, ethers }) => {
     await deployments.fixture(["FloatiesLSPFPL"]);
-    const floatiesDeployment = await deployments.get(
+    const floatiesFactory = await ethers.getContractFactory(
       "FloatiesLongShortPairFinancialProductLibrary"
     );
     const { deployer } = await getNamedAccounts();
@@ -32,11 +31,7 @@ const runDefaultFixture = deployments.createFixture(
     return {
       deployer: {
         address: deployer,
-        FloatiesFPL:
-          FloatiesLongShortPairFinancialProductLibrary__factory.connect(
-            floatiesDeployment.address,
-            await ethers.getSigner(deployer)
-          ),
+        FloatiesFPL: await floatiesFactory.deploy(),
         mockContract: mockDeployment,
       },
     };
