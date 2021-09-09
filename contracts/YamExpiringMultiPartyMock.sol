@@ -10,6 +10,13 @@ contract YamExpiringMultiPartyMock is ExpiringMultiPartyMock {
         FixedPoint.Unsigned memory _collateralRequirement,
         bytes32 _priceIdentifier,
         address _timerAddress
-    ) ExpiringMultiPartyMock(_financialProductLibraryAddress, _expirationTimestamp, _collateralRequirement, _priceIdentifier, _timerAddress)
+    )
+        ExpiringMultiPartyMock(
+            _financialProductLibraryAddress,
+            _expirationTimestamp,
+            _collateralRequirement,
+            _priceIdentifier,
+            _timerAddress
+        )
     {}
 }
