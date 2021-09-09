@@ -29,5 +29,5 @@ yarn-error.log*
 /coverage
 
 # Typechain files
-src/types/contracts/*
-src/types/abi/*
+/src/types/contracts/**
+/src/types/abi/**
