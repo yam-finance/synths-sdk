@@ -1,10 +1,10 @@
-import { ethers } from "ethers";
+import type { ethers } from "ethers";
 
 /// @notice Asset class interfaces
 
 export interface AssetClassConfig {
   /** ethersProvider - ethers.js provider */
-  ethersProvider: any;
+  ethersProvider: ethers.providers.Web3Provider;
   /** assets - Official contracts of the selected network */
   assets: AssetsConfig;
   /** assetIdentifier - The identifier of the asset contract to use */
@@ -79,4 +79,10 @@ export interface AssetsConfig {
 export interface SynthsAssetsConfig {
   /** id - Network name */
   [id: string]: AssetsConfig;
+}
+
+/// @todo Check ethersProvider type
+export interface InitOptions {
+  ethersProvider: any;
+  userAssetsConfig: SynthsAssetsConfig;
 }

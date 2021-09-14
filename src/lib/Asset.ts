@@ -7,10 +7,9 @@ import {
   AssetConfig,
 } from "../types/assets.t";
 import { ExpiringMultiParty } from "../types/contracts";
+import { IERC20Standard } from "types/contracts/IERC20Standard";
 import EmpAbi from "../abi/emp.json";
 import ERC20Abi from "../abi/erc20.json";
-import UNIFactContract from "../abi/uniFactory.json";
-import UNIContract from "../abi/uni.json";
 import { WETH, USDC } from "./config/contracts";
 import {
   UNISWAP_ENDPOINT,
@@ -20,8 +19,8 @@ import {
 } from "../utils/queries";
 
 class Asset {
-  #ethersProvider!: any;
-  #signer!: any;
+  #ethersProvider!: ethers.providers.Web3Provider;
+  #signer!: ethers.Signer;
   #assets!: AssetsConfig;
   #config!: AssetConfig;
   #contract!: ExpiringMultiParty;
@@ -31,17 +30,19 @@ class Asset {
    * @param config - Ethers Asset configuration
    * @return The Asset instance
    */
-  static async connect({
+  static connect({
     ethersProvider,
     assets,
     assetIdentifier,
-  }: AssetClassConfig): Promise<Asset> {
+  }: AssetClassConfig): Asset {
     const asset = new Asset();
-    await asset.init({
+
+    asset.init({
       ethersProvider,
       assets,
       assetIdentifier,
     });
+
     return asset;
   }
 
@@ -49,11 +50,11 @@ class Asset {
    * Initializes the Asset instance.
    * @param config - Ethers Asset configuration
    */
-  private async init({
+  private init({
     ethersProvider,
     assets,
     assetIdentifier,
-  }: AssetClassConfig): Promise<void> {
+  }: AssetClassConfig): void {
     this.#ethersProvider = ethersProvider;
     this.#assets = assets;
 
@@ -201,20 +202,25 @@ class Asset {
    *
    * @return A promise with an object that contains all positions of an address
    */
-  async getPositions(): Promise<{ string: ethers.BigNumber } | undefined> {
+  async getPositions(): Promise<
+    { [x: string]: ethers.BigNumber | undefined } | undefined
+  > {
     try {
-      const positions: any = {};
+      const positions: { [x: string]: ethers.BigNumber | undefined } = {
+        x: undefined,
+      };
 
       for (const assetCycles in this.#assets) {
-        for (const asset in this.#assets[assetCycles]) {
-          const customEmp = new ethers.Contract(
-            this.#assets[assetCycles][asset].emp.address,
-            EmpAbi,
-            this.#ethersProvider
-          ) as ExpiringMultiParty;
+        for (const asset of this.#assets[assetCycles]) {
+          /// @dev Not used at the moment
+          // const customEmp = new ethers.Contract(
+          //   asset.emp.address,
+          //   EmpAbi,
+          //   this.#ethersProvider
+          // ) as ExpiringMultiParty;
 
           const position = await this.getPosition();
-          positions[this.#assets[assetCycles][asset].token.address] =
+          positions[asset.token.address] =
             position?.tokensOutstanding["rawValue"];
         }
       }
@@ -262,14 +268,18 @@ class Asset {
           this.#config.pool.location === "uni"
             ? UNISWAP_PAIR_DATA
             : SUSHISWAP_PAIR_DATA;
-        const poolData = await request(endpoint, query, {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const poolData: any = await request(endpoint, query, {
           pairAddress: this.#config.pool.address,
         });
         let tokenPrice: number;
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (poolData["pair"].token0.id === this.#config.token.address) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           tokenPrice = poolData["pair"].reserve0 / poolData["pair"].reserve1;
         } else {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           tokenPrice = poolData["pair"].reserve1 / poolData["pair"].reserve0;
         }
 
@@ -303,18 +313,20 @@ class Asset {
 
   async getERC20Decimals(
     address: string,
-    ethersProvider: any
-  ): Promise<any | undefined> {
+    ethersProvider: ethers.providers.Web3Provider
+  ): Promise<number | undefined> {
     try {
       const contract = new ethers.Contract(
         address,
         ERC20Abi,
         ethersProvider
-      ) as any;
+      ) as IERC20Standard;
+      const decimals: number = await contract.decimals();
 
-      return contract.decimals();
+      return decimals;
     } catch (e) {
       console.error("error", e);
+      return undefined;
     }
   }
 
