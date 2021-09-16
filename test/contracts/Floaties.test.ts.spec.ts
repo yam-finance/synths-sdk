@@ -5,27 +5,24 @@ import { BigNumber } from "ethers";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 const runDefaultFixture = deployments.createFixture(
-  async ({ deployments, getNamedAccounts, ethers }) => {
+  async ({ getNamedAccounts, ethers }) => {
     await deployments.fixture(["FloatiesLSPFPL"]);
+    const { deployer } = await getNamedAccounts();
     const floatiesFactory = await ethers.getContractFactory(
       "FloatiesLongShortPairFinancialProductLibrary"
     );
-    const { deployer } = await getNamedAccounts();
-    const mockDeployment = await deployments.deploy(
-      "YamExpiringMultiPartyMock",
-      {
-        from: deployer,
-        args: [
-          ZERO_ADDRESS,
-          "1000000",
-          { rawValue: "1500000000000000000" },
-          ethers.utils.hexZeroPad(
-            ethers.utils.hexlify(ethers.utils.toUtf8Bytes("TEST_IDENTIFIER")),
-            32
-          ),
-          ZERO_ADDRESS,
-        ],
-      }
+    const mockEMPFactory = await ethers.getContractFactory(
+      "ExpiringMultiPartyMock"
+    );
+    const mockDeployment = await mockEMPFactory.deploy(
+      ZERO_ADDRESS,
+      "1000000",
+      { rawValue: "1500000000000000000" },
+      ethers.utils.hexZeroPad(
+        ethers.utils.hexlify(ethers.utils.toUtf8Bytes("TEST_IDENTIFIER")),
+        32
+      ),
+      ZERO_ADDRESS
     );
 
     return {
