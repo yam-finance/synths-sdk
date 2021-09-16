@@ -13,8 +13,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+// const WALLET_PRIVATE_KEY = process.env["WALLET_PRIVATE_KEY"];
 const INFURA_API_KEY = process.env["INFURA_API_KEY"];
-const WALLET_PRIVATE_KEY = process.env["WALLET_PRIVATE_KEY"];
 const ETHERSCAN_API_KEY = process.env["ETHERSCAN_API_KEY"];
 const COINMARKETCAP_PUBLIC_KEY = process.env["COINMARKETCAP_PUBLIC_KEY"];
 
@@ -36,8 +36,7 @@ const settings = {
   },
 };
 
-// const config: HardhatUserConfig = {
-const config = {
+const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       forking: {
