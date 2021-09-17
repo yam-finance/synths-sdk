@@ -19,7 +19,8 @@
     "format": "prettier --write .",
     "cover": "nyc yarn test",
     "test:w": "hardhat watch test",
-    "lint": "yarn eslint --fix ."
+    "lint": "yarn eslint --fix .",
+    "lint:report": "yarn eslint --ext .ts --output-file eslint_report.json --format json ."
   },
   "keywords": [
     "yam",
