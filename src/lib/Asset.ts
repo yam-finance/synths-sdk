@@ -268,12 +268,12 @@ class Asset {
           this.#config.pool.location === "uni"
             ? UNISWAP_PAIR_DATA
             : SUSHISWAP_PAIR_DATA;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        // eslint-disable-next-line
         const poolData: any = await request(endpoint, query, {
           pairAddress: this.#config.pool.address,
         });
         let tokenPrice: number;
-
+        ``;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (poolData["pair"].token0.id === this.#config.token.address) {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
