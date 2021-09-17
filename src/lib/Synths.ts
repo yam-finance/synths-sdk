@@ -1,9 +1,14 @@
 import Asset from "./Asset";
 import { defaultAssetsConfig } from "./config";
-import { SynthsAssetsConfig, AssetsConfig } from "../types/assets.t";
+import {
+  SynthsAssetsConfig,
+  AssetsConfig,
+  InitOptions,
+} from "../types/assets.t";
+import { ethers } from "ethers";
 
 class Synths {
-  #ethersProvider!: any;
+  #ethersProvider!: ethers.providers.Web3Provider;
   assets!: AssetsConfig;
 
   /**
@@ -13,7 +18,7 @@ class Synths {
    * @throws "Synths not found in the current network"
    */
   // @todo Add options type
-  static async create(options: any): Promise<Synths> {
+  static async create(options: InitOptions): Promise<Synths> {
     const synthsSdk = new Synths();
     await synthsSdk.init(options);
     return synthsSdk;
@@ -25,8 +30,10 @@ class Synths {
    * @throws "Synths not found in the current network"
    */
   // @todo Add options type
-  private async init(options: any): Promise<void> {
-    this.#ethersProvider = options.ethersProvider;
+  private async init(options: InitOptions): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    this.#ethersProvider =
+      options.ethersProvider as ethers.providers.Web3Provider;
 
     const signer = this.#ethersProvider.getSigner();
     const chainId = await signer.getChainId();
@@ -46,8 +53,8 @@ class Synths {
    * Connects the SDK to an asset.
    * @param config - Ethers Asset configuration
    */
-  async connectAsset(assetIdentifier: string): Promise<Asset> {
-    const asset = await Asset.connect({
+  connectAsset(assetIdentifier: string): Asset {
+    const asset = Asset.connect({
       ethersProvider: this.#ethersProvider,
       assets: this.assets,
       assetIdentifier: assetIdentifier,
