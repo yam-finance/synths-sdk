@@ -273,7 +273,7 @@ class Asset {
           pairAddress: this.#config.pool.address,
         });
         let tokenPrice: number;
-        ``;
+
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (poolData["pair"].token0.id === this.#config.token.address) {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
