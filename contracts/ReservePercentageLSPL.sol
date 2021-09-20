@@ -10,7 +10,7 @@ import "@uma/core/contracts/common/implementation/Lockable.sol";
  * make market making both the long and short tokens easier in a v2 style AMM.
  */
 contract ReservePercentageLSPL is LongShortPairFinancialProductLibrary, Lockable {
-
+    using FixedPoint for FixedPoint.Unsigned;
     struct LinearLongShortPairParameters {
         uint256 upperBound;
         uint256 pctLongCap;
@@ -23,8 +23,10 @@ contract ReservePercentageLSPL is LongShortPairFinancialProductLibrary, Lockable
      * @param longShortPair address of the LSP contract.
      * @param upperBound the upper price that the LSP will operate within.
      * @param pctLongCap the cap on the percentage that can be allocated to the long token - enforced for improving MM on v2 AMMs for both L&S tokens
-     * @dev Note: a) Any address can set these parameters b) existing LSP parameters for address not set.
-     * c) upperBound > lowerBound.
+     * @dev Note:
+     * a) Any address can set these parameters
+     * b) existing LSP parameters for address not set.
+     * c) upperBound > 0.
      * d) parameters can only be set once to prevent the deployer from changing the parameters after the fact.
      * e) For safety, parameters should be set before depositing any synthetic tokens in a liquidity pool.
      * f) longShortPair must expose an expirationTimestamp method to validate it is correctly deployed.
@@ -35,9 +37,9 @@ contract ReservePercentageLSPL is LongShortPairFinancialProductLibrary, Lockable
         uint256 pctLongCap
     ) public nonReentrant() {
         require(ExpiringContractInterface(longShortPair).expirationTimestamp() != 0, "Invalid LSP address");
-        require(upperBound > 0, "Invalid bound");
         // upperBound at 0 would cause a division by 0
-        require(pctLongCap < 1 ether, "Invalid percentage long cap");
+        require(upperBound > 0, "Invalid bound");
+        require(pctLongCap < 1 ether, "Invalid cap");
 
         LinearLongShortPairParameters memory params = longShortPairParameters[longShortPair];
         require(params.upperBound == 0, "Parameters already set");
@@ -63,14 +65,14 @@ contract ReservePercentageLSPL is LongShortPairFinancialProductLibrary, Lockable
     {
         LinearLongShortPairParameters memory params = longShortPairParameters[msg.sender];
         require(params.upperBound != 0, "Params not set for calling LSP");
-        uint positivePrice = expiryPrice >= 0 ? uint(expiryPrice) : 0;
-        //upperBound*pctLongCap gives the effectiveUpperBound
-        if (positivePrice >= (params.upperBound * params.pctLongCap) / 100 ether) return params.pctLongCap;
-        //1-pctLongCap = percentage long floor
-        //lowerBound*pctLongCap gives the effectiveLowerBound
-        if (positivePrice <= params.upperBound * (1 ether - params.pctLongCap)) return 1 ether - params.pctLongCap;
+        uint256 positivePrice = expiryPrice < 0 ? 0 : uint256(expiryPrice);
 
-        // if not exceeding bounds, expiryPercentLong = (expiryPrice - lowerBound) / (upperBound - lowerBound)
-        return positivePrice / params.upperBound;
+        if (positivePrice >= (params.upperBound * params.pctLongCap) / 1 ether) return params.pctLongCap;
+        if (positivePrice <= (params.upperBound * (1 ether - params.pctLongCap)) / 1 ether) return (1 ether - params.pctLongCap);
+
+        return FixedPoint
+        .Unsigned(positivePrice)
+        .div(FixedPoint.Unsigned(params.upperBound))
+        .rawValue;
     }
 }

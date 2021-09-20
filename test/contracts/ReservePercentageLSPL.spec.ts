@@ -105,7 +105,7 @@ describe("ReservePercentageLSPL.sol", () => {
         deployer.reservePercentageLSPL.setLongShortPairParameters(...badParams)
       ).to.revertedWith("Invalid bound");
     });
-    it("should revert on invalid reserve percentage, 1", async () => {
+    it("should revert on invalid reserve percentage,  1", async () => {
       const { deployer } = await fixture();
       type ContractParams = Parameters<
         typeof deployer.reservePercentageLSPL.setLongShortPairParameters
@@ -120,54 +120,102 @@ describe("ReservePercentageLSPL.sol", () => {
       // Send transaction to set parameters.
       await expect(
         deployer.reservePercentageLSPL.setLongShortPairParameters(...badParams)
-      ).to.revertedWith("Invalid percentage long cap");
+      ).to.revertedWith("Invalid cap");
     });
-    describe("When upperBound: 200 ether, pctLongCap:.90 ether ", () => {
-      const upperBound = utils.parseEther("200");
-      const pctLongCap = utils.parseEther(".9");
-      let deployment: Awaited<ReturnType<typeof fixture>>;
-      beforeEach(
-        "Set parameters, upperBound: 200 ether, pctLongCap:.90 ether ",
-        async () => {
-          deployment = await fixture();
-          const { deployer } = deployment;
-          type ContractParams = Parameters<
-            typeof deployer.reservePercentageLSPL.setLongShortPairParameters
-          >;
-          const contractParams = [
-            deployer.mockContract.address,
-            upperBound,
-            pctLongCap,
-            { from: deployer.address },
-          ] as ContractParams;
 
-          await deployer.reservePercentageLSPL.setLongShortPairParameters(
-            ...contractParams
-          );
+    const parameters = [
+      {
+        longMaxPercentage: ".90",
+        longMinPercentage: ".10",
+        upperBound: "200",
+        maxBoundSet: ["180", "190"],
+        minBoundSet: ["10", "20"],
+        knownResults: [
+          { input: "100", result: ".5" },
+          { input: "150", result: ".75" },
+          { input: "175.86777", result: ".87933885" },
+        ],
+      },
+      {
+        longMaxPercentage: ".90",
+        longMinPercentage: ".10",
+        upperBound: "100",
+        maxBoundSet: ["90", "100"],
+        minBoundSet: ["10", "0", "-1"],
+        knownResults: [
+          { input: "80", result: ".8" },
+          { input: "76", result: ".76" },
+        ],
+      },
+      {
+        longMaxPercentage: ".99",
+        longMinPercentage: ".01",
+        upperBound: "100",
+        maxBoundSet: ["99.99", "100"],
+        minBoundSet: ["0.009999999999999999", "0", "-1"],
+        knownResults: [
+          { input: "99", result: ".99" },
+          { input: "76", result: ".76" },
+          { input: "5", result: ".05" },
+        ],
+      },
+    ] as const;
+    parameters.forEach((params) => {
+      const {
+        longMaxPercentage,
+        longMinPercentage,
+        upperBound,
+        maxBoundSet,
+        minBoundSet,
+        knownResults,
+      } = params;
+      describe(`When upperBound: ${upperBound} ether, pctLongCap:${longMaxPercentage} ether `, () => {
+        let deployment: Awaited<ReturnType<typeof fixture>>;
+        beforeEach(
+          `Setting upperBound: ${upperBound} ether, pctLongCap: ${longMaxPercentage} ether `,
+          async () => {
+            deployment = await fixture();
+            const { deployer } = deployment;
+            type ContractParams = Parameters<
+              typeof deployer.reservePercentageLSPL.setLongShortPairParameters
+            >;
+            const contractParams: ContractParams = [
+              deployer.mockContract.address,
+              utils.parseEther(upperBound),
+              utils.parseEther(longMaxPercentage),
+              { from: deployer.address },
+            ];
+
+            await deployer.reservePercentageLSPL.setLongShortPairParameters(
+              ...contractParams
+            );
+          }
+        );
+
+        const testPriceBound = (price: string, bound: string) => {
+          it(`price: ${price} --> expiryPercentLong: ${bound} `, async () => {
+            const { deployer } = deployment;
+            // Reconnect to contract with the impersonated signer
+            const contract = deployer.reservePercentageLSPL.connect(
+              await ethers.getSigner(deployer.mockContract.address)
+            );
+            const percentLong = await contract.percentageLongCollateralAtExpiry(
+              utils.parseEther(price),
+              { from: deployer.mockContract.address }
+            );
+            expect(percentLong).to.equal(utils.parseEther(bound));
+          });
+        };
+        for (const price of maxBoundSet) {
+          testPriceBound(price, longMaxPercentage);
         }
-      );
-      const maxBoundSet = [
-        "180",
-        "180.01",
-        "190",
-        "200",
-        "200.0001",
-        "1000000000", // 1 billion
-      ] as const;
-      for (const price of maxBoundSet) {
-        it(`price: ${price} should return an expiryPercentLong of: .90 `, async () => {
-          const { deployer } = deployment;
-          // Reconnect to contract with the impersonated signer
-          const contract = deployer.reservePercentageLSPL.connect(
-            await ethers.getSigner(deployer.mockContract.address)
-          );
-          const percentLong = await contract.percentageLongCollateralAtExpiry(
-            utils.parseEther("100"),
-            { from: deployer.mockContract.address }
-          );
-          expect(percentLong).to.equal(utils.parseEther(".90"));
-        });
-      }
+        for (const price of minBoundSet) {
+          testPriceBound(price, longMinPercentage);
+        }
+        for (const { input, result } of knownResults) {
+          testPriceBound(input, result);
+        }
+      });
     });
   });
 });
