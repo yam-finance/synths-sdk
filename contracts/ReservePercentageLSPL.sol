@@ -10,7 +10,6 @@ import "@uma/core/contracts/common/implementation/Lockable.sol";
  * make market making both the long and short tokens easier in a v2 style AMM.
  */
 contract ReservePercentageLSPL is LongShortPairFinancialProductLibrary, Lockable {
-    using FixedPoint for FixedPoint.Unsigned;
     struct LinearLongShortPairParameters {
         uint256 upperBound;
         uint256 pctLongCap;
@@ -70,9 +69,6 @@ contract ReservePercentageLSPL is LongShortPairFinancialProductLibrary, Lockable
         if (positivePrice >= (params.upperBound * params.pctLongCap) / 1 ether) return params.pctLongCap;
         if (positivePrice <= (params.upperBound * (1 ether - params.pctLongCap)) / 1 ether) return (1 ether - params.pctLongCap);
 
-        return FixedPoint
-        .Unsigned(positivePrice)
-        .div(FixedPoint.Unsigned(params.upperBound))
-        .rawValue;
+        return (positivePrice * 1 ether) / params.upperBound;
     }
 }
