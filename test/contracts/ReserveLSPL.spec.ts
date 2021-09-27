@@ -9,11 +9,9 @@ type Awaited<T> = T extends PromiseLike<infer U> ? Awaited<U> : T;
 
 const runDefaultFixture = deployments.createFixture(
   async ({ getNamedAccounts, ethers }) => {
-    await deployments.fixture(["ReservePercentageLSPL"]);
+    await deployments.fixture(["ReserveLSPL"]);
     const { deployer } = await getNamedAccounts();
-    const reservePercentageLSPLFactory = await ethers.getContractFactory(
-      "ReservePercentageLSPL"
-    );
+    const reserveLSPLFactory = await ethers.getContractFactory("ReserveLSPL");
     const mockEMPFactory = await ethers.getContractFactory(
       "ExpiringMultiPartyMock"
     );
@@ -31,30 +29,29 @@ const runDefaultFixture = deployments.createFixture(
       mockDeployment.address,
     ]);
 
-    const reservePercentageLSPLContract =
-      await reservePercentageLSPLFactory.deploy();
+    const reserveLSPLContract = await reserveLSPLFactory.deploy();
 
     return {
       deployer: {
         address: deployer,
-        reservePercentageLSPL: reservePercentageLSPLContract,
+        reserveLSPL: reserveLSPLContract,
         mockContract: mockDeployment,
       },
     };
   }
 );
 
-describe("ReservePercentageLSPL.sol", () => {
+describe("ReserveLSPL.sol", () => {
   const fixture = runDefaultFixture;
   describe("A standard deployment", () => {
     it("should deploy", async () => {
       const { deployer } = await fixture();
-      expect(deployer.reservePercentageLSPL.address).to.contain("0x");
+      expect(deployer.reserveLSPL.address).to.contain("0x");
     });
     it("should allow setting valid parameters", async () => {
       const { deployer } = await fixture();
       type ContractParams = Parameters<
-        typeof deployer.reservePercentageLSPL.setLongShortPairParameters
+        typeof deployer.reserveLSPL.setLongShortPairParameters
       >;
 
       const validParams = [
@@ -65,14 +62,11 @@ describe("ReservePercentageLSPL.sol", () => {
       ] as ContractParams;
 
       // Send transaction to set parameters.
-      await deployer.reservePercentageLSPL.setLongShortPairParameters(
-        ...validParams
-      );
+      await deployer.reserveLSPL.setLongShortPairParameters(...validParams);
       // Retrieve Parameters from the network
-      const params =
-        await deployer.reservePercentageLSPL.longShortPairParameters(
-          deployer.mockContract.address
-        );
+      const params = await deployer.reserveLSPL.longShortPairParameters(
+        deployer.mockContract.address
+      );
 
       // subset of Contract Params that we expect to receive back on the call to longShortPairParameters.
       const [, upperBound, pctLongCap] = validParams;
@@ -82,16 +76,15 @@ describe("ReservePercentageLSPL.sol", () => {
     it("should not have parameters set by default", async () => {
       const { deployer } = await fixture();
       const expectedParams = [BigNumber.from("0"), BigNumber.from("0")];
-      const params =
-        await deployer.reservePercentageLSPL.longShortPairParameters(
-          deployer.mockContract.address
-        );
+      const params = await deployer.reserveLSPL.longShortPairParameters(
+        deployer.mockContract.address
+      );
       expect(params).to.deep.equal(expectedParams);
     });
     it("should revert on invalid bound, 0", async () => {
       const { deployer } = await fixture();
       type ContractParams = Parameters<
-        typeof deployer.reservePercentageLSPL.setLongShortPairParameters
+        typeof deployer.reserveLSPL.setLongShortPairParameters
       >;
       const badParams = [
         deployer.mockContract.address,
@@ -102,13 +95,13 @@ describe("ReservePercentageLSPL.sol", () => {
 
       // Send transaction to set parameters.
       await expect(
-        deployer.reservePercentageLSPL.setLongShortPairParameters(...badParams)
+        deployer.reserveLSPL.setLongShortPairParameters(...badParams)
       ).to.revertedWith("Invalid bound");
     });
     it("should revert on invalid reserve percentage,  1", async () => {
       const { deployer } = await fixture();
       type ContractParams = Parameters<
-        typeof deployer.reservePercentageLSPL.setLongShortPairParameters
+        typeof deployer.reserveLSPL.setLongShortPairParameters
       >;
       const badParams = [
         deployer.mockContract.address,
@@ -119,7 +112,7 @@ describe("ReservePercentageLSPL.sol", () => {
 
       // Send transaction to set parameters.
       await expect(
-        deployer.reservePercentageLSPL.setLongShortPairParameters(...badParams)
+        deployer.reserveLSPL.setLongShortPairParameters(...badParams)
       ).to.revertedWith("Invalid cap");
     });
 
@@ -177,7 +170,7 @@ describe("ReservePercentageLSPL.sol", () => {
             deployment = await fixture();
             const { deployer } = deployment;
             type ContractParams = Parameters<
-              typeof deployer.reservePercentageLSPL.setLongShortPairParameters
+              typeof deployer.reserveLSPL.setLongShortPairParameters
             >;
             const contractParams: ContractParams = [
               deployer.mockContract.address,
@@ -186,7 +179,7 @@ describe("ReservePercentageLSPL.sol", () => {
               { from: deployer.address },
             ];
 
-            await deployer.reservePercentageLSPL.setLongShortPairParameters(
+            await deployer.reserveLSPL.setLongShortPairParameters(
               ...contractParams
             );
           }
@@ -196,7 +189,7 @@ describe("ReservePercentageLSPL.sol", () => {
           it(`price: ${price} --> expiryPercentLong: ${bound} `, async () => {
             const { deployer } = deployment;
             // Reconnect to contract with the impersonated signer
-            const contract = deployer.reservePercentageLSPL.connect(
+            const contract = deployer.reserveLSPL.connect(
               await ethers.getSigner(deployer.mockContract.address)
             );
             const percentLong = await contract.percentageLongCollateralAtExpiry(

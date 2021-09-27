@@ -5,11 +5,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { getNamedAccounts, deployments } = hre;
   const { deployer } = await getNamedAccounts();
 
-  await deployments.deploy("LeveragedReservePercentageLSPL", {
+  await deployments.deploy("ReserveLSPL", {
     from: deployer,
     args: [],
   });
 };
 export default func;
 
-func.tags = ["LeveragedReservePercentageLSPL"];
+func.tags = ["ReserveLSPL"];
