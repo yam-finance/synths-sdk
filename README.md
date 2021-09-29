@@ -8,7 +8,7 @@
 
 ## Install
 
-```
+```sh
 yarn add synths-sdk
 ```
 
@@ -71,7 +71,7 @@ const synthsSDK = await Synths.create({
 
 After cloning the synths repo
 
-```
+```sh
 yarn install
 yarn test
 ```
