@@ -32,6 +32,7 @@ eslint_report.json
 # Coverage files
 /.nyc_output
 /coverage
+coverage.json
 
 # Typechain files
 /src/types/contracts/**
