@@ -24,6 +24,7 @@ eslint_report.json
 /cache
 /artifacts
 /deployments/hardhat/
+/deployments/localhost/
 
 # OSX files
 .DS_Store
