@@ -5,6 +5,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# ESLint files
+eslint_report.json
+
 # Node files
 /node_modules
 
