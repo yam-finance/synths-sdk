@@ -75,3 +75,10 @@ After cloning the synths repo
 yarn install
 yarn test
 ```
+
+## Local testnet deployment
+
+```sh
+yarn hardhat node
+yarn hardhat deploy --network localhost
+```
