@@ -15,7 +15,8 @@ contract ReserveLSPL is LongShortPairFinancialProductLibrary, Lockable {
         uint256 pctLongCap;
     }
 
-    mapping(address => ReserveLinearLongShortPairParameters) public longShortPairParameters;
+    mapping(address => ReserveLinearLongShortPairParameters)
+        public longShortPairParameters;
 
     /**
      * @notice Enables any address to set the parameters for an associated financial product.
@@ -34,18 +35,24 @@ contract ReserveLSPL is LongShortPairFinancialProductLibrary, Lockable {
         address longShortPair,
         uint256 upperBound,
         uint256 pctLongCap
-    ) public nonReentrant() {
-        require(ExpiringContractInterface(longShortPair).expirationTimestamp() != 0, "Invalid LSP address");
+    ) public nonReentrant {
+        require(
+            ExpiringContractInterface(longShortPair).expirationTimestamp() != 0,
+            "Invalid LSP address"
+        );
         // upperBound at 0 would cause a division by 0
         require(upperBound > 0, "Invalid bound");
         require(pctLongCap < 1 ether, "Invalid cap");
 
-        ReserveLinearLongShortPairParameters memory params = longShortPairParameters[longShortPair];
+        ReserveLinearLongShortPairParameters
+            memory params = longShortPairParameters[longShortPair];
         require(params.upperBound == 0, "Parameters already set");
 
-        longShortPairParameters[longShortPair] = ReserveLinearLongShortPairParameters({
-        upperBound : upperBound,
-        pctLongCap : pctLongCap
+        longShortPairParameters[
+            longShortPair
+        ] = ReserveLinearLongShortPairParameters({
+            upperBound: upperBound,
+            pctLongCap: pctLongCap
         });
     }
 
@@ -56,18 +63,23 @@ contract ReserveLSPL is LongShortPairFinancialProductLibrary, Lockable {
      * @return expiryPercentLong to indicate how much collateral should be sent between long and short tokens.
      */
     function percentageLongCollateralAtExpiry(int256 expiryPrice)
-    public
-    view
-    override
-    nonReentrantView()
-    returns (uint256)
+        public
+        view
+        override
+        nonReentrantView
+        returns (uint256)
     {
-        ReserveLinearLongShortPairParameters memory params = longShortPairParameters[msg.sender];
+        ReserveLinearLongShortPairParameters
+            memory params = longShortPairParameters[msg.sender];
         require(params.upperBound != 0, "Params not set for calling LSP");
         uint256 positivePrice = expiryPrice < 0 ? 0 : uint256(expiryPrice);
 
-        if (positivePrice >= (params.upperBound * params.pctLongCap) / 1 ether) return params.pctLongCap;
-        if (positivePrice <= (params.upperBound * (1 ether - params.pctLongCap)) / 1 ether) return (1 ether - params.pctLongCap);
+        if (positivePrice >= (params.upperBound * params.pctLongCap) / 1 ether)
+            return params.pctLongCap;
+        if (
+            positivePrice <=
+            (params.upperBound * (1 ether - params.pctLongCap)) / 1 ether
+        ) return (1 ether - params.pctLongCap);
 
         return (positivePrice * 1 ether) / params.upperBound;
     }

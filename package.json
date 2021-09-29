@@ -16,9 +16,9 @@
     "build": "yarn build:abi && hardhat compile --force && tsc",
     "build:abi": "typechain --target=ethers-v5 src/abi/*.json --out-dir src/types/abi",
     "test": "hardhat test",
+    "test:w": "hardhat watch test",
     "format": "prettier --write .",
     "cover": "nyc yarn test",
-    "test:w": "hardhat watch test",
     "lint": "yarn eslint --fix .",
     "lint:report": "yarn eslint --ext .ts --output-file eslint_report.json --format json ."
   },

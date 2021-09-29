@@ -10,8 +10,10 @@ import "@uma/core/contracts/common/implementation/Lockable.sol";
  * Also includes a capped percentage payable to the long (& short) token to
  * make market making both the long and short tokens easier in a v2 style AMM.
  */
-contract LeveragedReserveLSPL is LongShortPairFinancialProductLibrary, Lockable {
-
+contract LeveragedReserveLSPL is
+    LongShortPairFinancialProductLibrary,
+    Lockable
+{
     struct LeveragedReserveLongShortPairParameters {
         uint256 upperBound;
         uint256 pctLongCap;
@@ -19,7 +21,8 @@ contract LeveragedReserveLSPL is LongShortPairFinancialProductLibrary, Lockable 
         uint256 leverageFactor;
     }
 
-    mapping(address => LeveragedReserveLongShortPairParameters) public longShortPairParameters;
+    mapping(address => LeveragedReserveLongShortPairParameters)
+        public longShortPairParameters;
 
     /**
      * @notice Enables any address to set the parameters for an associated financial product.
@@ -42,21 +45,27 @@ contract LeveragedReserveLSPL is LongShortPairFinancialProductLibrary, Lockable 
         uint256 pctLongCap,
         int256 initialPrice,
         uint256 leverageFactor
-    ) public nonReentrant() {
-        require(ExpiringContractInterface(longShortPair).expirationTimestamp() != 0, "Invalid LSP address");
+    ) public nonReentrant {
+        require(
+            ExpiringContractInterface(longShortPair).expirationTimestamp() != 0,
+            "Invalid LSP address"
+        );
         require(upperBound > 0, "Invalid bound");
         require(pctLongCap < 1 ether, "Invalid cap");
         require(initialPrice > 0, "Invalid initial price");
         require(leverageFactor > 0, "Invalid leverage");
 
-        LeveragedReserveLongShortPairParameters memory params = longShortPairParameters[longShortPair];
+        LeveragedReserveLongShortPairParameters
+            memory params = longShortPairParameters[longShortPair];
         require(params.upperBound == 0, "Parameters already set");
 
-        longShortPairParameters[longShortPair] = LeveragedReserveLongShortPairParameters({
-        upperBound : upperBound,
-        pctLongCap : pctLongCap,
-        initialPrice : initialPrice,
-        leverageFactor : leverageFactor
+        longShortPairParameters[
+            longShortPair
+        ] = LeveragedReserveLongShortPairParameters({
+            upperBound: upperBound,
+            pctLongCap: pctLongCap,
+            initialPrice: initialPrice,
+            leverageFactor: leverageFactor
         });
     }
 
@@ -67,24 +76,32 @@ contract LeveragedReserveLSPL is LongShortPairFinancialProductLibrary, Lockable 
      * @return expiryPercentLong to indicate how much collateral should be sent between long and short tokens.
      */
     function percentageLongCollateralAtExpiry(int256 expiryPrice)
-    public
-    view
-    override
-    nonReentrantView()
-    returns (uint256)
+        public
+        view
+        override
+        nonReentrantView
+        returns (uint256)
     {
-        LeveragedReserveLongShortPairParameters memory params = longShortPairParameters[msg.sender];
+        LeveragedReserveLongShortPairParameters
+            memory params = longShortPairParameters[msg.sender];
         require(params.upperBound != 0, "Params not set for calling LSP");
-        int256 unScaledReturnFactor = ((expiryPrice * 1 ether) / params.initialPrice) - 1 ether;
+        int256 unScaledReturnFactor = ((expiryPrice * 1 ether) /
+            params.initialPrice) - 1 ether;
 
-        int256 scaledReturnFactor = (unScaledReturnFactor * int256(params.leverageFactor)) / 1 ether;
+        int256 scaledReturnFactor = (unScaledReturnFactor *
+            int256(params.leverageFactor)) / 1 ether;
 
-        int256 scaledReturn = (int256((params.upperBound * 1 ether) / 2 ether) * (scaledReturnFactor + 1 ether)) / 1 ether;
+        int256 scaledReturn = (int256((params.upperBound * 1 ether) / 2 ether) *
+            (scaledReturnFactor + 1 ether)) / 1 ether;
 
         uint256 positivePrice = scaledReturn < 0 ? 0 : uint256(scaledReturn);
 
-        if (positivePrice >= (params.upperBound * params.pctLongCap) / 1 ether) return params.pctLongCap;
-        if (positivePrice <= (params.upperBound * (1 ether - params.pctLongCap)) / 1 ether) return (1 ether - params.pctLongCap);
+        if (positivePrice >= (params.upperBound * params.pctLongCap) / 1 ether)
+            return params.pctLongCap;
+        if (
+            positivePrice <=
+            (params.upperBound * (1 ether - params.pctLongCap)) / 1 ether
+        ) return (1 ether - params.pctLongCap);
 
         return (positivePrice * 1 ether) / params.upperBound;
     }

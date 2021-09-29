@@ -4,11 +4,15 @@ pragma solidity ^0.8.0;
 import "@uma/core/contracts/financial-templates/common/financial-product-libraries/long-short-pair-libraries/LongShortPairFinancialProductLibrary.sol";
 import "@uma/core/contracts/common/implementation/Lockable.sol";
 import "prb-math/contracts/PRBMathSD59x18.sol";
+
 /**
  * @title Leveraged IL Long Short Pair Financial Product Library.
  * @notice Adds settlement logic to create leveraged IL payouts for LSP
  */
-contract ImpermanentLossLeveragedReserveLSPL is LongShortPairFinancialProductLibrary, Lockable {
+contract ImpermanentLossLeveragedReserveLSPL is
+    LongShortPairFinancialProductLibrary,
+    Lockable
+{
     using PRBMathSD59x18 for int256;
     struct ImpermanentLossLeveragedReserveParameters {
         uint256 upperBound;
@@ -17,7 +21,8 @@ contract ImpermanentLossLeveragedReserveLSPL is LongShortPairFinancialProductLib
         uint256 leverageFactor;
     }
 
-    mapping(address => ImpermanentLossLeveragedReserveParameters) public longShortPairParameters;
+    mapping(address => ImpermanentLossLeveragedReserveParameters)
+        public longShortPairParameters;
 
     /**
      * @notice Enables any address to set the parameters for an associated financial product.
@@ -40,21 +45,27 @@ contract ImpermanentLossLeveragedReserveLSPL is LongShortPairFinancialProductLib
         uint256 pctLongCap,
         int256 initialPrice,
         uint256 leverageFactor
-    ) public nonReentrant() {
-        require(ExpiringContractInterface(longShortPair).expirationTimestamp() != 0, "Invalid LSP address");
+    ) public nonReentrant {
+        require(
+            ExpiringContractInterface(longShortPair).expirationTimestamp() != 0,
+            "Invalid LSP address"
+        );
         require(upperBound > 0, "Invalid bound");
         require(pctLongCap < 1 ether, "Invalid cap");
         require(initialPrice > 0, "Invalid initial price");
         require(leverageFactor > 0, "Invalid leverage");
 
-        ImpermanentLossLeveragedReserveParameters memory params = longShortPairParameters[longShortPair];
+        ImpermanentLossLeveragedReserveParameters
+            memory params = longShortPairParameters[longShortPair];
         require(params.upperBound == 0, "Parameters already set");
 
-        longShortPairParameters[longShortPair] = ImpermanentLossLeveragedReserveParameters({
-        upperBound : upperBound,
-        pctLongCap : pctLongCap,
-        initialPrice : initialPrice,
-        leverageFactor : leverageFactor
+        longShortPairParameters[
+            longShortPair
+        ] = ImpermanentLossLeveragedReserveParameters({
+            upperBound: upperBound,
+            pctLongCap: pctLongCap,
+            initialPrice: initialPrice,
+            leverageFactor: leverageFactor
         });
     }
 
@@ -65,26 +76,37 @@ contract ImpermanentLossLeveragedReserveLSPL is LongShortPairFinancialProductLib
      * @return expiryPercentLong to indicate how much collateral should be sent between long and short tokens.
      */
     function percentageLongCollateralAtExpiry(int256 expiryPrice)
-    public
-    view
-    override
-    nonReentrantView()
-    returns (uint256)
+        public
+        view
+        override
+        nonReentrantView
+        returns (uint256)
     {
-        ImpermanentLossLeveragedReserveParameters memory params = longShortPairParameters[msg.sender];
+        ImpermanentLossLeveragedReserveParameters
+            memory params = longShortPairParameters[msg.sender];
         require(params.upperBound != 0, "Params not set for calling LSP");
         // Find price ratio -> denoted as 'p' in the IL approximation formula
-        int256 priceRatio = (params.initialPrice * 1 ether) / (expiryPrice <= 0 ? int256(1) : expiryPrice);
+        int256 priceRatio = (params.initialPrice * 1 ether) /
+            (expiryPrice <= 0 ? int256(1) : expiryPrice);
         // Perform IL calculation
         int256 numerator = 2 ether * PRBMathSD59x18.sqrt(priceRatio);
         int256 denominator = priceRatio + 1 ether;
         int256 impLoss = (numerator / denominator) - 1 ether;
 
         // Take absolute value of IL, multiply by leverage, and add 1 to make positive synth payout
-        uint256 expiryPriceTransformed = uint256(PRBMathSD59x18.abs(impLoss).mul(int256(params.leverageFactor)) + 1 ether);
+        uint256 expiryPriceTransformed = uint256(
+            PRBMathSD59x18.abs(impLoss).mul(int256(params.leverageFactor)) +
+                1 ether
+        );
 
-        if (expiryPriceTransformed >= (params.upperBound * params.pctLongCap) / 1 ether) return params.pctLongCap;
-        if (expiryPriceTransformed <= (params.upperBound * (1 ether - params.pctLongCap)) / 1 ether) return (1 ether - params.pctLongCap);
+        if (
+            expiryPriceTransformed >=
+            (params.upperBound * params.pctLongCap) / 1 ether
+        ) return params.pctLongCap;
+        if (
+            expiryPriceTransformed <=
+            (params.upperBound * (1 ether - params.pctLongCap)) / 1 ether
+        ) return (1 ether - params.pctLongCap);
 
         return (expiryPriceTransformed * 1 ether) / params.upperBound;
     }
