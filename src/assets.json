@@ -95,6 +95,25 @@
           "location": "sushiswap"
         },
         "expired": false
+      },
+      {
+        "name": "December",
+        "cycle": "12",
+        "year": "21",
+        "collateral": "WETH",
+        "token": {
+          "address": "0xe3df5e08b72704c23229cb92fe847b23bfde9dbd",
+          "decimals": 18
+        },
+        "emp": {
+          "address": "0x7c62e5c39b7b296f4f2244e7eb51bea57ed26e4b",
+          "new": true
+        },
+        "pool": {
+          "address": "0xF6E15Cdf292D36A589276C835cC576F0DF0Fe53A",
+          "location": "sushiswap"
+        },
+        "expired": false
       }
     ],
     "ustonks": [
@@ -173,6 +192,26 @@
         },
         "pool": {
           "address": "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
+          "location": "sushiswap"
+        },
+        "expired": false
+      },
+      {
+        "name": "December",
+        "cycle": "12",
+        "year": "21",
+        "collateral": "WETH",
+        "token": {
+          "address": "0x37a572b95d3fb5007a3519e73d4e9d6e0fc9de50",
+          "decimals": 18
+        },
+        "emp": {
+          "address": "0xf35a80e4705c56fd345e735387c3377baccd8189",
+          "new": true,
+          "type": "finlib"
+        },
+        "pool": {
+          "address": "0x9469313a1702dC275015775249883cFc35Aa94d8",
           "location": "sushiswap"
         },
         "expired": false
