@@ -6,8 +6,8 @@ import {
   AssetsConfig,
   AssetConfig,
 } from "../types/assets.t";
-import { ExpiringMultiParty } from "../types/contracts";
-import { IERC20Standard } from "types/contracts/IERC20Standard";
+import { Emp as ExpiringMultiParty } from "../types/abi";
+import { Erc20 } from "types/abi";
 import EmpAbi from "../abi/emp.json";
 import ERC20Abi from "../abi/erc20.json";
 import { WETH, USDC } from "./config/contracts";
@@ -320,7 +320,7 @@ class Asset {
         address,
         ERC20Abi,
         ethersProvider
-      ) as IERC20Standard;
+      ) as Erc20;
       const decimals: number = await contract.decimals();
 
       return decimals;

@@ -5,6 +5,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# ESLint files
+eslint_report.json
+
 # Node files
 /node_modules
 
@@ -20,6 +23,8 @@ yarn-error.log*
 # Hardhat files
 /cache
 /artifacts
+/deployments/hardhat/
+/deployments/localhost/
 
 # OSX files
 .DS_Store
@@ -27,3 +32,8 @@ yarn-error.log*
 # Coverage files
 /.nyc_output
 /coverage
+coverage.json
+
+# Typechain files
+/src/types/contracts/**
+/src/types/abi/**

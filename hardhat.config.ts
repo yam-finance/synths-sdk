@@ -9,12 +9,13 @@ import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "hardhat-deploy";
 import "hardhat-watcher";
+import "solidity-coverage";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-const INFURA_API_KEY = process.env["INFURA_API_KEY"];
 // const WALLET_PRIVATE_KEY = process.env["WALLET_PRIVATE_KEY"];
+const INFURA_API_KEY = process.env["INFURA_API_KEY"];
 const ETHERSCAN_API_KEY = process.env["ETHERSCAN_API_KEY"];
 const COINMARKETCAP_PUBLIC_KEY = process.env["COINMARKETCAP_PUBLIC_KEY"];
 
@@ -52,7 +53,10 @@ const config: HardhatUserConfig = {
     deployer: 0,
   },
   solidity: {
-    compilers: [{ version: "0.8.0", settings }],
+    compilers: [
+      { version: "0.8.0", settings },
+      { version: "0.8.4", settings },
+    ],
   },
   typechain: {
     outDir: "./src/types/contracts",
