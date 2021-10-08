@@ -8,7 +8,7 @@
 
 ## Install
 
-```
+```sh
 yarn add synths-sdk
 ```
 
@@ -27,7 +27,7 @@ const synthsSDK = await Synths.create({
 });
 
 // Connect the sdk a synth
-const upunksAsset = await synthsSDK.connectAsset("upunks-0921");
+const upunksAsset = synthsSDK.connectAsset("upunks-0921");
 
 // Example method calls
 const gcr: any = await upunksAsset.getGCR();
@@ -71,7 +71,14 @@ const synthsSDK = await Synths.create({
 
 After cloning the synths repo
 
-```
+```sh
 yarn install
 yarn test
+```
+
+## Local testnet deployment
+
+```sh
+yarn hardhat node
+yarn hardhat deploy --network localhost
 ```

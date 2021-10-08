@@ -1,3 +1,9 @@
+# Build output
+dist
+
+# Coverage output
+coverage
+
 # CSS Files
 *.css
 

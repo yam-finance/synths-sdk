@@ -22,4 +22,23 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm install --global yarn
       - run: yarn install --frozen-lockfile
-      - run: yarn test
+      - run: yarn build
+      - name: Run unit/intergration tests
+        run: yarn test
+      - name: Test linting without fixings
+        run: yarn eslint .
+        continue-on-error: true
+      - name: Save code linting report to json
+        run: yarn lint:report
+        continue-on-error: true
+      - name: Annotate Code Linting Results
+        uses: ataylorme/eslint-annotate-action@1.2.0
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          report-json: "eslint_report.json"
+        continue-on-error: true
+      - name: Upload ESLint report
+        uses: actions/upload-artifact@v2
+        with:
+          name: eslint_report.json
+          path: eslint_report.json
