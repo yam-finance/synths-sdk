@@ -110,7 +110,7 @@
           "new": true
         },
         "pool": {
-          "address": "0xF6E15Cdf292D36A589276C835cC576F0DF0Fe53A",
+          "address": "0xf6e15cdf292d36a589276c835cc576f0df0fe53a",
           "location": "sushiswap"
         },
         "expired": false
@@ -211,7 +211,7 @@
           "type": "finlib"
         },
         "pool": {
-          "address": "0x9469313a1702dC275015775249883cFc35Aa94d8",
+          "address": "0x9469313a1702dc275015775249883cfc35aa94d8",
           "location": "sushiswap"
         },
         "expired": false
