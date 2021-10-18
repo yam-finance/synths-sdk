@@ -26,7 +26,7 @@ const synthsSDK = await Synths.create({
   ethersProvider: provider,
 });
 
-// Connect the sdk a synth
+// Connect the sdk to a synth
 const upunksAsset = await synthsSDK.connectAsset("upunks-0921");
 
 // Example method calls
