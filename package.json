@@ -22,7 +22,7 @@
     "cover:sol": "HARDHAT_DEPLOY_FIXTURE=true hardhat coverage",
     "lint": "yarn eslint --fix .",
     "lint:report": "yarn eslint --ext .ts --output-file eslint_report.json --format json .",
-    "docgen": "typedoc"
+    "docgen": "build && typedoc"
   },
   "keywords": [
     "yam",
