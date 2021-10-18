@@ -46,7 +46,7 @@ describe("Synths SDKs", function () {
         userAssetsConfig: userAssetsConfig,
       });
 
-      upunksAsset = synthsSDK.connectAsset("upunks-0921");
+      upunksAsset = await synthsSDK.connectAsset("upunks-0921");
     });
 
     // @todo Add tests
