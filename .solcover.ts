@@ -1,2 +1,0 @@
-export skipFiles: ["YamExpiringMultiPartyMock.sol"];
-
