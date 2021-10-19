@@ -22,7 +22,7 @@
     "cover:sol": "HARDHAT_DEPLOY_FIXTURE=true hardhat coverage",
     "lint": "yarn eslint --fix .",
     "lint:report": "yarn eslint --ext .ts --output-file eslint_report.json --format json .",
-    "docgen": "build && typedoc"
+    "docgen": "yarn build && yarn typedoc && yarn run hardhat docgen"
   },
   "keywords": [
     "yam",
@@ -63,6 +63,7 @@
     "ethereum-waffle": "3.4.0",
     "hardhat": "^2.5.0",
     "hardhat-deploy": "^0.9.3",
+    "hardhat-docgen": "^1.1.2",
     "hardhat-gas-reporter": "^1.0.4",
     "hardhat-watcher": "^2.1.1",
     "nyc": "^15.1.0",

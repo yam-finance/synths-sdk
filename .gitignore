@@ -37,3 +37,6 @@ coverage.json
 # Typechain files
 /src/types/contracts/**
 /src/types/abi/**
+
+# Documentation
+/docs
