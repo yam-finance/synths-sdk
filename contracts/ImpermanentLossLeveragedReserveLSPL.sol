@@ -61,16 +61,17 @@ contract ImpermanentLossLeveragedReserveLSPL is
         int256 initialPrice,
         uint256 leverageFactor
     ) public nonReentrant {
-        if (ExpiringContractInterface(longShortPair).expirationTimestamp() == 0) revert InvalidLSPAddress(); 
-        if (upperBound <= 0) revert InvalidBound(); 
-        if (pctLongCap >= 1 ether) revert InvalidCap(); 
+        if (ExpiringContractInterface(longShortPair).expirationTimestamp() == 0)
+            revert InvalidLSPAddress();
+        if (upperBound <= 0) revert InvalidBound();
+        if (pctLongCap >= 1 ether) revert InvalidCap();
         if (initialPrice <= 0) revert InvalidInitialPrice();
         if (leverageFactor <= 0) revert InvalidLeverage();
 
         ImpermanentLossLeveragedReserveParameters
             memory params = longShortPairParameters[longShortPair];
 
-        if (params.upperBound != 0) revert ParametersSet(); 
+        if (params.upperBound != 0) revert ParametersSet();
 
         longShortPairParameters[
             longShortPair
@@ -97,7 +98,7 @@ contract ImpermanentLossLeveragedReserveLSPL is
     {
         ImpermanentLossLeveragedReserveParameters
             memory params = longShortPairParameters[msg.sender];
-        
+
         if (params.upperBound == 0) revert ParametersNotSet();
         // Find price ratio -> denoted as 'p' in the IL approximation formula
         int256 priceRatio = (params.initialPrice * 1 ether) /

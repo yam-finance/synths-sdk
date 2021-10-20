@@ -61,10 +61,11 @@ contract LeveragedReserveLSPL is
         int256 initialPrice,
         uint256 leverageFactor
     ) public nonReentrant {
-        if (ExpiringContractInterface(longShortPair).expirationTimestamp() == 0) revert InvalidLSPAddress();
-        if (upperBound <= 0) revert InvalidBound(); 
-        if (pctLongCap >= 1 ether) revert InvalidCap(); 
-        if (initialPrice <= 0) revert InvalidInitialPrice(); 
+        if (ExpiringContractInterface(longShortPair).expirationTimestamp() == 0)
+            revert InvalidLSPAddress();
+        if (upperBound <= 0) revert InvalidBound();
+        if (pctLongCap >= 1 ether) revert InvalidCap();
+        if (initialPrice <= 0) revert InvalidInitialPrice();
         if (leverageFactor <= 0) revert InvalidLeverage();
 
         LeveragedReserveLongShortPairParameters

@@ -47,15 +47,16 @@ contract ReserveLSPL is LongShortPairFinancialProductLibrary, Lockable {
         uint256 upperBound,
         uint256 pctLongCap
     ) public nonReentrant {
-        if (ExpiringContractInterface(longShortPair).expirationTimestamp() == 0) revert InvalidLSPAddress();
+        if (ExpiringContractInterface(longShortPair).expirationTimestamp() == 0)
+            revert InvalidLSPAddress();
         // upperBound at 0 would cause a division by 0
-        if (upperBound <= 0) revert InvalidBound(); 
-        if (pctLongCap >= 1 ether) revert InvalidCap(); 
+        if (upperBound <= 0) revert InvalidBound();
+        if (pctLongCap >= 1 ether) revert InvalidCap();
 
         ReserveLinearLongShortPairParameters
             memory params = longShortPairParameters[longShortPair];
 
-        if (params.upperBound != 0) revert ParametersSet(); 
+        if (params.upperBound != 0) revert ParametersSet();
 
         longShortPairParameters[
             longShortPair
