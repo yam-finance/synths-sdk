@@ -28,5 +28,9 @@
     "resolveJsonModule": true
   },
   "include": ["./test/**/*", "./deploy/**/*", "./src/**/*", "./src/**/*.json"],
-  "files": ["./hardhat.config.ts"]
+  "files": ["./hardhat.config.ts"],
+  "typedocOptions": {
+    "entryPoints": ["src/index.ts"],
+    "out": "docs/sdk"
+  }
 }
