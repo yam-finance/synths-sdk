@@ -31,6 +31,6 @@
   "files": ["./hardhat.config.ts"],
   "typedocOptions": {
     "entryPoints": ["src/index.ts"],
-    "out": "docs"
+    "out": "docs/sdk"
   }
 }

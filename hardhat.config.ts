@@ -79,7 +79,7 @@ const config: HardhatUserConfig = {
     },
   },
   docgen: {
-    path: "./docs",
+    path: "./docs/contracts",
     clear: true,
     runOnCompile: true,
   },
