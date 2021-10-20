@@ -24,6 +24,21 @@ contract LeveragedReserveLSPL is
     mapping(address => LeveragedReserveLongShortPairParameters)
         public longShortPairParameters;
 
+    /// @notice Invalid LSP address.
+    error InvalidLSPAddress();
+    /// @notice Invalid bound.
+    error InvalidBound();
+    /// @notice Invalid cap.
+    error InvalidCap();
+    /// @notice Invalid initial price.
+    error InvalidInitialPrice();
+    /// @notice Invalid leverage.
+    error InvalidLeverage();
+    /// @notice Parameters already set.
+    error ParametersSet();
+    /// @notice Parameters not set for calling LSP.
+    error ParametersNotSet();
+
     /**
      * @notice Enables any address to set the parameters for an associated financial product.
      * @param longShortPair address of the LSP contract.
@@ -46,18 +61,17 @@ contract LeveragedReserveLSPL is
         int256 initialPrice,
         uint256 leverageFactor
     ) public nonReentrant {
-        require(
-            ExpiringContractInterface(longShortPair).expirationTimestamp() != 0,
-            "Invalid LSP address"
-        );
-        require(upperBound > 0, "Invalid bound");
-        require(pctLongCap < 1 ether, "Invalid cap");
-        require(initialPrice > 0, "Invalid initial price");
-        require(leverageFactor > 0, "Invalid leverage");
+        if (ExpiringContractInterface(longShortPair).expirationTimestamp() == 0)
+            revert InvalidLSPAddress();
+        if (upperBound <= 0) revert InvalidBound();
+        if (pctLongCap >= 1 ether) revert InvalidCap();
+        if (initialPrice <= 0) revert InvalidInitialPrice();
+        if (leverageFactor <= 0) revert InvalidLeverage();
 
         LeveragedReserveLongShortPairParameters
             memory params = longShortPairParameters[longShortPair];
-        require(params.upperBound == 0, "Parameters already set");
+
+        if (params.upperBound != 0) revert ParametersSet();
 
         longShortPairParameters[
             longShortPair
@@ -84,7 +98,7 @@ contract LeveragedReserveLSPL is
     {
         LeveragedReserveLongShortPairParameters
             memory params = longShortPairParameters[msg.sender];
-        require(params.upperBound != 0, "Params not set for calling LSP");
+        if (params.upperBound == 0) revert ParametersNotSet();
         int256 unScaledReturnFactor = ((expiryPrice * 1 ether) /
             params.initialPrice) - 1 ether;
 

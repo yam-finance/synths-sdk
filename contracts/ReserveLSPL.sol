@@ -18,6 +18,17 @@ contract ReserveLSPL is LongShortPairFinancialProductLibrary, Lockable {
     mapping(address => ReserveLinearLongShortPairParameters)
         public longShortPairParameters;
 
+    /// @notice Invalid LSP address.
+    error InvalidLSPAddress();
+    /// @notice Invalid bound.
+    error InvalidBound();
+    /// @notice Invalid cap.
+    error InvalidCap();
+    /// @notice Parameters already set.
+    error ParametersSet();
+    /// @notice Parameters not set for calling LSP.
+    error ParametersNotSet();
+
     /**
      * @notice Enables any address to set the parameters for an associated financial product.
      * @param longShortPair address of the LSP contract.
@@ -36,17 +47,16 @@ contract ReserveLSPL is LongShortPairFinancialProductLibrary, Lockable {
         uint256 upperBound,
         uint256 pctLongCap
     ) public nonReentrant {
-        require(
-            ExpiringContractInterface(longShortPair).expirationTimestamp() != 0,
-            "Invalid LSP address"
-        );
+        if (ExpiringContractInterface(longShortPair).expirationTimestamp() == 0)
+            revert InvalidLSPAddress();
         // upperBound at 0 would cause a division by 0
-        require(upperBound > 0, "Invalid bound");
-        require(pctLongCap < 1 ether, "Invalid cap");
+        if (upperBound <= 0) revert InvalidBound();
+        if (pctLongCap >= 1 ether) revert InvalidCap();
 
         ReserveLinearLongShortPairParameters
             memory params = longShortPairParameters[longShortPair];
-        require(params.upperBound == 0, "Parameters already set");
+
+        if (params.upperBound != 0) revert ParametersSet();
 
         longShortPairParameters[
             longShortPair
@@ -71,7 +81,7 @@ contract ReserveLSPL is LongShortPairFinancialProductLibrary, Lockable {
     {
         ReserveLinearLongShortPairParameters
             memory params = longShortPairParameters[msg.sender];
-        require(params.upperBound != 0, "Params not set for calling LSP");
+        if (params.upperBound == 0) revert ParametersNotSet();
         uint256 positivePrice = expiryPrice < 0 ? 0 : uint256(expiryPrice);
 
         if (positivePrice >= (params.upperBound * params.pctLongCap) / 1 ether)
