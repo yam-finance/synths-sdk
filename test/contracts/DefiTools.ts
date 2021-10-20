@@ -202,8 +202,14 @@ const testFixture: {
       },
       invalidParameters: [
         [{ upperBound: toEther("-1") }, ""],
-        [{ pctLongCap: toEther("1") }, "reverted with custom error 'InvalidCap()'"],
-        [{ upperBound: toEther("0") }, "reverted with custom error 'InvalidBound()'"],
+        [
+          { pctLongCap: toEther("1") },
+          "reverted with custom error 'InvalidCap()'",
+        ],
+        [
+          { upperBound: toEther("0") },
+          "reverted with custom error 'InvalidBound()'",
+        ],
       ],
       knownResults: [
         { price: toEther("50"), result: toEther(".50") },
@@ -223,10 +229,22 @@ const testFixture: {
       },
       invalidParameters: [
         [{ upperBound: toEther("-1") }, ""],
-        [{ pctLongCap: toEther("1") }, "reverted with custom error 'InvalidCap()'"],
-        [{ upperBound: toEther("0") }, "reverted with custom error 'InvalidBound()'"],
-        [{ initialPrice: toEther("0") }, "reverted with custom error 'InvalidInitialPrice()'"],
-        [{ leverageFactor: toEther("0") }, "reverted with custom error 'InvalidLeverage()'"],
+        [
+          { pctLongCap: toEther("1") },
+          "reverted with custom error 'InvalidCap()'",
+        ],
+        [
+          { upperBound: toEther("0") },
+          "reverted with custom error 'InvalidBound()'",
+        ],
+        [
+          { initialPrice: toEther("0") },
+          "reverted with custom error 'InvalidInitialPrice()'",
+        ],
+        [
+          { leverageFactor: toEther("0") },
+          "reverted with custom error 'InvalidLeverage()'",
+        ],
       ],
       knownResults: [
         { price: toEther("50"), result: toEther(".50") },
@@ -246,10 +264,22 @@ const testFixture: {
       },
       invalidParameters: [
         [{ upperBound: toEther("-1") }, ""],
-        [{ pctLongCap: toEther("1") }, "reverted with custom error 'InvalidCap()'"],
-        [{ upperBound: toEther("0") }, "reverted with custom error 'InvalidBound()'"],
-        [{ initialPrice: toEther("0") }, "reverted with custom error 'InvalidInitialPrice()'"],
-        [{ leverageFactor: toEther("0") }, "reverted with custom error 'InvalidLeverage()'"],
+        [
+          { pctLongCap: toEther("1") },
+          "reverted with custom error 'InvalidCap()'",
+        ],
+        [
+          { upperBound: toEther("0") },
+          "reverted with custom error 'InvalidBound()'",
+        ],
+        [
+          { initialPrice: toEther("0") },
+          "reverted with custom error 'InvalidInitialPrice()'",
+        ],
+        [
+          { leverageFactor: toEther("0") },
+          "reverted with custom error 'InvalidLeverage()'",
+        ],
       ],
       knownResults: [
         { price: toEther("4000"), result: toEther("0.5") },
