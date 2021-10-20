@@ -16,3 +16,6 @@ src/types/contracts
 
 # Build Files
 dist
+
+# Documentation
+docs/*
