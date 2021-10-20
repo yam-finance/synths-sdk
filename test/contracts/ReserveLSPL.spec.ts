@@ -96,7 +96,7 @@ describe("ReserveLSPL.sol", () => {
       // Send transaction to set parameters.
       await expect(
         deployer.reserveLSPL.setLongShortPairParameters(...badParams)
-      ).to.revertedWith("Invalid bound");
+      ).to.revertedWith("reverted with custom error 'InvalidBound()'");
     });
     it("should revert on invalid reserve percentage,  1", async () => {
       const { deployer } = await fixture();
@@ -113,7 +113,7 @@ describe("ReserveLSPL.sol", () => {
       // Send transaction to set parameters.
       await expect(
         deployer.reserveLSPL.setLongShortPairParameters(...badParams)
-      ).to.revertedWith("Invalid cap");
+      ).to.revertedWith("reverted with custom error 'InvalidCap()'");
     });
 
     const parameters = [

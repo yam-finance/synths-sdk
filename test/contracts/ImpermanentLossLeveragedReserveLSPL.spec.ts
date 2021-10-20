@@ -124,7 +124,7 @@ describe("ImpermanentLossLeveragedReserveLSPL.sol", () => {
         deployer.impermanentLossLeveragedReserveLSPL.setLongShortPairParameters(
           ...badParams
         )
-      ).to.be.revertedWith("Invalid bound");
+      ).to.be.revertedWith("reverted with custom error 'InvalidBound()'");
     });
     it("should revert on invalid reserve percentage,  1", async () => {
       const { deployer } = await fixture();
@@ -145,7 +145,7 @@ describe("ImpermanentLossLeveragedReserveLSPL.sol", () => {
         deployer.impermanentLossLeveragedReserveLSPL.setLongShortPairParameters(
           ...badParams
         )
-      ).to.revertedWith("Invalid cap");
+      ).to.revertedWith("reverted with custom error 'InvalidCap()'");
     });
 
     const parameters = [
