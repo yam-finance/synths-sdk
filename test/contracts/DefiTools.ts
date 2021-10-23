@@ -204,11 +204,11 @@ const testFixture: {
         [{ upperBound: toEther("-1") }, ""],
         [
           { pctLongCap: toEther("1") },
-          "reverted with custom error 'InvalidCap()'",
+          "reverted with custom error 'InvalidCap(1000000000000000000)'",
         ],
         [
           { upperBound: toEther("0") },
-          "reverted with custom error 'InvalidBound()'",
+          "reverted with custom error 'InvalidBound(0)'",
         ],
       ],
       knownResults: [
@@ -231,19 +231,19 @@ const testFixture: {
         [{ upperBound: toEther("-1") }, ""],
         [
           { pctLongCap: toEther("1") },
-          "reverted with custom error 'InvalidCap()'",
+          "reverted with custom error 'InvalidCap(1000000000000000000)'",
         ],
         [
           { upperBound: toEther("0") },
-          "reverted with custom error 'InvalidBound()'",
+          "reverted with custom error 'InvalidBound(0)'",
         ],
         [
           { initialPrice: toEther("0") },
-          "reverted with custom error 'InvalidInitialPrice()'",
+          "reverted with custom error 'InvalidInitialPrice(0)'",
         ],
         [
           { leverageFactor: toEther("0") },
-          "reverted with custom error 'InvalidLeverage()'",
+          "reverted with custom error 'InvalidLeverage(0)'",
         ],
       ],
       knownResults: [
@@ -266,19 +266,19 @@ const testFixture: {
         [{ upperBound: toEther("-1") }, ""],
         [
           { pctLongCap: toEther("1") },
-          "reverted with custom error 'InvalidCap()'",
+          "reverted with custom error 'InvalidCap(1000000000000000000)'",
         ],
         [
           { upperBound: toEther("0") },
-          "reverted with custom error 'InvalidBound()'",
+          "reverted with custom error 'InvalidBound(0)'",
         ],
         [
           { initialPrice: toEther("0") },
-          "reverted with custom error 'InvalidInitialPrice()'",
+          "reverted with custom error 'InvalidInitialPrice(0)'",
         ],
         [
           { leverageFactor: toEther("0") },
-          "reverted with custom error 'InvalidLeverage()'",
+          "reverted with custom error 'InvalidLeverage(0)'",
         ],
       ],
       knownResults: [
