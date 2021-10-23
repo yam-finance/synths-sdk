@@ -1,8 +1,8 @@
 {
   "137": {
-    "ugas": [
+    "2xdpi": [
       {
-        "name": "October",
+        "name": "October26",
         "cycle": "10",
         "year": "21",
         "collateral": "WETH",
@@ -11,7 +11,7 @@
           "decimals": 18
         },
         "lsp": {
-          "address": "",
+          "address": "0x4707b810b75C2DF8Ffeb50f7f33Af617Fbf3d766",
           "new": false
         },
         "pool": {
