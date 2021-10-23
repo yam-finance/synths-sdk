@@ -24,16 +24,16 @@ contract LeveragedReserveLSPL is
     mapping(address => LeveragedReserveLongShortPairParameters)
         public longShortPairParameters;
 
-    /// @notice Invalid LSP address.
-    error InvalidLSPAddress();
-    /// @notice Invalid bound.
-    error InvalidBound();
-    /// @notice Invalid cap.
-    error InvalidCap();
-    /// @notice Invalid initial price.
-    error InvalidInitialPrice();
-    /// @notice Invalid leverage.
-    error InvalidLeverage();
+    /// `longShortPair` is not a valid LSP address.
+    error InvalidLSPAddress(address longShortPair);
+    /// `upperBound` has to be greater than zero.
+    error InvalidBound(uint256 upperBound);
+    /// `pctLongCap` has to be less than 1 ether.
+    error InvalidCap(uint256 pctLongCap);
+    /// `initialPrice` has to be greater than zero.
+    error InvalidInitialPrice(int256 initialPrice);
+    /// `leverageFactor` has to be greater than 0.
+    error InvalidLeverage(uint256 leverageFactor);
     /// @notice Parameters already set.
     error ParametersSet();
     /// @notice Parameters not set for calling LSP.
@@ -62,11 +62,11 @@ contract LeveragedReserveLSPL is
         uint256 leverageFactor
     ) public nonReentrant {
         if (ExpiringContractInterface(longShortPair).expirationTimestamp() == 0)
-            revert InvalidLSPAddress();
-        if (upperBound <= 0) revert InvalidBound();
-        if (pctLongCap >= 1 ether) revert InvalidCap();
-        if (initialPrice <= 0) revert InvalidInitialPrice();
-        if (leverageFactor <= 0) revert InvalidLeverage();
+            revert InvalidLSPAddress(longShortPair);
+        if (upperBound <= 0) revert InvalidBound(upperBound);
+        if (pctLongCap >= 1 ether) revert InvalidCap(pctLongCap);
+        if (initialPrice <= 0) revert InvalidInitialPrice(initialPrice);
+        if (leverageFactor <= 0) revert InvalidLeverage(leverageFactor);
 
         LeveragedReserveLongShortPairParameters
             memory params = longShortPairParameters[longShortPair];

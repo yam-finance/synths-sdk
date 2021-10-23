@@ -18,12 +18,12 @@ contract ReserveLSPL is LongShortPairFinancialProductLibrary, Lockable {
     mapping(address => ReserveLinearLongShortPairParameters)
         public longShortPairParameters;
 
-    /// @notice Invalid LSP address.
-    error InvalidLSPAddress();
-    /// @notice Invalid bound.
-    error InvalidBound();
-    /// @notice Invalid cap.
-    error InvalidCap();
+    /// `longShortPair` is not a valid LSP address.
+    error InvalidLSPAddress(address longShortPair);
+    /// `upperBound` has to be greater than zero.
+    error InvalidBound(uint256 upperBound);
+    /// `pctLongCap` has to be less than 1 ether.
+    error InvalidCap(uint256 pctLongCap);
     /// @notice Parameters already set.
     error ParametersSet();
     /// @notice Parameters not set for calling LSP.
@@ -48,10 +48,10 @@ contract ReserveLSPL is LongShortPairFinancialProductLibrary, Lockable {
         uint256 pctLongCap
     ) public nonReentrant {
         if (ExpiringContractInterface(longShortPair).expirationTimestamp() == 0)
-            revert InvalidLSPAddress();
+            revert InvalidLSPAddress(longShortPair);
         // upperBound at 0 would cause a division by 0
-        if (upperBound <= 0) revert InvalidBound();
-        if (pctLongCap >= 1 ether) revert InvalidCap();
+        if (upperBound <= 0) revert InvalidBound(upperBound);
+        if (pctLongCap >= 1 ether) revert InvalidCap(pctLongCap);
 
         ReserveLinearLongShortPairParameters
             memory params = longShortPairParameters[longShortPair];
