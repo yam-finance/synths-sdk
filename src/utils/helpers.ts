@@ -66,6 +66,8 @@ export async function getCurrentDexTokenPrice(
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       return poolData["pair"].reserve1 / poolData["pair"].reserve0;
     }
+
+    console.log("Pool data", poolData);
   } catch (e) {
     console.error("error", e);
     return undefined;
