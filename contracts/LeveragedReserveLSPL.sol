@@ -34,7 +34,7 @@ contract LeveragedReserveLSPL is
     error InvalidInitialPrice(int256 initialPrice);
     /// `leverageFactor` has to be greater than 0.
     error InvalidLeverage(uint256 leverageFactor);
-    /// @notice Parameters already set.
+    /// @notice Parameters already set for calling LSP.
     error ParametersSet();
     /// @notice Parameters not set for calling LSP.
     error ParametersNotSet();

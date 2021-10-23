@@ -24,7 +24,7 @@ contract ReserveLSPL is LongShortPairFinancialProductLibrary, Lockable {
     error InvalidBound(uint256 upperBound);
     /// `pctLongCap` has to be less than 1 ether.
     error InvalidCap(uint256 pctLongCap);
-    /// @notice Parameters already set.
+    /// @notice Parameters already set for calling LSP.
     error ParametersSet();
     /// @notice Parameters not set for calling LSP.
     error ParametersNotSet();
