@@ -49,7 +49,7 @@ describe("Synths SDKs", function () {
       upunksAsset = synthsSDK.connectAsset("upunks-0921");
     });
 
-    // @todo Add tests
+    // @todo Add tests.
     describe("Interact with asset", function () {
       it("getEmpState - success", async function () {
         const empState = await upunksAsset.getEmpState();

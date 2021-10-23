@@ -12,12 +12,12 @@ class Synths {
   assets!: AssetsConfig;
 
   /**
-   * Creates an instance of the Synths SDK.
-   * @param options - Ethers Synths configuration
-   * @return The Synths SDK instance
-   * @throws "Synths not found in the current network"
+   * @notice Creates an instance of the Synths SDK.
+   * @param options - Ethers Synths configuration.
+   * @returns The Synths SDK instance.
+   * @throws "Synths not found in the current network".
    */
-  // @todo Add options type
+  // @todo Add options type.
   static async create(options: InitOptions): Promise<Synths> {
     const synthsSdk = new Synths();
     await synthsSdk.init(options);
@@ -25,11 +25,11 @@ class Synths {
   }
 
   /**
-   * Initializes the Synths SDK instance.
-   * @param options - Ethers Synths configuration
-   * @throws "Synths not found in the current network"
+   * @notice Initializes the Synths SDK instance.
+   * @param options - Ethers Synths configuration.
+   * @throws "Synths not found in the current network".
    */
-  // @todo Add options type
+  // @todo Add options type.
   private async init(options: InitOptions): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     this.#ethersProvider =
@@ -50,8 +50,8 @@ class Synths {
   }
 
   /**
-   * Connects the SDK to an asset.
-   * @param config - Ethers Asset configuration
+   * @notice Connects the SDK to an asset.
+   * @param config - Ethers Asset configuration.
    */
   connectAsset(assetIdentifier: string): Asset {
     const asset = Asset.connect({

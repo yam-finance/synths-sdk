@@ -1,4 +1,4 @@
-// // @todo Cleanup code
+// // @todo Cleanup code.
 
 // /**
 //  * @notice The following is a sdk implementation of the tx stats calculation.
@@ -381,7 +381,7 @@
 //       const _whitelistedTVM: number = Number(whitelistedTVM);
 //       console.log("_whitelistedTVM", _whitelistedTVM);
 //       // 50_000
-//       /// @TODO Check why umaRewards != 50_000
+//       /// @todo Check why umaRewards != 50_000
 //       const _umaRewards: number = 50_000;
 //       console.log("_umaRewards", _umaRewards);
 //       // umaPrice

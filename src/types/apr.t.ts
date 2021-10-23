@@ -26,7 +26,7 @@ export interface ISynth {
   group: string;
   cycle: string;
   year: string;
-  collateral: string; // TODO remove, get collateral through group
+  collateral: string; // @todo remove, get collateral through group
   token: IToken;
   emp: IContract;
   pool: ILiquidityPool;
