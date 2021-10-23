@@ -1,5 +1,4 @@
 import { ethers, BigNumber } from "ethers";
-import { request } from "graphql-request";
 import {
   AssetClassConfig,
   EmpState,
@@ -7,16 +6,9 @@ import {
   AssetConfig,
 } from "../types/assets.t";
 import { Emp as ExpiringMultiParty } from "../types/abi";
-import { Erc20 } from "types/abi";
 import EmpAbi from "../abi/emp.json";
-import ERC20Abi from "../abi/erc20.json";
 import { WETH, USDC } from "./config/contracts";
-import {
-  UNISWAP_ENDPOINT,
-  SUSHISWAP_ENDPOINT,
-  UNISWAP_PAIR_DATA,
-  SUSHISWAP_PAIR_DATA,
-} from "../utils/queries";
+import { getTokenDecimals, getCurrentDexTokenPrice } from "../utils/helpers";
 
 class Asset {
   #ethersProvider!: ethers.providers.Web3Provider;
@@ -26,9 +18,9 @@ class Asset {
   #contract!: ExpiringMultiParty;
 
   /**
-   * Connects an instance of the Asset.
-   * @param config - Ethers Asset configuration
-   * @return The Asset instance
+   * @notice Connects an instance of the Asset.
+   * @param config - Ethers Asset configuration.
+   * @returns The Asset instance.
    */
   static connect({
     ethersProvider,
@@ -47,8 +39,8 @@ class Asset {
   }
 
   /**
-   * Initializes the Asset instance.
-   * @param config - Ethers Asset configuration
+   * @notice Initializes the Asset instance.
+   * @param config - Ethers Asset configuration.
    */
   private init({
     ethersProvider,
@@ -58,13 +50,13 @@ class Asset {
     this.#ethersProvider = ethersProvider;
     this.#assets = assets;
 
-    // @todo Check alternatives
+    // @todo Check alternatives.
     // this.#signer = await this.#ethersProvider.getSigner();
     this.#signer = ethers.Wallet.createRandom();
 
     const assetIdentifierSplit = assetIdentifier.split("-");
 
-    // @todo Check EmpAbi error
+    // @todo Check EmpAbi error.
     for (const assetCycle of assets[assetIdentifierSplit[0]]) {
       if (assetCycle.cycle + assetCycle.year == assetIdentifierSplit[1]) {
         this.#config = assetCycle;
@@ -85,13 +77,12 @@ class Asset {
   }
 
   /**
-   * Get expiring multi party (EMP) state
-   *
-   * @return A promise with the info of the metapool contract
+   * @notice Get expiring multi party (EMP) state.
+   * @returns A promise with the info of the metapool contract.
    */
   async getEmpState(): Promise<EmpState | undefined> {
     try {
-      /// @dev Because of an overload error, we split the calls into separate promises
+      /// @dev Because of an overload error, we split the calls into separate promises.
 
       const result1 = await Promise.all([
         this.#contract.expirationTimestamp(),
@@ -149,9 +140,8 @@ class Asset {
   }
 
   /**
-   * Fetch the position of an asset in relation to the connected user address
-   *
-   * @return A promise with the user position
+   * @notice Fetch the position of an asset in relation to the connected user address.
+   * @returns A promise with the user position.
    */
   async getPosition() {
     try {
@@ -170,18 +160,17 @@ class Asset {
    */
 
   /**
-   * Get the current user asset position collateral ratio (CR).
-   *
-   * @return A promise with the user asset CR
+   * @notice Get the current user asset position collateral ratio (CR).
+   * @returns A promise with the user asset CR.
    */
   async getPositionCR(): Promise<string | undefined> {
     try {
       const position = await this.getPosition();
-      // @todo Look at alternatives for maintainability
+      // @todo Look at alternatives for maintainability.
       const collateralAddress = this.#config.collateral == "WETH" ? WETH : USDC;
       const collateralDecimals = BigNumber.from(10).pow(
         BigNumber.from(
-          await this.getERC20Decimals(collateralAddress, this.#ethersProvider)
+          await getTokenDecimals(collateralAddress, this.#ethersProvider)
         )
       );
       const collateralRatio = BigNumber.from(
@@ -198,9 +187,8 @@ class Asset {
   }
 
   /**
-   * Fetch all the positions of an address.
-   *
-   * @return A promise with an object that contains all positions of an address
+   * @notice Fetch all the positions of an address.
+   * @returns A promise with an object that contains all positions of an address.
    */
   async getPositions(): Promise<
     { [x: string]: ethers.BigNumber | undefined } | undefined
@@ -212,7 +200,7 @@ class Asset {
 
       for (const assetCycles in this.#assets) {
         for (const asset of this.#assets[assetCycles]) {
-          /// @dev Not used at the moment
+          /// @dev Not used at the moment.
           // const customEmp = new ethers.Contract(
           //   asset.emp.address,
           //   EmpAbi,
@@ -233,9 +221,8 @@ class Asset {
   }
 
   /**
-   * Get asset global collateral ratio (GCR).
-   *
-   * @return A promise with the GCR
+   * @notice Get asset global collateral ratio (GCR).
+   * @returns A promise with the GCR.
    */
   async getGCR() {
     try {
@@ -243,45 +230,29 @@ class Asset {
       const empState = await this.getEmpState();
 
       if (empState != undefined) {
-        const tokenDecimals = await this.getERC20Decimals(
+        const tokenDecimals = await getTokenDecimals(
           this.#config.token.address,
           this.#ethersProvider
         );
         const totalTokens = empState["totalTokensOutstanding"]
           .div(BigNumber.from(10).pow(BigNumber.from(tokenDecimals)))
           .toNumber();
-        // @todo Look at alternatives for maintainability
+        // @todo Look at alternatives for maintainability.
         const collateralAddress =
           this.#config.collateral == "WETH" ? WETH : USDC;
         const collateralDecimals = BigNumber.from(10).pow(
           BigNumber.from(
-            await this.getERC20Decimals(collateralAddress, this.#ethersProvider)
+            await getTokenDecimals(collateralAddress, this.#ethersProvider)
           )
         );
 
-        /// @dev Get pool data from graph endpoints
-        const endpoint =
-          this.#config.pool.location === "uni"
-            ? UNISWAP_ENDPOINT
-            : SUSHISWAP_ENDPOINT;
-        const query =
-          this.#config.pool.location === "uni"
-            ? UNISWAP_PAIR_DATA
-            : SUSHISWAP_PAIR_DATA;
-        // eslint-disable-next-line
-        const poolData: any = await request(endpoint, query, {
-          pairAddress: this.#config.pool.address,
-        });
-        let tokenPrice: number;
+        const tokenPrice = await getCurrentDexTokenPrice(
+          this.#config.pool.location,
+          this.#config.pool.address,
+          this.#config.token.address
+        );
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        if (poolData["pair"].token0.id === this.#config.token.address) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          tokenPrice = poolData["pair"].reserve0 / poolData["pair"].reserve1;
-        } else {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          tokenPrice = poolData["pair"].reserve1 / poolData["pair"].reserve0;
-        }
+        if (tokenPrice == undefined) return;
 
         const feeMultiplier = Number(
           ethers.utils.formatEther(empState["cumulativeFeeMultiplier"])
@@ -299,31 +270,6 @@ class Asset {
       }
 
       return gcr;
-    } catch (e) {
-      console.error("error", e);
-      return undefined;
-    }
-  }
-
-  /**
-   * ----------------------------------------------------------------------------------
-   * @notice The following are on-chain helpers that will be moved to another directory
-   * ----------------------------------------------------------------------------------
-   */
-
-  async getERC20Decimals(
-    address: string,
-    ethersProvider: ethers.providers.Web3Provider
-  ): Promise<number | undefined> {
-    try {
-      const contract = new ethers.Contract(
-        address,
-        ERC20Abi,
-        ethersProvider
-      ) as Erc20;
-      const decimals: number = await contract.decimals();
-
-      return decimals;
     } catch (e) {
       console.error("error", e);
       return undefined;
@@ -558,10 +504,10 @@ class Asset {
   //     if (!this.options.account) {
   //       return false;
   //     }
-  //     // TODO check if is already approved (fetchContractApproval) and if so return;
+  //     // @todo check if is already approved (fetchContractApproval) and if so return;
   //     const makeApproval = await approve(this.options.account, spenderAddress, tokenAddress, this.options.provider);
   //     return makeApproval;
-  //     // TODO handle update approvals on web
+  //     // @todo handle update approvals on web
   //   };
 
   //   /**
@@ -629,7 +575,7 @@ class Asset {
 
   //       const price = await getPriceByContract(tokenAddress)
   //       return price
-  //       // TODO get onchain price of the tokenAddress
+  //       // @todo get onchain price of the tokenAddress
   //     };
 
   //   /**
@@ -947,7 +893,7 @@ class Asset {
   //     };
   //     const emp = (asset.emp.new ? await this.getEmp(asset) : await this.getEmpV1(asset));
   //     try {
-  //       // TODO try going with estimations again
+  //       // @todo try going with estimations again
   //       // const ge = await emp.methods.settleExpired().estimateGas(
   //       //   {
   //       //     from: this.options.account,

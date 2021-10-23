@@ -1,4 +1,5 @@
 import Synths from "./lib/Synths";
+import "./utils/helpers";
 
 export default Synths;
 

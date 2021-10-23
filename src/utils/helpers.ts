@@ -1,4 +1,84 @@
-// // @todo Replace web3 with ether.js
+import { ethers } from "ethers";
+import { request } from "graphql-request";
+import axios from "axios";
+import { Erc20 } from "types/abi";
+import ERC20Abi from "../abi/erc20.json";
+import {
+  UNISWAP_ENDPOINT,
+  SUSHISWAP_ENDPOINT,
+  UNISWAP_PAIR_DATA,
+  SUSHISWAP_PAIR_DATA,
+} from "./queries";
+
+/**
+ * @notice Helper function to get the decimals of a erc20 token.
+ * @param address Address of the erc20 contract.
+ * @param ethersProvider Ethers provider instance.
+ * @returns `undefined` or the erc20 token decimals.
+ */
+export async function getTokenDecimals(
+  address: string,
+  ethersProvider: ethers.providers.Web3Provider
+): Promise<number | undefined> {
+  try {
+    const contract = new ethers.Contract(
+      address,
+      ERC20Abi,
+      ethersProvider
+    ) as Erc20;
+    const decimals: number = await contract.decimals();
+
+    return decimals;
+  } catch (e) {
+    console.error("error", e);
+    return undefined;
+  }
+}
+
+/**
+ * @notice Helper function to get the current DEX token price.
+ * @param poolLocation Location string of the DEX pool (e.g. "uni").
+ * @param poolAddress Address of the DEX pool.
+ * @param tokenAddress Address of the token.
+ * @returns `undefined` or the DEX token price.
+ */
+export async function getCurrentDexTokenPrice(
+  poolLocation: string,
+  tokenAddress: string,
+  poolAddress: string
+): Promise<number | undefined> {
+  try {
+    /// @dev Get pool data from graph endpoints.
+    const endpoint =
+      poolLocation === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
+    const query =
+      poolLocation === "uni" ? UNISWAP_PAIR_DATA : SUSHISWAP_PAIR_DATA;
+    // eslint-disable-next-line
+    const poolData: any = await request(endpoint, query, {
+      pairAddress: poolAddress,
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (poolData["pair"].token0.id === tokenAddress) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      return poolData["pair"].reserve0 / poolData["pair"].reserve1;
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      return poolData["pair"].reserve1 / poolData["pair"].reserve0;
+    }
+  } catch (e) {
+    console.error("error", e);
+    return undefined;
+  }
+}
+
+export async function getYamSynthsTVL(): Promise<unknown> {
+  const response = await axios.get(`https://api.yam.finance/tvl/degenerative`);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return response.data;
+}
+
+// // @todo Replace web3 with ether.js.
 
 // import Web3 from "web3";
 // import { ethers } from "ethers";
