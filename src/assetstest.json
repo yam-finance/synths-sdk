@@ -1,0 +1,22 @@
+{
+  "137": {
+    "2xdpi": [
+      {
+        "name": "October26",
+        "cycle": "10",
+        "year": "21",
+        "collateral": "WETH",
+        "contract": {
+          "address": "0x4707b810b75C2DF8Ffeb50f7f33Af617Fbf3d766"
+        },
+        "pool": {
+          "address": "",
+          "location": "sushiswap"
+        },
+        "expired": true,
+        "type": "lsp",
+        "version": "1"
+      }
+    ]
+  }
+}

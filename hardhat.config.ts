@@ -10,6 +10,7 @@ import "hardhat-gas-reporter";
 import "hardhat-deploy";
 import "hardhat-watcher";
 import "solidity-coverage";
+import "hardhat-docgen";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -73,6 +74,11 @@ const config: HardhatUserConfig = {
       files: ["./test/**/*"],
       verbose: true,
     },
+  },
+  docgen: {
+    path: "./docs/contracts",
+    clear: true,
+    runOnCompile: true,
   },
 };
 

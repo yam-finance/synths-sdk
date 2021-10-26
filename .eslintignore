@@ -52,3 +52,6 @@ src/types/*
 
 # Hardhat Cache
 cache/*
+
+# Documentation
+docs/*

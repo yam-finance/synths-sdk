@@ -2,6 +2,10 @@
 
 [![CI](https://github.com/yam-finance/synths-sdk/actions/workflows/main.yml/badge.svg)](https://github.com/yam-finance/synths-sdk/actions/workflows/main.yml)
 
+# Documentation
+- [SDK](https://yam-finance.github.io/synths-sdk/)
+- [Synth Contracts](https://yam-finance.github.io/synths-sdk/contracts/)
+
 # Using the Yam Uma Synths SDK
 
 ### **Official assets:** [File](https://github.com/yam-finance/synths-sdk/blob/master/src/assets.json) and [Raw file](https://raw.githubusercontent.com/yam-finance/synths-sdk/master/src/assets.json)
@@ -26,8 +30,8 @@ const synthsSDK = await Synths.create({
   ethersProvider: provider,
 });
 
-// Connect the sdk a synth
-const upunksAsset = synthsSDK.connectAsset("upunks-0921");
+// Connect the sdk to a synth
+const upunksAsset = await synthsSDK.connectAsset("upunks-0921");
 
 // Example method calls
 const gcr: any = await upunksAsset.getGCR();
