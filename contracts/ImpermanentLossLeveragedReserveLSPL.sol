@@ -24,13 +24,39 @@ contract ImpermanentLossLeveragedReserveLSPL is
     mapping(address => ImpermanentLossLeveragedReserveParameters)
         public longShortPairParameters;
 
+    /// `longShortPair` is not a valid LSP address.
+    /// @param longShortPair The address of the LSP contract.
+    error InvalidLSPAddress(address longShortPair);
+
+    /// `upperBound` has to be greater than zero.
+    /// @param upperBound The upper price that the LSP will operate within.
+    error InvalidBound(uint256 upperBound);
+
+    /// `pctLongCap` has to be less than 1 ether.
+    /// @param pctLongCap The cap on the percentage that can be allocated to the long token - enforced for improving MM on v2 AMMs for both L&S tokens.
+    error InvalidCap(uint256 pctLongCap);
+
+    /// `initialPrice` has to be greater than zero.
+    /// @param initialPrice The price of the asset at LSP deployment, used to calculate returns.
+    error InvalidInitialPrice(int256 initialPrice);
+
+    /// `leverageFactor` has to be greater than 0.
+    /// @param leverageFactor The amount of leverage you want to apply to the asset return.
+    error InvalidLeverage(uint256 leverageFactor);
+
+    /// @notice Parameters already set for calling LSP.
+    error ParametersSet();
+
+    /// @notice Parameters not set for calling LSP.
+    error ParametersNotSet();
+
     /**
      * @notice Enables any address to set the parameters for an associated financial product.
-     * @param longShortPair address of the LSP contract.
-     * @param upperBound the upper price that the LSP will operate within.
-     * @param pctLongCap the cap on the percentage that can be allocated to the long token - enforced for improving MM on v2 AMMs for both L&S tokens
-     * @param initialPrice the price of the asset at LSP deployment, used to calculate returns
-     * @param leverageFactor the amount of leverage you want to apply to the asset return
+     * @param longShortPair The address of the LSP contract.
+     * @param upperBound The upper price that the LSP will operate within.
+     * @param pctLongCap The cap on the percentage that can be allocated to the long token - enforced for improving MM on v2 AMMs for both L&S tokens.
+     * @param initialPrice The price of the asset at LSP deployment, used to calculate returns.
+     * @param leverageFactor The amount of leverage you want to apply to the asset return.
      * @dev Note:
      * a) Any address can set these parameters
      * b) existing LSP parameters for address not set.
@@ -46,18 +72,17 @@ contract ImpermanentLossLeveragedReserveLSPL is
         int256 initialPrice,
         uint256 leverageFactor
     ) public nonReentrant {
-        require(
-            ExpiringContractInterface(longShortPair).expirationTimestamp() != 0,
-            "Invalid LSP address"
-        );
-        require(upperBound > 0, "Invalid bound");
-        require(pctLongCap < 1 ether, "Invalid cap");
-        require(initialPrice > 0, "Invalid initial price");
-        require(leverageFactor > 0, "Invalid leverage");
+        if (ExpiringContractInterface(longShortPair).expirationTimestamp() == 0)
+            revert InvalidLSPAddress(longShortPair);
+        if (upperBound <= 0) revert InvalidBound(upperBound);
+        if (pctLongCap >= 1 ether) revert InvalidCap(pctLongCap);
+        if (initialPrice <= 0) revert InvalidInitialPrice(initialPrice);
+        if (leverageFactor <= 0) revert InvalidLeverage(leverageFactor);
 
         ImpermanentLossLeveragedReserveParameters
             memory params = longShortPairParameters[longShortPair];
-        require(params.upperBound == 0, "Parameters already set");
+
+        if (params.upperBound != 0) revert ParametersSet();
 
         longShortPairParameters[
             longShortPair
@@ -72,7 +97,7 @@ contract ImpermanentLossLeveragedReserveLSPL is
     /**
      * @notice Returns a number between 0 and 1e18 to indicate how much collateral each long and short token is entitled
      * to per collateralPerPair.
-     * @param expiryPrice price from the optimistic oracle for the LSP price identifier.
+     * @param expiryPrice The price from the optimistic oracle for the LSP price identifier.
      * @return expiryPercentLong to indicate how much collateral should be sent between long and short tokens.
      */
     function percentageLongCollateralAtExpiry(int256 expiryPrice)
@@ -84,7 +109,8 @@ contract ImpermanentLossLeveragedReserveLSPL is
     {
         ImpermanentLossLeveragedReserveParameters
             memory params = longShortPairParameters[msg.sender];
-        require(params.upperBound != 0, "Params not set for calling LSP");
+
+        if (params.upperBound == 0) revert ParametersNotSet();
         // Find price ratio -> denoted as 'p' in the IL approximation formula
         int256 priceRatio = (params.initialPrice * 1 ether) /
             (expiryPrice <= 0 ? int256(1) : expiryPrice);

@@ -1,4 +1,3 @@
 module.exports = {
-    skipFiles: ["YamExpiringMultiPartyMock.sol"],
+  skipFiles: ["YamExpiringMultiPartyMock.sol"],
 };
-
