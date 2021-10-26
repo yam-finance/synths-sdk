@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { request } from "graphql-request";
 import axios from "axios";
-import { Erc20 } from "types/abi";
+import { Erc20 } from "../types/abi";
 import ERC20Abi from "../abi/erc20.json";
 import {
   UNISWAP_ENDPOINT,
@@ -44,8 +44,8 @@ export async function getTokenDecimals(
  */
 export async function getCurrentDexTokenPrice(
   poolLocation: string,
-  tokenAddress: string,
-  poolAddress: string
+  poolAddress: string,
+  tokenAddress: string
 ): Promise<number | undefined> {
   try {
     /// @dev Get pool data from graph endpoints.
@@ -66,18 +66,18 @@ export async function getCurrentDexTokenPrice(
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       return poolData["pair"].reserve1 / poolData["pair"].reserve0;
     }
-
-    console.log("Pool data", poolData);
   } catch (e) {
     console.error("error", e);
     return undefined;
   }
 }
 
-export async function getYamSynthsTVL(): Promise<unknown> {
+export async function getYamSynthsTotalTVLData(): Promise<string> {
   const response = await axios.get(`https://api.yam.finance/tvl/degenerative`);
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return response.data;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const tvl: string = response.data["total"];
+
+  return tvl;
 }
 
 // // @todo Replace web3 with ether.js.

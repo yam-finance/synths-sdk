@@ -1,7 +1,12 @@
 import Synths from "./lib/Synths";
-import "./utils/helpers";
+import {
+  getTokenDecimals,
+  getCurrentDexTokenPrice,
+  getYamSynthsTotalTVLData,
+} from "./utils/helpers";
 
 export default Synths;
+export { getTokenDecimals, getCurrentDexTokenPrice, getYamSynthsTotalTVLData };
 
 // import Web3 from "web3";
 // import { Contracts } from "./protocol/Contracts";

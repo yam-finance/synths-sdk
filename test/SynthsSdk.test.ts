@@ -1,9 +1,10 @@
 import { ethers } from "hardhat";
 import { BigNumber } from "ethers";
 import { expect } from "chai";
-import Synths from "../src/index";
+import Synths, { getYamSynthsTotalTVLData } from "../src/index";
 import { SynthsAssetsConfig } from "../src/types/assets.t";
 import Asset from "../src/lib/Asset";
+import sushiData from "@sushiswap/sushi-data"; // es modules
 
 describe("Synths SDKs", function () {
   let provider: typeof ethers.provider;
@@ -51,7 +52,16 @@ describe("Synths SDKs", function () {
 
     // @todo Add tests.
     describe("Interact with asset", function () {
+      it("helpers - success", async function () {
+        const tvlData: string = await getYamSynthsTotalTVLData();
+        const chartsData = await sushiData.charts.tokenDaily({
+          token_address: "0x86140A763077155964754968B6F6e243fE809cBe",
+        });
+        console.log(chartsData);
+        console.log(tvlData);
+      });
       it("getEmpState - success", async function () {
+        this.timeout(100000);
         const empState = await upunksAsset.getEmpState();
         expect(empState).to.deep.include({
           collateralCurrency: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
@@ -71,10 +81,10 @@ describe("Synths SDKs", function () {
           "0x86140A763077155964754968B6F6e243fE809cBe": BigNumber.from(0),
         });
       });
-      // it("getGCR - success", async function () {
-      //   const gcr = await upunksAsset.getGCR();
-      //   expect(parseFloat(gcr ?? "0")).to.be.greaterThan(1.05);
-      // });
+      it("getGCR - success", async function () {
+        const gcr = await upunksAsset.getGCR();
+        // expect(parseFloat(gcr ?? "0")).to.be.greaterThan(1.05);
+      });
     });
   });
 });
