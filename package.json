@@ -22,7 +22,7 @@
     "cover:sol": "hardhat coverage",
     "lint": "eslint --fix .",
     "lint:report": "eslint --ext .ts --output-file eslint_report.json --format json .",
-    "deploy": "hardhat deploy"
+    "deploy": "hardhat deploy",
     "docgen": "yarn build && typedoc && hardhat docgen"
   },
   "keywords": [
