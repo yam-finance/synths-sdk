@@ -7,6 +7,7 @@ import type { Deployment } from "hardhat-deploy/dist/types";
 const toEther = utils.parseEther;
 const formatEther = utils.formatEther;
 type Awaited<T> = T extends PromiseLike<infer U> ? Awaited<U> : T;
+const BigNumberMaxUINT = (bytes = 256) => BigNumber.from(2).pow(bytes).sub(1);
 
 enum DefiToolLibs {
   LeveragedReserveLSPL = "LeveragedReserveLSPL",
@@ -215,6 +216,7 @@ const testFixture: {
         { price: toEther("50"), result: toEther(".50") },
         { price: toEther("100"), result: toEther(".90") },
         { price: toEther("10"), result: toEther(".10") },
+        { price: BigNumberMaxUINT(255), result: toEther(".90") },
       ],
     },
   ],
@@ -250,6 +252,7 @@ const testFixture: {
         { price: toEther("50"), result: toEther(".50") },
         { price: toEther("100"), result: toEther(".90") },
         { price: toEther("10"), result: toEther(".10") },
+        { price: BigNumberMaxUINT(255), result: toEther(".90") },
       ],
     },
   ],
@@ -285,6 +288,7 @@ const testFixture: {
         { price: toEther("4000"), result: toEther("0.5") },
         { price: toEther("3500"), result: toEther("0.522246968602822980") },
         { price: toEther("-1"), result: toEther(".9") },
+        { price: BigNumberMaxUINT(255), result: toEther(".90") },
       ],
     },
   ],
