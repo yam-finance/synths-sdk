@@ -110,17 +110,18 @@ contract LeveragedReserveLSPL is
         LeveragedReserveLongShortPairParameters
             memory params = longShortPairParameters[msg.sender];
         if (params.upperBound == 0) revert ParametersNotSet();
-        if(expiryPrice <= 0) return (1 ether - params.pctLongCap);
-        if(expiryPrice >= int184(params.upperBound)) return params.pctLongCap;
+        if (expiryPrice <= 0) return (1 ether - params.pctLongCap);
+        if (expiryPrice >= int184(params.upperBound)) return params.pctLongCap;
 
         int256 unScaledReturnFactor = ((expiryPrice) * 1 ether) /
-            int256(int184(params.initialPrice)) - 1 ether;
+            int256(int184(params.initialPrice)) -
+            1 ether;
 
         int256 scaledReturnFactor = (unScaledReturnFactor *
             int256(int72(params.leverageFactor))) / 1 ether;
 
-        int256 scaledReturn = (int256((int184(params.upperBound) * 1 ether)) / 2 ether *
-            (scaledReturnFactor + 1 ether)) / 1 ether;
+        int256 scaledReturn = ((int256((int184(params.upperBound) * 1 ether)) /
+            2 ether) * (scaledReturnFactor + 1 ether)) / 1 ether;
 
         uint256 scaledPrice = scaledReturn < 0 ? 0 : uint256(scaledReturn);
 
