@@ -2,11 +2,19 @@ import Synths from "./lib/Synths";
 import {
   getTokenDecimals,
   getCurrentDexTokenPrice,
-  getYamSynthsTotalTVLData,
+  getYamSynthsTotalTVL,
+  getSynthData,
+  getSynthChartData,
 } from "./utils/helpers";
 
 export default Synths;
-export { getTokenDecimals, getCurrentDexTokenPrice, getYamSynthsTotalTVLData };
+export {
+  getTokenDecimals,
+  getCurrentDexTokenPrice,
+  getYamSynthsTotalTVL,
+  getSynthData,
+  getSynthChartData,
+};
 
 // import Web3 from "web3";
 // import { Contracts } from "./protocol/Contracts";

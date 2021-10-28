@@ -1,10 +1,13 @@
 import { ethers } from "hardhat";
 import { BigNumber } from "ethers";
 import { expect } from "chai";
-import Synths, { getYamSynthsTotalTVLData } from "../src/index";
+import Synths, {
+  getYamSynthsTotalTVL,
+  getSynthData,
+  getSynthChartData,
+} from "../src/index";
 import { SynthsAssetsConfig } from "../src/types/assets.t";
 import Asset from "../src/lib/Asset";
-import sushiData from "@sushiswap/sushi-data"; // es modules
 
 describe("Synths SDKs", function () {
   let provider: typeof ethers.provider;
@@ -53,12 +56,20 @@ describe("Synths SDKs", function () {
     // @todo Add tests.
     describe("Interact with asset", function () {
       it("helpers - success", async function () {
-        const tvlData: string = await getYamSynthsTotalTVLData();
-        const chartsData = await sushiData.charts.tokenDaily({
-          token_address: "0x86140A763077155964754968B6F6e243fE809cBe",
-        });
-        console.log(chartsData);
-        console.log(tvlData);
+        this.timeout(100000);
+        console.log(await getYamSynthsTotalTVL());
+
+        console.log(
+          await getSynthData(
+            "upunks-0921",
+            "0x86140A763077155964754968B6F6e243fE809cBe"
+          )
+        );
+
+        const monthAgoTimestamp = Math.floor(Date.now() / 1000) - 2629743;
+        console.log(
+          await getSynthChartData("0x86140A763077155964754968B6F6e243fE809cBe")
+        );
       });
       it("getEmpState - success", async function () {
         this.timeout(100000);

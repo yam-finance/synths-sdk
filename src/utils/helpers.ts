@@ -1,13 +1,13 @@
 import { ethers } from "ethers";
 import { request } from "graphql-request";
 import axios from "axios";
+import sushiData from "@sushiswap/sushi-data";
 import { Erc20 } from "../types/abi";
 import ERC20Abi from "../abi/erc20.json";
 import {
   UNISWAP_ENDPOINT,
   SUSHISWAP_ENDPOINT,
-  UNISWAP_PAIR_DATA,
-  SUSHISWAP_PAIR_DATA,
+  UNI_SUSHI_PAIR_DATA,
 } from "./queries";
 
 /**
@@ -51,8 +51,7 @@ export async function getCurrentDexTokenPrice(
     /// @dev Get pool data from graph endpoints.
     const endpoint =
       poolLocation === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
-    const query =
-      poolLocation === "uni" ? UNISWAP_PAIR_DATA : SUSHISWAP_PAIR_DATA;
+    const query = UNI_SUSHI_PAIR_DATA;
     // eslint-disable-next-line
     const poolData: any = await request(endpoint, query, {
       pairAddress: poolAddress,
@@ -72,12 +71,48 @@ export async function getCurrentDexTokenPrice(
   }
 }
 
-export async function getYamSynthsTotalTVLData(): Promise<string> {
+export async function getSynthData(
+  synthId: string,
+  tokenAddress: string
+): Promise<any | undefined> {
+  try {
+    const tokenData = await sushiData.exchange.token24h({
+      token_address: tokenAddress,
+    });
+
+    const response = await axios.get(
+      `https://data.yam.finance/degenerative/apr/${synthId}`
+    );
+    const apr: string = response.data["aprMultiplier"];
+
+    return {
+      apr: apr,
+      price: tokenData.priceUSD,
+      priceChanged24h: tokenData.priceUSDChange,
+      liquidity24h: tokenData.liquidityUSD,
+      volume24h: tokenData.volumeUSDOneDay,
+    };
+  } catch (e) {
+    console.error("error", e);
+    return undefined;
+  }
+}
+
+export async function getYamSynthsTotalTVL(): Promise<string> {
   const response = await axios.get(`https://api.yam.finance/tvl/degenerative`);
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const tvl: string = response.data["total"];
 
   return tvl;
+}
+
+export async function getSynthChartData(
+  tokenAddress: string
+): Promise<any | undefined> {
+  const tokenData = await sushiData.charts.tokenDaily({
+    token_address: tokenAddress,
+  });
+  return tokenData;
 }
 
 // // @todo Replace web3 with ether.js.
