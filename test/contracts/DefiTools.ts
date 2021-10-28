@@ -358,6 +358,15 @@ const testParamsNotSet = async (config: LSPLConfiguration) => {
     .be.reverted;
 };
 
+const testInvalidTimestampLSP = async (config: LSPLConfiguration) => {
+  const fixture = await createDefiToolsFixture();
+  const tx = await fixture.deployer.mockContract.setCurrentTime(0);
+  await tx.wait();
+  await expect(
+    setParams(config.library, config.validParameters)
+  ).to.be.revertedWith("reverted with custom error 'InvalidLSPAddress()'");
+};
+
 const runDefaultTests = (config: LSPLConfiguration) => {
   const parameters = config.validParameters;
   describe(`
@@ -380,6 +389,9 @@ const runDefaultTests = (config: LSPLConfiguration) => {
     });
     it("should revert on an invalid lsp address", async () => {
       await testInvalidLSPAddress(config);
+    });
+    it.skip("should revert on an lsp with no timestamp", async () => {
+      await testInvalidTimestampLSP(config);
     });
     it("should revert when params have already been set", async () => {
       await testDoubleSetParams(config);
