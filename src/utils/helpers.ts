@@ -71,6 +71,12 @@ export async function getCurrentDexTokenPrice(
   }
 }
 
+/**
+ * @notice Helper function to get relevant synth market data.
+ * @param synthId The synth identifier.
+ * @param tokenAddress The token address of the synth.
+ * @returns `undefined` or an object with the relevant data.
+ */
 export async function getSynthData(
   synthId: string,
   tokenAddress: string
@@ -83,10 +89,10 @@ export async function getSynthData(
     const response = await axios.get(
       `https://data.yam.finance/degenerative/apr/${synthId}`
     );
-    const apr: string = response.data["aprMultiplier"];
 
     return {
-      apr: apr,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      apr: response.data["aprMultiplier"] as string,
       price: tokenData.priceUSD,
       priceChanged24h: tokenData.priceUSDChange,
       liquidity24h: tokenData.liquidityUSD,
@@ -98,14 +104,21 @@ export async function getSynthData(
   }
 }
 
+/**
+ * @notice Helper function to get the YAM Synths total TVL.
+ * @returns The total tvl of all yam synths.
+ */
 export async function getYamSynthsTotalTVL(): Promise<string> {
   const response = await axios.get(`https://api.yam.finance/tvl/degenerative`);
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const tvl: string = response.data["total"];
-
-  return tvl;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  return response.data["total"] as string;
 }
 
+/**
+ * @notice Helper function to get market chart data.
+ * @param tokenAddress Address of the Synth.
+ * @returns An array of synth market data.
+ */
 export async function getSynthChartData(
   tokenAddress: string
 ): Promise<any | undefined> {

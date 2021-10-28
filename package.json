@@ -38,6 +38,7 @@
     "@openzeppelin/contracts": "^4.2.0",
     "@sushiswap/sushi-data": "^1.0.26",
     "@uma/core": "^2.10.0",
+    "axios": "^0.24.0",
     "dotenv": "^10.0.0",
     "ethers": "^5.4.2",
     "graphql": "^15.5.0",
