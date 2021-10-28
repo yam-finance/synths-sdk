@@ -15,10 +15,10 @@ contract LeveragedReserveLSPL is
     Lockable
 {
     struct LeveragedReserveLongShortPairParameters {
-        uint256 upperBound;
-        uint256 pctLongCap;
-        int256 initialPrice;
-        uint256 leverageFactor;
+        uint184 upperBound;
+        uint72 pctLongCap;
+        uint184 initialPrice;
+        uint72 leverageFactor;
     }
 
     mapping(address => LeveragedReserveLongShortPairParameters)
@@ -30,19 +30,19 @@ contract LeveragedReserveLSPL is
 
     /// `upperBound` has to be greater than zero.
     /// @param upperBound The upper price that the LSP will operate within.
-    error InvalidBound(uint256 upperBound);
+    error InvalidBound(uint184 upperBound);
 
     /// `pctLongCap` has to be less than 1 ether.
     /// @param pctLongCap The cap on the percentage that can be allocated to the long token - enforced for improving MM on v2 AMMs for both L&S tokens.
-    error InvalidCap(uint256 pctLongCap);
+    error InvalidCap(uint72 pctLongCap);
 
     /// `initialPrice` has to be greater than zero.
     /// @param initialPrice The price of the asset at LSP deployment, used to calculate returns.
-    error InvalidInitialPrice(int256 initialPrice);
+    error InvalidInitialPrice(uint184 initialPrice);
 
     /// `leverageFactor` has to be greater than 0.
     /// @param leverageFactor The amount of leverage you want to apply to the asset return.
-    error InvalidLeverage(uint256 leverageFactor);
+    error InvalidLeverage(uint72 leverageFactor);
 
     /// @notice Parameters already set for calling LSP.
     error ParametersSet();
@@ -67,17 +67,17 @@ contract LeveragedReserveLSPL is
      */
     function setLongShortPairParameters(
         address longShortPair,
-        uint256 upperBound,
-        uint256 pctLongCap,
-        int256 initialPrice,
-        uint256 leverageFactor
+        uint184 upperBound,
+        uint72 pctLongCap,
+        uint184 initialPrice,
+        uint72 leverageFactor
     ) public nonReentrant {
         if (ExpiringContractInterface(longShortPair).expirationTimestamp() == 0)
             revert InvalidLSPAddress(longShortPair);
-        if (upperBound <= 0) revert InvalidBound(upperBound);
+        if (upperBound == 0) revert InvalidBound(upperBound);
         if (pctLongCap >= 1 ether) revert InvalidCap(pctLongCap);
-        if (initialPrice <= 0) revert InvalidInitialPrice(initialPrice);
-        if (leverageFactor <= 0) revert InvalidLeverage(leverageFactor);
+        if (initialPrice == 0) revert InvalidInitialPrice(initialPrice);
+        if (leverageFactor == 0) revert InvalidLeverage(leverageFactor);
 
         LeveragedReserveLongShortPairParameters
             memory params = longShortPairParameters[longShortPair];
@@ -110,24 +110,27 @@ contract LeveragedReserveLSPL is
         LeveragedReserveLongShortPairParameters
             memory params = longShortPairParameters[msg.sender];
         if (params.upperBound == 0) revert ParametersNotSet();
-        int256 unScaledReturnFactor = ((expiryPrice * 1 ether) /
-            params.initialPrice) - 1 ether;
+        if(expiryPrice <= 0) return (1 ether - params.pctLongCap);
+        if(expiryPrice >= int184(params.upperBound)) return params.pctLongCap;
+
+        int256 unScaledReturnFactor = ((expiryPrice) * 1 ether) /
+            int256(int184(params.initialPrice)) - 1 ether;
 
         int256 scaledReturnFactor = (unScaledReturnFactor *
-            int256(params.leverageFactor)) / 1 ether;
+            int256(int72(params.leverageFactor))) / 1 ether;
 
-        int256 scaledReturn = (int256((params.upperBound * 1 ether) / 2 ether) *
+        int256 scaledReturn = (int256((int184(params.upperBound) * 1 ether)) / 2 ether *
             (scaledReturnFactor + 1 ether)) / 1 ether;
 
-        uint256 positivePrice = scaledReturn < 0 ? 0 : uint256(scaledReturn);
+        uint256 scaledPrice = scaledReturn < 0 ? 0 : uint256(scaledReturn);
 
-        if (positivePrice >= (params.upperBound * params.pctLongCap) / 1 ether)
+        if (scaledPrice >= (params.upperBound * params.pctLongCap) / 1 ether)
             return params.pctLongCap;
         if (
-            positivePrice <=
+            scaledPrice <=
             (params.upperBound * (1 ether - params.pctLongCap)) / 1 ether
         ) return (1 ether - params.pctLongCap);
 
-        return (positivePrice * 1 ether) / params.upperBound;
+        return (scaledPrice * 1 ether) / params.upperBound;
     }
 }
