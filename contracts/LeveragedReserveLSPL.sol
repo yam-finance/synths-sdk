@@ -10,10 +10,7 @@ import "@uma/core/contracts/common/implementation/Lockable.sol";
  * Also includes a capped percentage payable to the long (& short) token to
  * make market making both the long and short tokens easier in a v2 style AMM.
  */
-contract LeveragedReserveLSPL is
-    LongShortPairFinancialProductLibrary,
-    Lockable
-{
+contract LeveragedReserveLSPL is LongShortPairFinancialProductLibrary, Lockable {
     struct LeveragedReserveLongShortPairParameters {
         uint184 upperBound;
         uint72 pctLongCap;
@@ -21,8 +18,7 @@ contract LeveragedReserveLSPL is
         uint72 leverageFactor;
     }
 
-    mapping(address => LeveragedReserveLongShortPairParameters)
-        public longShortPairParameters;
+    mapping(address => LeveragedReserveLongShortPairParameters) public longShortPairParameters;
 
     /// `longShortPair` is not a valid LSP address.
     /// @param longShortPair The address of the LSP contract.
@@ -58,13 +54,13 @@ contract LeveragedReserveLSPL is
      * @param initialPrice The price of the asset at LSP deployment, used to calculate returns.
      * @param leverageFactor The amount of leverage you want to apply to the asset return.
      * @dev Note:
-     *  - Any address can set these parameters
-     *  - For safety, parameters should be set before depositing any synthetic tokens in a liquidity pool.
-     *  - The parameters are set for the LSP contract address
-     *  - parameters can only be set once to prevent the deployer from changing the parameters after the fact.
-     *  - upperBound can't be zero.
-     *  - lowerBound (or effective lowerBound) can't be zero because pctLongCap can't be zero.
-     *  - longShortPair must expose an expirationTimestamp method to validate it is correctly deployed.
+     *  a) Any address can set these parameters
+     *  b) For safety, parameters should be set before depositing any synthetic tokens in a liquidity pool.
+     *  c) The parameters are set for the LSP contract address
+     *  d) Parameters can only be set once to prevent the deployer from changing the parameters after the fact.
+     *  e) upperBound can't be zero.
+     *  f) pctLongCap can't be greater than or equal to 1 ether (100%).
+     *  g) longShortPair must expose an expirationTimestamp method to validate it is correctly deployed.
      */
     function setLongShortPairParameters(
         address longShortPair,
@@ -80,14 +76,11 @@ contract LeveragedReserveLSPL is
         if (initialPrice == 0) revert InvalidInitialPrice(initialPrice);
         if (leverageFactor == 0) revert InvalidLeverage(leverageFactor);
 
-        LeveragedReserveLongShortPairParameters
-            memory params = longShortPairParameters[longShortPair];
+        LeveragedReserveLongShortPairParameters memory params = longShortPairParameters[longShortPair];
 
         if (params.upperBound != 0) revert ParametersSet();
 
-        longShortPairParameters[
-            longShortPair
-        ] = LeveragedReserveLongShortPairParameters({
+        longShortPairParameters[longShortPair] = LeveragedReserveLongShortPairParameters({
             upperBound: upperBound,
             pctLongCap: pctLongCap,
             initialPrice: initialPrice,
@@ -108,31 +101,23 @@ contract LeveragedReserveLSPL is
         nonReentrantView
         returns (uint256)
     {
-        LeveragedReserveLongShortPairParameters
-            memory params = longShortPairParameters[msg.sender];
+        LeveragedReserveLongShortPairParameters memory params = longShortPairParameters[msg.sender];
         if (params.upperBound == 0) revert ParametersNotSet();
         if (expiryPrice <= 0) return (1 ether - params.pctLongCap);
         if (expiryPrice >= int184(params.upperBound)) return params.pctLongCap;
 
-        int256 unScaledReturnFactor = ((expiryPrice) * 1 ether) /
-            int256(int184(params.initialPrice)) -
-            1 ether;
-        int256 scaledReturnFactor = (unScaledReturnFactor *
-            int256(int72(params.leverageFactor))) / 1 ether;
+        int256 unScaledReturnFactor = ((expiryPrice) * 1 ether) / int256(int184(params.initialPrice)) - 1 ether;
+        int256 scaledReturnFactor = (unScaledReturnFactor * int256(int72(params.leverageFactor))) / 1 ether;
 
         // scaledPrice = (upperBound * 1 ether / 2 ether) * (returnFactor + 1 ether) / 1 ether)
         uint256 scaledPrice = uint256(
-            ((int256((int184(params.upperBound) * 1 ether)) / 2 ether) *
-                (scaledReturnFactor + 1 ether)) / 1 ether
+            ((int256((int184(params.upperBound) * 1 ether)) / 2 ether) * (scaledReturnFactor + 1 ether)) / 1 ether
         );
 
-        uint256 effectiveUpperBound = (params.upperBound * params.pctLongCap) /
-            1 ether;
-        uint256 effectiveLowerBound = (params.upperBound *
-            (1 ether - params.pctLongCap)) / 1 ether;
+        uint256 effectiveUpperBound = (params.upperBound * params.pctLongCap) / 1 ether;
+        uint256 effectiveLowerBound = (params.upperBound * (1 ether - params.pctLongCap)) / 1 ether;
         if (scaledPrice >= effectiveUpperBound) return params.pctLongCap;
-        if (scaledPrice <= effectiveLowerBound)
-            return (1 ether - params.pctLongCap);
+        if (scaledPrice <= effectiveLowerBound) return (1 ether - params.pctLongCap);
         return (scaledPrice * 1 ether) / params.upperBound;
     }
 }

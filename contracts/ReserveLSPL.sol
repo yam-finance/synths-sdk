@@ -15,8 +15,7 @@ contract ReserveLSPL is LongShortPairFinancialProductLibrary, Lockable {
         uint256 pctLongCap;
     }
 
-    mapping(address => ReserveLinearLongShortPairParameters)
-        public longShortPairParameters;
+    mapping(address => ReserveLinearLongShortPairParameters) public longShortPairParameters;
 
     /// `longShortPair` is not a valid LSP address.
     /// @param longShortPair The address of the LSP contract.
@@ -60,14 +59,11 @@ contract ReserveLSPL is LongShortPairFinancialProductLibrary, Lockable {
         if (upperBound <= 0) revert InvalidBound(upperBound);
         if (pctLongCap >= 1 ether) revert InvalidCap(pctLongCap);
 
-        ReserveLinearLongShortPairParameters
-            memory params = longShortPairParameters[longShortPair];
+        ReserveLinearLongShortPairParameters memory params = longShortPairParameters[longShortPair];
 
         if (params.upperBound != 0) revert ParametersSet();
 
-        longShortPairParameters[
-            longShortPair
-        ] = ReserveLinearLongShortPairParameters({
+        longShortPairParameters[longShortPair] = ReserveLinearLongShortPairParameters({
             upperBound: upperBound,
             pctLongCap: pctLongCap
         });
@@ -86,16 +82,12 @@ contract ReserveLSPL is LongShortPairFinancialProductLibrary, Lockable {
         nonReentrantView
         returns (uint256)
     {
-        ReserveLinearLongShortPairParameters
-            memory params = longShortPairParameters[msg.sender];
+        ReserveLinearLongShortPairParameters memory params = longShortPairParameters[msg.sender];
         if (params.upperBound == 0) revert ParametersNotSet();
         uint256 positivePrice = expiryPrice < 0 ? 0 : uint256(expiryPrice);
-        uint256 effectiveUpperBound = (params.upperBound * params.pctLongCap) /
-            1 ether;
-        uint256 effectiveLowerBound = (params.upperBound *
-            (1 ether - params.pctLongCap)) / 1 ether;
-        if (positivePrice <= effectiveLowerBound)
-            return (1 ether - params.pctLongCap);
+        uint256 effectiveUpperBound = (params.upperBound * params.pctLongCap) / 1 ether;
+        uint256 effectiveLowerBound = (params.upperBound * (1 ether - params.pctLongCap)) / 1 ether;
+        if (positivePrice <= effectiveLowerBound) return (1 ether - params.pctLongCap);
         if (positivePrice >= effectiveUpperBound) return params.pctLongCap;
         return (positivePrice * 1 ether) / params.upperBound;
     }
