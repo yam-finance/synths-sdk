@@ -42,15 +42,24 @@ export interface PoolConfig {
   /** location - Location of the pool contract */
   location: string;
 }
-
-export interface EmpConfig {
-  /** address - Address of the emp contract */
+// @notice Financial Contract Configuration
+export interface FinancialContractConfigBase {
+  /** address - Address of the Financial contract */
   address: string;
+}
+
+export interface FinancialContractConfigEMP extends FinancialContractConfigBase {
   /** new - Identifier to distinguish between the new and the old emp contracts */
   new: boolean;
   /** type - Identifier to clarify the emp contract type */
   type?: string;
 }
+
+export interface FinancialContractConfigLSP extends FinancialContractConfigBase {
+  //** library - Financial Product Library's Address for LSP */
+  library: string;
+}
+
 
 export interface TokenConfig {
   /** address - Address of the token contract */
@@ -60,19 +69,38 @@ export interface TokenConfig {
 }
 
 /** AssetConfig - Asset specifications */
-export interface AssetConfig {
+export interface AssetConfigBase {
   name: string;
   cycle: string;
   year: string;
   collateral: string;
   token: TokenConfig;
-  emp: EmpConfig;
+
+
+}
+export interface AssetConfigEMP extends AssetConfigBase {
+  /** ExpiringMultipartyContract config options */
+  emp: FinancialContractConfigEMP;
+  /** Expiration status */
+  expired: boolean;
+  /** Incentivized Pool */
   pool: PoolConfig;
-  expired: boolean; // Force expiration of the asset
 }
 
+export interface AssetConfigLSP extends AssetConfigBase {
+  /** address - Address of the LSP contract */
+  lsp: FinancialContractConfigLSP;
+  pools: PoolConfig[];
+  pool: never;
+}
+export interface FPLConfig{
+  /** address - Address of the FPL contract */
+  address: string;
+  type: string;
+}
+export type AssetConfig = AssetConfigEMP | AssetConfigLSP;
 export interface AssetsConfig {
-  /** assetType - Object of all official asset contracts of a type in a network */
+  /** assetType - Object of all official Asset contracts of a type in a network */
   [assetType: string]: AssetConfig[];
 }
 
@@ -85,4 +113,26 @@ export interface SynthsAssetsConfig {
 export interface InitOptions {
   ethersProvider: any;
   userAssetsConfig: SynthsAssetsConfig;
+}
+
+export const isAssetConfigEMP = (assetConfig: AssetConfig): assetConfig is AssetConfigEMP => {
+  return (assetConfig as AssetConfigEMP).emp !== undefined;
+}
+
+export const isAssetConfigLSP = (assetConfig: AssetConfig): assetConfig is AssetConfigLSP => {
+  return (assetConfig as AssetConfigLSP).lsp !== undefined;
+}
+
+export const assertAssetConfigEMP = (assetConfig: AssetConfig): AssetConfigEMP => {
+  if (!isAssetConfigEMP(assetConfig)) {
+    throw new Error(`AssetConfig is not an AssetConfigEMP`);
+  }
+  return assetConfig as AssetConfigEMP;
+}
+
+export const assertAssetConfigLSP = (assetConfig: AssetConfig): AssetConfigLSP => {
+  if (!isAssetConfigLSP(assetConfig)) {
+    throw new Error(`AssetConfig is not an AssetConfigLSP`);
+  }
+  return assetConfig as AssetConfigLSP;
 }

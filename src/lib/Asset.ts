@@ -1,21 +1,27 @@
-import { ethers, BigNumber } from "ethers";
+import { BigNumber, ethers } from "ethers";
+import {
+  ERC20Ethers__factory,
+  ExpiringMultiPartyEthers,
+  ExpiringMultiPartyEthers__factory,
+  LongShortPairEthers,
+  LongShortPairEthers__factory,
+} from "@uma/contracts-node";
 import { request } from "graphql-request";
 import {
+  assertAssetConfigEMP,
   AssetClassConfig,
-  EmpState,
-  AssetsConfig,
   AssetConfig,
+  AssetsConfig,
+  EmpState,
+  isAssetConfigEMP,
+  isAssetConfigLSP,
 } from "../types/assets.t";
-import { Emp as ExpiringMultiParty } from "../types/abi";
-import { Erc20 } from "types/abi";
-import EmpAbi from "../abi/emp.json";
-import ERC20Abi from "../abi/erc20.json";
-import { WETH, USDC } from "./config/contracts";
+import { USDC, WETH } from "./config/contracts";
 import {
-  UNISWAP_ENDPOINT,
   SUSHISWAP_ENDPOINT,
-  UNISWAP_PAIR_DATA,
   SUSHISWAP_PAIR_DATA,
+  UNISWAP_ENDPOINT,
+  UNISWAP_PAIR_DATA,
 } from "../utils/queries";
 
 class Asset {
@@ -23,7 +29,7 @@ class Asset {
   #signer!: ethers.Signer;
   #assets!: AssetsConfig;
   #config!: AssetConfig;
-  #contract!: ExpiringMultiParty;
+  #contract!: ExpiringMultiPartyEthers | LongShortPairEthers;
 
   /**
    * Connects an instance of the Asset.
@@ -53,6 +59,8 @@ class Asset {
    */
   async getEmpState(): Promise<EmpState | undefined> {
     try {
+      assertAssetConfigEMP(this.#config);
+      this.#contract = this.#contract as ExpiringMultiPartyEthers;
       /// @dev Because of an overload error, we split the calls into separate promises
 
       const result1 = await Promise.all([
@@ -118,6 +126,8 @@ class Asset {
   async getPosition() {
     try {
       const address = await this.#signer.getAddress();
+      assertAssetConfigEMP(this.#config);
+      this.#contract = this.#contract as ExpiringMultiPartyEthers;
       return this.#contract.positions(address);
     } catch (e) {
       console.error("error", e);
@@ -174,13 +184,6 @@ class Asset {
 
       for (const assetCycles in this.#assets) {
         for (const asset of this.#assets[assetCycles]) {
-          /// @dev Not used at the moment
-          // const customEmp = new ethers.Contract(
-          //   asset.emp.address,
-          //   EmpAbi,
-          //   this.#ethersProvider
-          // ) as ExpiringMultiParty;
-
           const position = await this.getPosition();
           positions[asset.token.address] =
             position?.tokensOutstanding["rawValue"];
@@ -204,7 +207,7 @@ class Asset {
       let gcr: string;
       const empState = await this.getEmpState();
 
-      if (empState != undefined) {
+      if (empState != undefined && isAssetConfigEMP(this.#config)) {
         const tokenDecimals = await this.getERC20Decimals(
           this.#config.token.address,
           this.#ethersProvider
@@ -278,14 +281,8 @@ class Asset {
     ethersProvider: ethers.providers.Web3Provider
   ): Promise<number | undefined> {
     try {
-      const contract = new ethers.Contract(
-        address,
-        ERC20Abi,
-        ethersProvider
-      ) as Erc20;
-      const decimals: number = await contract.decimals();
-
-      return decimals;
+      const token = ERC20Ethers__factory.connect(address, ethersProvider);
+      return await token.decimals();
     } catch (e) {
       console.error("error", e);
       return undefined;
@@ -313,12 +310,21 @@ class Asset {
     // @todo Check EmpAbi error
     for (const assetCycle of assets[assetIdentifierSplit[0]]) {
       if (assetCycle.cycle + assetCycle.year == assetIdentifierSplit[1]) {
-        this.#config = assetCycle;
-        this.#contract = new ethers.Contract(
-          assetCycle.emp.address,
-          EmpAbi,
-          this.#ethersProvider
-        ) as ExpiringMultiParty;
+        if (isAssetConfigEMP(assetCycle)) {
+          this.#config = assetCycle;
+          this.#contract = ExpiringMultiPartyEthers__factory.connect(
+            this.#config.emp.address,
+            this.#ethersProvider
+          );
+          break;
+        } else if (isAssetConfigLSP(assetCycle)) {
+          this.#config = assetCycle;
+          this.#contract = LongShortPairEthers__factory.connect(
+            this.#config.lsp.address,
+            this.#ethersProvider
+          );
+          break;
+        }
         break;
       }
     }

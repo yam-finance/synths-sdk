@@ -13,8 +13,7 @@
   ],
   "license": "MIT",
   "scripts": {
-    "build": "yarn build:abi && hardhat compile --force && tsc",
-    "build:abi": "typechain --target=ethers-v5 src/abi/*.json --out-dir src/types/abi",
+    "build": "hardhat compile --force && tsc",
     "test": "hardhat test",
     "test:w": "hardhat watch test",
     "format": "prettier --write .",
