@@ -9,10 +9,7 @@ import "prb-math/contracts/PRBMathSD59x18.sol";
  * @title Leveraged IL Long Short Pair Financial Product Library.
  * @notice Adds settlement logic to create leveraged IL payouts for LSP
  */
-contract ImpermanentLossLeveragedReserveLSPL is
-    LongShortPairFinancialProductLibrary,
-    Lockable
-{
+contract ImpermanentLossLeveragedReserveLSPL is LongShortPairFinancialProductLibrary, Lockable {
     using PRBMathSD59x18 for int256;
     struct ImpermanentLossLeveragedReserveParameters {
         uint256 upperBound;
@@ -21,8 +18,7 @@ contract ImpermanentLossLeveragedReserveLSPL is
         uint256 leverageFactor;
     }
 
-    mapping(address => ImpermanentLossLeveragedReserveParameters)
-        public longShortPairParameters;
+    mapping(address => ImpermanentLossLeveragedReserveParameters) public longShortPairParameters;
 
     /// `longShortPair` is not a valid LSP address.
     /// @param longShortPair The address of the LSP contract.
@@ -79,14 +75,11 @@ contract ImpermanentLossLeveragedReserveLSPL is
         if (initialPrice <= 0) revert InvalidInitialPrice(initialPrice);
         if (leverageFactor <= 0) revert InvalidLeverage(leverageFactor);
 
-        ImpermanentLossLeveragedReserveParameters
-            memory params = longShortPairParameters[longShortPair];
+        ImpermanentLossLeveragedReserveParameters memory params = longShortPairParameters[longShortPair];
 
         if (params.upperBound != 0) revert ParametersSet();
 
-        longShortPairParameters[
-            longShortPair
-        ] = ImpermanentLossLeveragedReserveParameters({
+        longShortPairParameters[longShortPair] = ImpermanentLossLeveragedReserveParameters({
             upperBound: upperBound,
             pctLongCap: pctLongCap,
             initialPrice: initialPrice,
@@ -107,33 +100,24 @@ contract ImpermanentLossLeveragedReserveLSPL is
         nonReentrantView
         returns (uint256)
     {
-        ImpermanentLossLeveragedReserveParameters
-            memory params = longShortPairParameters[msg.sender];
+        ImpermanentLossLeveragedReserveParameters memory params = longShortPairParameters[msg.sender];
 
         if (params.upperBound == 0) revert ParametersNotSet();
         // Find price ratio -> denoted as 'p' in the IL approximation formula
-        int256 priceRatio = (params.initialPrice * 1 ether) /
-            (expiryPrice <= 0 ? int256(1) : expiryPrice);
+        int256 priceRatio = (params.initialPrice * 1 ether) / (expiryPrice <= 1 ? int256(1) : expiryPrice);
         // Perform IL calculation
         int256 numerator = 2 ether * PRBMathSD59x18.sqrt(priceRatio);
         int256 denominator = priceRatio + 1 ether;
         int256 impLoss = (numerator / denominator) - 1 ether;
 
         // Take absolute value of IL, multiply by leverage, and add 1 to make positive synth payout
-        uint256 expiryPriceTransformed = uint256(
-            PRBMathSD59x18.abs(impLoss).mul(int256(params.leverageFactor)) +
-                1 ether
-        );
+        uint256 impLossTransformed = uint256(PRBMathSD59x18.abs(impLoss).mul(int256(params.leverageFactor)) + 1 ether);
+        uint256 effectiveUpperBound = (params.upperBound * params.pctLongCap) / 1 ether;
+        uint256 effectiveLowerBound = (params.upperBound * (1 ether - params.pctLongCap)) / 1 ether;
 
-        if (
-            expiryPriceTransformed >=
-            (params.upperBound * params.pctLongCap) / 1 ether
-        ) return params.pctLongCap;
-        if (
-            expiryPriceTransformed <=
-            (params.upperBound * (1 ether - params.pctLongCap)) / 1 ether
-        ) return (1 ether - params.pctLongCap);
+        if (impLossTransformed >= effectiveUpperBound) return params.pctLongCap;
+        if (impLossTransformed <= effectiveLowerBound) return (1 ether - params.pctLongCap);
 
-        return (expiryPriceTransformed * 1 ether) / params.upperBound;
+        return (impLossTransformed * 1 ether) / params.upperBound;
     }
 }

@@ -90,14 +90,13 @@ contract ReserveLSPL is LongShortPairFinancialProductLibrary, Lockable {
             memory params = longShortPairParameters[msg.sender];
         if (params.upperBound == 0) revert ParametersNotSet();
         uint256 positivePrice = expiryPrice < 0 ? 0 : uint256(expiryPrice);
-
-        if (positivePrice >= (params.upperBound * params.pctLongCap) / 1 ether)
-            return params.pctLongCap;
-        if (
-            positivePrice <=
-            (params.upperBound * (1 ether - params.pctLongCap)) / 1 ether
-        ) return (1 ether - params.pctLongCap);
-
+        uint256 effectiveUpperBound = (params.upperBound * params.pctLongCap) /
+            1 ether;
+        uint256 effectiveLowerBound = (params.upperBound *
+            (1 ether - params.pctLongCap)) / 1 ether;
+        if (positivePrice <= effectiveLowerBound)
+            return (1 ether - params.pctLongCap);
+        if (positivePrice >= effectiveUpperBound) return params.pctLongCap;
         return (positivePrice * 1 ether) / params.upperBound;
     }
 }

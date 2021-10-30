@@ -58,12 +58,13 @@ contract LeveragedReserveLSPL is
      * @param initialPrice The price of the asset at LSP deployment, used to calculate returns.
      * @param leverageFactor The amount of leverage you want to apply to the asset return.
      * @dev Note:
-     * a) Any address can set these parameters
-     * b) existing LSP parameters for address not set.
-     * c) upperBound > lowerBound.
-     * d) parameters can only be set once to prevent the deployer from changing the parameters after the fact.
-     * e) For safety, parameters should be set before depositing any synthetic tokens in a liquidity pool.
-     * f) longShortPair must expose an expirationTimestamp method to validate it is correctly deployed.
+     *  - Any address can set these parameters
+     *  - For safety, parameters should be set before depositing any synthetic tokens in a liquidity pool.
+     *  - The parameters are set for the LSP contract address
+     *  - parameters can only be set once to prevent the deployer from changing the parameters after the fact.
+     *  - upperBound can't be zero.
+     *  - lowerBound (or effective lowerBound) can't be zero because pctLongCap can't be zero.
+     *  - longShortPair must expose an expirationTimestamp method to validate it is correctly deployed.
      */
     function setLongShortPairParameters(
         address longShortPair,
@@ -116,22 +117,22 @@ contract LeveragedReserveLSPL is
         int256 unScaledReturnFactor = ((expiryPrice) * 1 ether) /
             int256(int184(params.initialPrice)) -
             1 ether;
-
         int256 scaledReturnFactor = (unScaledReturnFactor *
             int256(int72(params.leverageFactor))) / 1 ether;
 
-        int256 scaledReturn = ((int256((int184(params.upperBound) * 1 ether)) /
-            2 ether) * (scaledReturnFactor + 1 ether)) / 1 ether;
+        // scaledPrice = (upperBound * 1 ether / 2 ether) * (returnFactor + 1 ether) / 1 ether)
+        uint256 scaledPrice = uint256(
+            ((int256((int184(params.upperBound) * 1 ether)) / 2 ether) *
+                (scaledReturnFactor + 1 ether)) / 1 ether
+        );
 
-        uint256 scaledPrice = scaledReturn < 0 ? 0 : uint256(scaledReturn);
-
-        if (scaledPrice >= (params.upperBound * params.pctLongCap) / 1 ether)
-            return params.pctLongCap;
-        if (
-            scaledPrice <=
-            (params.upperBound * (1 ether - params.pctLongCap)) / 1 ether
-        ) return (1 ether - params.pctLongCap);
-
+        uint256 effectiveUpperBound = (params.upperBound * params.pctLongCap) /
+            1 ether;
+        uint256 effectiveLowerBound = (params.upperBound *
+            (1 ether - params.pctLongCap)) / 1 ether;
+        if (scaledPrice >= effectiveUpperBound) return params.pctLongCap;
+        if (scaledPrice <= effectiveLowerBound)
+            return (1 ether - params.pctLongCap);
         return (scaledPrice * 1 ether) / params.upperBound;
     }
 }
