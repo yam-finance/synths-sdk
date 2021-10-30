@@ -2179,6 +2179,11 @@
     truffle-deploy-registry "^0.5.1"
     web3 "^1.5.0"
 
+"@uma/contracts-node@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@uma/contracts-node/-/contracts-node-0.1.4.tgz#27ca40b680cb1427e389143068df6b64612bae69"
+  integrity sha512-GmmzauSl8Xe8hZqK23qDlHTkITI41jNjziDpgy9JjTP1RMcYA+lf2osI7W/d5YHFLBX96eNg/Q2faLzFh7pc8w==
+
 "@uma/core@^2.10.0":
   version "2.10.0"
   resolved "https://registry.yarnpkg.com/@uma/core/-/core-2.10.0.tgz#48b4d9e77bff62504f8192583cff891e728496cd"

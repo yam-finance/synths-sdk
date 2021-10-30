@@ -8,8 +8,8 @@ import {
 import { ethers } from "ethers";
 
 class Synths {
-  #ethersProvider!: ethers.providers.Web3Provider;
   assets!: AssetsConfig;
+  #ethersProvider!: ethers.providers.Web3Provider;
 
   /**
    * Creates an instance of the Synths SDK.
@@ -22,6 +22,20 @@ class Synths {
     const synthsSdk = new Synths();
     await synthsSdk.init(options);
     return synthsSdk;
+  }
+
+  /**
+   * Connects the SDK to an asset.
+   * @param config - Ethers Asset configuration
+   */
+  connectAsset(assetIdentifier: string): Asset {
+    const asset = Asset.connect({
+      ethersProvider: this.#ethersProvider,
+      assets: this.assets,
+      assetIdentifier: assetIdentifier,
+    });
+
+    return asset;
   }
 
   /**
@@ -47,20 +61,6 @@ class Synths {
     if (!this.assets) {
       throw new Error("Synths not found in the current network");
     }
-  }
-
-  /**
-   * Connects the SDK to an asset.
-   * @param config - Ethers Asset configuration
-   */
-  connectAsset(assetIdentifier: string): Asset {
-    const asset = Asset.connect({
-      ethersProvider: this.#ethersProvider,
-      assets: this.assets,
-      assetIdentifier: assetIdentifier,
-    });
-
-    return asset;
   }
 }
 
