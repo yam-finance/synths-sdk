@@ -48,18 +48,19 @@ export interface FinancialContractConfigBase {
   address: string;
 }
 
-export interface FinancialContractConfigEMP extends FinancialContractConfigBase {
+export interface FinancialContractConfigEMP
+  extends FinancialContractConfigBase {
   /** new - Identifier to distinguish between the new and the old emp contracts */
   new: boolean;
   /** type - Identifier to clarify the emp contract type */
   type?: string;
 }
 
-export interface FinancialContractConfigLSP extends FinancialContractConfigBase {
+export interface FinancialContractConfigLSP
+  extends FinancialContractConfigBase {
   //** library - Financial Product Library's Address for LSP */
   library: string;
 }
-
 
 export interface TokenConfig {
   /** address - Address of the token contract */
@@ -75,8 +76,6 @@ export interface AssetConfigBase {
   year: string;
   collateral: string;
   token: TokenConfig;
-
-
 }
 export interface AssetConfigEMP extends AssetConfigBase {
   /** ExpiringMultipartyContract config options */
@@ -93,7 +92,7 @@ export interface AssetConfigLSP extends AssetConfigBase {
   pools: PoolConfig[];
   pool: never;
 }
-export interface FPLConfig{
+export interface FPLConfig {
   /** address - Address of the FPL contract */
   address: string;
   type: string;
@@ -115,24 +114,32 @@ export interface InitOptions {
   userAssetsConfig: SynthsAssetsConfig;
 }
 
-export const isAssetConfigEMP = (assetConfig: AssetConfig): assetConfig is AssetConfigEMP => {
+export const isAssetConfigEMP = (
+  assetConfig: AssetConfig
+): assetConfig is AssetConfigEMP => {
   return (assetConfig as AssetConfigEMP).emp !== undefined;
-}
+};
 
-export const isAssetConfigLSP = (assetConfig: AssetConfig): assetConfig is AssetConfigLSP => {
+export const isAssetConfigLSP = (
+  assetConfig: AssetConfig
+): assetConfig is AssetConfigLSP => {
   return (assetConfig as AssetConfigLSP).lsp !== undefined;
-}
+};
 
-export const assertAssetConfigEMP = (assetConfig: AssetConfig): AssetConfigEMP => {
+export const assertAssetConfigEMP = (
+  assetConfig: AssetConfig
+): AssetConfigEMP => {
   if (!isAssetConfigEMP(assetConfig)) {
     throw new Error(`AssetConfig is not an AssetConfigEMP`);
   }
   return assetConfig as AssetConfigEMP;
-}
+};
 
-export const assertAssetConfigLSP = (assetConfig: AssetConfig): AssetConfigLSP => {
+export const assertAssetConfigLSP = (
+  assetConfig: AssetConfig
+): AssetConfigLSP => {
   if (!isAssetConfigLSP(assetConfig)) {
     throw new Error(`AssetConfig is not an AssetConfigLSP`);
   }
   return assetConfig as AssetConfigLSP;
-}
+};
