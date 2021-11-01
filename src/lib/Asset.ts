@@ -39,9 +39,8 @@ class Asset {
   }
 
   /**
-   * Get expiring multi party (EMP) state
-   *
-   * @returns A promise with the info of the metapool contract
+   * @notice Get expiring multi party (EMP) state.
+   * @returns A promise with the info of the metapool contract.
    */
   async getEmpState(): Promise<EmpState | undefined> {
     try {
@@ -117,9 +116,8 @@ class Asset {
   }
 
   /**
-   * Get the current user asset position collateral ratio (CR).
-   *
-   * @returns A promise with the user asset CR
+   * @notice Get the current user asset position collateral ratio (CR).
+   * @returns A promise with the user asset CR.
    */
   async getPositionCR(): Promise<string | undefined> {
     try {
@@ -151,9 +149,8 @@ class Asset {
    */
 
   /**
-   * Fetch all the positions of an address.
-   *
-   * @returns A promise with an object that contains all positions of an address
+   * @notice Fetch all the positions of an address.
+   * @returns A promise with an object that contains all positions of an address.
    */
   async getPositions(): Promise<
     { [x: string]: ethers.BigNumber | undefined } | undefined
@@ -242,8 +239,8 @@ class Asset {
   }
 
   /**
-   * Initializes the Asset instance.
-   * @param config - Ethers Asset configuration
+   * @notice Initializes the Asset instance.
+   * @param config - Ethers Asset configuration.
    */
   private init({
     ethersProvider,
