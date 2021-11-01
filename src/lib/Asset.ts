@@ -41,7 +41,7 @@ class Asset {
   /**
    * Get expiring multi party (EMP) state
    *
-   * @return A promise with the info of the metapool contract
+   * @returns A promise with the info of the metapool contract
    */
   async getEmpState(): Promise<EmpState | undefined> {
     try {
@@ -119,7 +119,7 @@ class Asset {
   /**
    * Get the current user asset position collateral ratio (CR).
    *
-   * @return A promise with the user asset CR
+   * @returns A promise with the user asset CR
    */
   async getPositionCR(): Promise<string | undefined> {
     try {
@@ -153,7 +153,7 @@ class Asset {
   /**
    * Fetch all the positions of an address.
    *
-   * @return A promise with an object that contains all positions of an address
+   * @returns A promise with an object that contains all positions of an address
    */
   async getPositions(): Promise<
     { [x: string]: ethers.BigNumber | undefined } | undefined
@@ -235,31 +235,6 @@ class Asset {
       }
 
       return gcr;
-    } catch (e) {
-      console.error("error", e);
-      return undefined;
-    }
-  }
-
-  /**
-   * ----------------------------------------------------------------------------------
-   * @notice The following are on-chain helpers that will be moved to another directory
-   * ----------------------------------------------------------------------------------
-   */
-
-  async getERC20Decimals(
-    address: string,
-    ethersProvider: ethers.providers.Web3Provider
-  ): Promise<number | undefined> {
-    try {
-      const contract = new ethers.Contract(
-        address,
-        ERC20Abi,
-        ethersProvider
-      ) as Erc20;
-      const decimals: number = await contract.decimals();
-
-      return decimals;
     } catch (e) {
       console.error("error", e);
       return undefined;
