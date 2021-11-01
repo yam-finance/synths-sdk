@@ -54,10 +54,7 @@ const config: HardhatUserConfig = {
     deployer: 0,
   },
   solidity: {
-    compilers: [
-      { version: "0.8.0", settings },
-      { version: "0.8.4", settings },
-    ],
+    compilers: [{ version: "0.8.4", settings }],
   },
   typechain: {
     outDir: "./src/types/contracts",

@@ -6,13 +6,8 @@
         "cycle": "10",
         "year": "21",
         "collateral": "WETH",
-        "token": {
-          "address": "",
-          "decimals": 18
-        },
-        "lsp": {
-          "address": "0x4707b810b75C2DF8Ffeb50f7f33Af617Fbf3d766",
-          "new": false
+        "contract": {
+          "address": "0x4707b810b75C2DF8Ffeb50f7f33Af617Fbf3d766"
         },
         "pool": {
           "address": "",

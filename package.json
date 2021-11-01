@@ -19,10 +19,11 @@
     "test:w": "hardhat watch test",
     "format": "prettier --write .",
     "cover": "nyc yarn test",
-    "cover:sol": "HARDHAT_DEPLOY_FIXTURE=true hardhat coverage",
-    "lint": "yarn eslint --fix .",
-    "lint:report": "yarn eslint --ext .ts --output-file eslint_report.json --format json .",
-    "docgen": "yarn build && yarn typedoc && yarn run hardhat docgen"
+    "cover:sol": "hardhat coverage",
+    "lint": "eslint --fix .",
+    "lint:report": "eslint --ext .ts --output-file eslint_report.json --format json .",
+    "deploy": "hardhat deploy",
+    "docgen": "yarn build && typedoc && hardhat docgen"
   },
   "keywords": [
     "yam",
@@ -37,6 +38,7 @@
   "dependencies": {
     "@openzeppelin/contracts": "^4.2.0",
     "@sushiswap/sushi-data": "^1.0.26",
+    "@uma/contracts-node": "^0.1.4",
     "@uma/core": "^2.10.0",
     "axios": "^0.24.0",
     "dotenv": "^10.0.0",

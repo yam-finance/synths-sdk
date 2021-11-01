@@ -8,6 +8,7 @@ import {
 } from "./utils/helpers";
 
 export default Synths;
+<<<<<<< HEAD
 export {
   getTokenDecimals,
   getCurrentDexTokenPrice,
@@ -68,3 +69,5 @@ export {
 //         this.utils = new Utils(this.options)
 //     }
 // }
+=======
+>>>>>>> develop
