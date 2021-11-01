@@ -1,5 +1,9 @@
 import { BigNumber, ethers } from "ethers";
 import {
+  Contract as MulticallContract,
+  Provider as MulticalProvider,
+} from "ethcall";
+import {
   ERC20Ethers__factory,
   ExpiringMultiPartyEthers,
   ExpiringMultiPartyEthers__factory,
@@ -9,6 +13,7 @@ import {
 import { request } from "graphql-request";
 import {
   assertAssetConfigEMP,
+  assertAssetConfigLSP,
   AssetClassConfig,
   AssetConfig,
   AssetsConfig,
@@ -119,6 +124,54 @@ class Asset {
   }
 
   /**
+   * Get Long Short Pair (LSP) state
+   *
+   * @return A promise with the info of the metapool contract
+   */
+  async getLSPState() {
+    try {
+      assertAssetConfigLSP(this.#config);
+      const ethcallProvider = new MulticalProvider();
+      // Workaround for an issue with the ethcall package.
+      type BaseProvider = Parameters<typeof ethcallProvider.init>[0];
+      await ethcallProvider.init(this.#ethersProvider as unknown as BaseProvider);
+
+      const contract = new MulticallContract(
+        this.#contract.address,
+        LongShortPairEthers__factory.abi
+      );
+
+      const results = await ethcallProvider.all([
+        contract.expirationTimestamp(),
+        contract.collateralToken(),
+        contract.priceIdentifier(),
+        contract.pairName(),
+        contract.longToken(),
+        contract.shortToken(),
+        contract.collateralPerPair(),
+        contract.timerAddress(),
+      ]);
+
+      const lspData = {
+        expirationTimestamp: results[0],
+        collateralToken: results[1],
+        priceIdentifier: results[2],
+        pairName: results[3],
+        longToken: results[4],
+        shortToken: results[5],
+        collateralPerPair: results[6],
+        timerAddress: results[7],
+      };
+
+      return lspData;
+
+    } catch (e) {
+      console.error("error", e);
+      return undefined;
+    }
+  }
+
+  /**
    * Fetch the position of an asset in relation to the connected user address
    *
    * @return A promise with the user position
@@ -178,15 +231,19 @@ class Asset {
     { [x: string]: ethers.BigNumber | undefined } | undefined
   > {
     try {
+
       const positions: { [x: string]: ethers.BigNumber | undefined } = {
         x: undefined,
       };
 
       for (const assetCycles in this.#assets) {
         for (const asset of this.#assets[assetCycles]) {
-          const position = await this.getPosition();
-          positions[asset.token.address] =
-            position?.tokensOutstanding["rawValue"];
+          if(asset.type === "EMP") {
+            const position = await this.getPosition();
+            positions[asset.token.address] =
+              position?.tokensOutstanding["rawValue"];
+          }
+
         }
       }
 
@@ -336,4 +393,5 @@ class Asset {
     }
   }
 }
+
 export default Asset;

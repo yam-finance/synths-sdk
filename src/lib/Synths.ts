@@ -50,13 +50,20 @@ class Synths {
       options.ethersProvider as ethers.providers.Web3Provider;
 
     const signer = this.#ethersProvider.getSigner();
-    const chainId = await signer.getChainId();
+
     const synthsAssetsConfig: SynthsAssetsConfig = {
       ...defaultAssetsConfig,
       ...options.userAssetsConfig,
     };
-
-    this.assets = synthsAssetsConfig[chainId];
+    const chainId = await signer.getChainId();
+    if (Object.keys(synthsAssetsConfig).includes(chainId.toString())) {
+      this.assets =
+        synthsAssetsConfig[chainId];
+    } else {
+      throw new Error(
+        `Synths not found in the current network ${chainId}. Please check your configuration.`
+      );
+    }
 
     if (!this.assets) {
       throw new Error("Synths not found in the current network");

@@ -1,5 +1,10 @@
 import type { ethers } from "ethers";
 
+export enum FinancialContractTemplates {
+  EMP = "EMP",
+  LSP = "LSP",
+}
+
 /// @notice Asset class interfaces
 
 export interface AssetClassConfig {
@@ -42,6 +47,7 @@ export interface PoolConfig {
   /** location - Location of the pool contract */
   location: string;
 }
+
 // @notice Financial Contract Configuration
 export interface FinancialContractConfigBase {
   /** address - Address of the Financial contract */
@@ -58,7 +64,7 @@ export interface FinancialContractConfigEMP
 
 export interface FinancialContractConfigLSP
   extends FinancialContractConfigBase {
-  //** library - Financial Product Library's Address for LSP */
+  /** library - Financial Product Library's Address for LSP */
   library: string;
 }
 
@@ -76,28 +82,34 @@ export interface AssetConfigBase {
   year: string;
   collateral: string;
   token: TokenConfig;
+  /** Expiration status */
+  expired: boolean;
 }
+
 export interface AssetConfigEMP extends AssetConfigBase {
   /** ExpiringMultipartyContract config options */
   emp: FinancialContractConfigEMP;
-  /** Expiration status */
-  expired: boolean;
   /** Incentivized Pool */
   pool: PoolConfig;
+  type?: FinancialContractTemplates.EMP;
 }
 
-export interface AssetConfigLSP extends AssetConfigBase {
+export interface AssetConfigLSP extends Omit<AssetConfigBase, "token"> {
   /** address - Address of the LSP contract */
   lsp: FinancialContractConfigLSP;
   pools: PoolConfig[];
-  pool: never;
+  tokens?: TokenConfig;
+  type: FinancialContractTemplates.LSP;
 }
+
 export interface FPLConfig {
   /** address - Address of the FPL contract */
   address: string;
   type: string;
 }
+
 export type AssetConfig = AssetConfigEMP | AssetConfigLSP;
+
 export interface AssetsConfig {
   /** assetType - Object of all official Asset contracts of a type in a network */
   [assetType: string]: AssetConfig[];
@@ -110,7 +122,7 @@ export interface SynthsAssetsConfig {
 
 /// @todo Check ethersProvider type
 export interface InitOptions {
-  ethersProvider: any;
+  ethersProvider: ethers.providers.JsonRpcProvider;
   userAssetsConfig: SynthsAssetsConfig;
 }
 

@@ -4,6 +4,7 @@ import { expect } from "chai";
 import Synths from "../src/index";
 import { SynthsAssetsConfig } from "../src/types/assets.t";
 import Asset from "../src/lib/Asset";
+import testAssetConfig from "../src/assetstest.json";
 
 describe("Synths SDKs", function () {
   let provider: typeof ethers.provider;
@@ -75,6 +76,27 @@ describe("Synths SDKs", function () {
       //   const gcr = await upunksAsset.getGCR();
       //   expect(parseFloat(gcr ?? "0")).to.be.greaterThan(1.05);
       // });
+    });
+  });
+  describe("LSP Asset", () => {
+    let lspAsset: Asset;
+
+    before(async () => {
+      provider = ethers.provider;
+      const userAssetsConfig = testAssetConfig as SynthsAssetsConfig;
+      const synthsSDK = await Synths.create({
+        ethersProvider: provider,
+        userAssetsConfig: userAssetsConfig,
+      });
+      lspAsset = synthsSDK.connectAsset("2xdpi-1021");
+    });
+    describe("Interact with LSP asset", () => {
+      it("getLSPState - Success", async function () {
+        const lspState = await lspAsset.getLSPState();
+        expect(lspState).to.deep.include({
+          pairName: "2XDPI Oct26",
+        });
+      });
     });
   });
 });
