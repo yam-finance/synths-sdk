@@ -1,14 +1,16 @@
 {
   "name": "synths-sdk",
-  "version": "1.0.95",
+  "version": "1.1.0",
   "description": "Yam Uma Synths SDK",
   "main": "dist/src/index.js",
   "typings": "dist/src/index.d.ts",
   "files": [
     "dist/**/*"
   ],
-  "author": "e, byterose",
+  "author": "yam",
   "contributors": [
+    "e",
+    "byterose",
     "snake"
   ],
   "license": "MIT",
