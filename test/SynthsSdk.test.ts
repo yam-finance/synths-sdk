@@ -1,7 +1,12 @@
 import { ethers } from "hardhat";
 import { BigNumber } from "ethers";
 import { expect } from "chai";
-import Synths from "../src/index";
+import axios from "axios";
+import Synths, {
+  getCurrentDexTokenPrice,
+  getSynthData,
+  getSynthChartData,
+} from "../src/index";
 import { SynthsAssetsConfig } from "../src/types/assets.t";
 import Asset from "../src/lib/Asset";
 
@@ -49,8 +54,30 @@ describe("Synths SDKs", function () {
       upunksAsset = synthsSDK.connectAsset("upunks-0921");
     });
 
-    // @todo Add tests.
     describe("Interact with asset", function () {
+      it("helpers - success", async function () {
+        const synthPrice = await getCurrentDexTokenPrice(
+          "sushiswap",
+          "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
+          "0x86140A763077155964754968B6F6e243fE809cBe"
+        );
+        const synthData = await getSynthData(
+          "upunks-0921",
+          "0x86140A763077155964754968B6F6e243fE809cBe"
+        );
+        const synthChartData = await getSynthChartData(
+          "0x86140A763077155964754968B6F6e243fE809cBe"
+        );
+        const response = await axios.get(
+          `https://data.yam.finance/degenerative/apr/upunks-0921`
+        );
+
+        expect(synthData).to.deep.include({
+          apr: response.data["aprMultiplier"],
+        });
+        expect(synthChartData).to.be.an("array");
+        expect(synthPrice).to.not.equal(0);
+      });
       it("getEmpState - success", async function () {
         this.timeout(100000);
         const empState = await upunksAsset.getEmpState();

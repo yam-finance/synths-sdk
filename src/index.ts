@@ -1,6 +1,5 @@
 import Synths from "./lib/Synths";
 import {
-  getTokenDecimals,
   getCurrentDexTokenPrice,
   getYamSynthsTotalTVL,
   getSynthData,
@@ -9,7 +8,6 @@ import {
 
 export default Synths;
 export {
-  getTokenDecimals,
   getCurrentDexTokenPrice,
   getYamSynthsTotalTVL,
   getSynthData,
