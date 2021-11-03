@@ -56,6 +56,7 @@ describe("Synths SDKs", function () {
 
     describe("Interact with asset", function () {
       it("helpers - success", async function () {
+        this.timeout(100000);
         const synthPrice = await getCurrentDexTokenPrice(
           "sushiswap",
           "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
@@ -104,7 +105,7 @@ describe("Synths SDKs", function () {
       });
       it("getGCR - success", async function () {
         const gcr = await upunksAsset.getGCR();
-        // expect(parseFloat(gcr ?? "0")).to.be.greaterThan(1.05);
+        expect(parseFloat(gcr ?? "0")).to.be.greaterThan(0);
       });
     });
   });
