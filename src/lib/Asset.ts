@@ -156,9 +156,7 @@ class Asset {
     { [x: string]: ethers.BigNumber | undefined } | undefined
   > {
     try {
-      const positions: { [x: string]: ethers.BigNumber | undefined } = {
-        x: undefined,
-      };
+      const positions: { [x: string]: ethers.BigNumber | undefined } = {};
 
       for (const assetCycles in this.#assets) {
         for (const asset of this.#assets[assetCycles]) {
