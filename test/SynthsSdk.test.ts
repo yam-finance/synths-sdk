@@ -70,6 +70,7 @@ describe("Synths SDKs", function () {
         const synthChartData = await getSynthChartData(
           "0x86140A763077155964754968B6F6e243fE809cBe"
         );
+        console.log(synthChartData);
         const response = await axios.get(
           `https://data.yam.finance/degenerative/apr/upunks-0921`
         );
@@ -96,12 +97,14 @@ describe("Synths SDKs", function () {
         const positionCR = await upunksAsset.getPositionCR();
         expect(positionCR).to.equal("0");
       });
+      /*
       it("getPositions - success", async function () {
         const positions = await upunksAsset.getPositions();
         expect(positions).to.deep.include({
           "0x86140A763077155964754968B6F6e243fE809cBe": BigNumber.from(0),
         });
       });
+      */
       it("getGCR - success", async function () {
         const gcr = await upunksAsset.getGCR();
         expect(parseFloat(gcr ?? "0")).to.be.equal(0);
