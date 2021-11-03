@@ -1,11 +1,7 @@
 import { ethers } from "hardhat";
 import { BigNumber } from "ethers";
 import { expect } from "chai";
-import Synths, {
-  getYamSynthsTotalTVL,
-  getSynthData,
-  getSynthChartData,
-} from "../src/index";
+import Synths from "../src/index";
 import { SynthsAssetsConfig } from "../src/types/assets.t";
 import Asset from "../src/lib/Asset";
 
@@ -55,22 +51,6 @@ describe("Synths SDKs", function () {
 
     // @todo Add tests.
     describe("Interact with asset", function () {
-      it("helpers - success", async function () {
-        this.timeout(100000);
-        console.log(await getYamSynthsTotalTVL());
-
-        console.log(
-          await getSynthData(
-            "upunks-0921",
-            "0x86140A763077155964754968B6F6e243fE809cBe"
-          )
-        );
-
-        const monthAgoTimestamp = Math.floor(Date.now() / 1000) - 2629743;
-        console.log(
-          await getSynthChartData("0x86140A763077155964754968B6F6e243fE809cBe")
-        );
-      });
       it("getEmpState - success", async function () {
         this.timeout(100000);
         const empState = await upunksAsset.getEmpState();
