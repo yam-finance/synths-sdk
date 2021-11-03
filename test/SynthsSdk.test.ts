@@ -61,10 +61,12 @@ describe("Synths SDKs", function () {
           "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
           "0x86140A763077155964754968B6F6e243fE809cBe"
         );
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const synthData = await getSynthData(
           "upunks-0921",
           "0x86140A763077155964754968B6F6e243fE809cBe"
         );
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const synthChartData = await getSynthChartData(
           "0x86140A763077155964754968B6F6e243fE809cBe"
         );
@@ -73,7 +75,8 @@ describe("Synths SDKs", function () {
         );
 
         expect(synthData).to.deep.include({
-          apr: response.data["aprMultiplier"],
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          apr: response.data["aprMultiplier"] as string,
         });
         expect(synthChartData).to.be.an("array");
         expect(synthPrice).to.not.equal(0);
