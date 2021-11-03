@@ -105,7 +105,7 @@ describe("Synths SDKs", function () {
       });
       it("getGCR - success", async function () {
         const gcr = await upunksAsset.getGCR();
-        expect(parseFloat(gcr ?? "0")).to.be.greaterThan(0);
+        expect(parseFloat(gcr ?? "0")).to.be.equal(0);
       });
     });
   });
