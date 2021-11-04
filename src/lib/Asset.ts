@@ -1,8 +1,5 @@
 import { BigNumber, ethers } from "ethers";
-import {
-  Contract as MulticallContract,
-  Provider as MulticalProvider,
-} from "ethcall";
+import { providers } from "@0xsequence/multicall";
 import {
   ERC20Ethers__factory,
   ExpiringMultiPartyEthers,
@@ -29,8 +26,18 @@ import {
   UNISWAP_PAIR_DATA,
 } from "../utils/queries";
 
+// typeof here is important, otherwise we get a TS error. The type of the value of providers.MulticallProvider is not a constructor.
+type MulticallParameter = ConstructorParameters<
+  typeof providers.MulticallProvider
+>[1];
+
+const MulticallWrapper = providers.MulticallProvider as unknown as new (
+  provider: ethers.providers.BaseProvider,
+  multicall?: MulticallParameter
+) => ethers.providers.JsonRpcProvider;
+
 class Asset {
-  #ethersProvider!: ethers.providers.Web3Provider;
+  #ethersProvider!: ethers.providers.Provider;
   #signer!: ethers.Signer;
   #assets!: AssetsConfig;
   #config!: AssetConfig;
@@ -46,10 +53,12 @@ class Asset {
     assets,
     assetIdentifier,
   }: AssetClassConfig): Asset {
+    ``;
     const asset = new Asset();
+    const provider = new MulticallWrapper(ethersProvider);
 
     asset.init({
-      ethersProvider,
+      ethersProvider: provider,
       assets,
       assetIdentifier,
     });
@@ -131,40 +140,33 @@ class Asset {
   async getLSPState() {
     try {
       assertAssetConfigLSP(this.#config);
-      const ethcallProvider = new MulticalProvider();
-      // Workaround for an issue with the ethcall package.
-      type BaseProvider = Parameters<typeof ethcallProvider.init>[0];
-      await ethcallProvider.init(this.#ethersProvider as unknown as BaseProvider);
+      if ("collateralToken" in this.#contract) {
+        const results = await Promise.all([
+          this.#contract.expirationTimestamp(),
+          this.#contract.collateralToken(),
+          this.#contract.priceIdentifier(),
+          this.#contract.pairName(),
+          this.#contract.longToken(),
+          this.#contract.shortToken(),
+          this.#contract.collateralPerPair(),
+          this.#contract.timerAddress(),
+        ]);
 
-      const contract = new MulticallContract(
-        this.#contract.address,
-        LongShortPairEthers__factory.abi
-      );
+        const lspData = {
+          expirationTimestamp: results[0],
+          collateralToken: results[1],
+          priceIdentifier: results[2],
+          pairName: results[3],
+          longToken: results[4],
+          shortToken: results[5],
+          collateralPerPair: results[6],
+          timerAddress: results[7],
+        };
 
-      const results = await ethcallProvider.all([
-        contract.expirationTimestamp(),
-        contract.collateralToken(),
-        contract.priceIdentifier(),
-        contract.pairName(),
-        contract.longToken(),
-        contract.shortToken(),
-        contract.collateralPerPair(),
-        contract.timerAddress(),
-      ]);
-
-      const lspData = {
-        expirationTimestamp: results[0],
-        collateralToken: results[1],
-        priceIdentifier: results[2],
-        pairName: results[3],
-        longToken: results[4],
-        shortToken: results[5],
-        collateralPerPair: results[6],
-        timerAddress: results[7],
-      };
-
-      return lspData;
-
+        return lspData;
+      } else {
+        return undefined;
+      }
     } catch (e) {
       console.error("error", e);
       return undefined;
@@ -231,19 +233,17 @@ class Asset {
     { [x: string]: ethers.BigNumber | undefined } | undefined
   > {
     try {
-
       const positions: { [x: string]: ethers.BigNumber | undefined } = {
         x: undefined,
       };
 
       for (const assetCycles in this.#assets) {
         for (const asset of this.#assets[assetCycles]) {
-          if(asset.type === "EMP") {
+          if (asset.type === "EMP") {
             const position = await this.getPosition();
             positions[asset.token.address] =
               position?.tokensOutstanding["rawValue"];
           }
-
         }
       }
 
@@ -335,7 +335,7 @@ class Asset {
 
   async getERC20Decimals(
     address: string,
-    ethersProvider: ethers.providers.Web3Provider
+    ethersProvider: ethers.providers.Provider
   ): Promise<number | undefined> {
     try {
       const token = ERC20Ethers__factory.connect(address, ethersProvider);
@@ -359,7 +359,6 @@ class Asset {
     this.#assets = assets;
 
     // @todo Check alternatives
-    // this.#signer = await this.#ethersProvider.getSigner();
     this.#signer = ethers.Wallet.createRandom();
 
     const assetIdentifierSplit = assetIdentifier.split("-");

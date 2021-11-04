@@ -22,7 +22,8 @@
     "lint": "eslint --fix .",
     "lint:report": "eslint --ext .ts --output-file eslint_report.json --format json .",
     "deploy": "hardhat deploy",
-    "docgen": "yarn build && typedoc && hardhat docgen"
+    "docgen": "yarn build && typedoc && hardhat docgen",
+    "test:matic": "cross-env CHAINID=137 hardhat test test/SynthsSdk.test.ts"
   },
   "keywords": [
     "yam",

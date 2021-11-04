@@ -15,11 +15,27 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// const WALLET_PRIVATE_KEY = process.env["WALLET_PRIVATE_KEY"];
-const INFURA_API_KEY = process.env["INFURA_API_KEY"];
+enum PROVIDER {
+  INFURA = "infura",
+  ALCHEMY = "alchemy",
+}
+
+// const WALLET_PRIVATE_KEY = process.env["WALLET_PRIVATE_KEY"] ?? undefined;
+const INFURA_API_KEY = process.env["INFURA_API_KEY"] ?? "";
+const ALCHEMY_API_KEY = process.env["ALCHEMY_API_KEY"] ?? "";
+const PREFERRED_PROVIDER =
+  process.env["INFURA_API_KEY"]?.toLowerCase() === PROVIDER.INFURA
+    ? PROVIDER.INFURA
+    : PROVIDER.ALCHEMY;
+const API_KEY =
+  PREFERRED_PROVIDER === PROVIDER.INFURA ? INFURA_API_KEY : ALCHEMY_API_KEY;
 const ETHERSCAN_API_KEY = process.env["ETHERSCAN_API_KEY"];
 const COINMARKETCAP_PUBLIC_KEY = process.env["COINMARKETCAP_PUBLIC_KEY"];
+const CHAINID = parseInt(process.env["CHAINID"] ?? "1");
 
+if (!API_KEY) {
+  throw new Error("Please set the API key for the preferred provider");
+}
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
 task("accounts", "Prints the list of accounts", async (args: unknown, hre) => {
@@ -38,13 +54,33 @@ const settings = {
   },
 };
 
+const NETWORK_URLS = {
+  [PROVIDER.INFURA]: {
+    mainnet: `https://mainnet.infura.io/v3/${INFURA_API_KEY}`,
+    // Polygon is only supported as an addon for infura projects, use alchemy as free alternative.
+    matic: `https://polygon-mainnet.infura.io/v3/${INFURA_API_KEY}`,
+  },
+  [PROVIDER.ALCHEMY]: {
+    mainnet: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_API_KEY}`,
+    matic: `https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+  },
+};
+
 const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       forking: {
-        url: `https://mainnet.infura.io/v3/${INFURA_API_KEY || ""}`,
+        url:
+          CHAINID === 137
+            ? NETWORK_URLS[PREFERRED_PROVIDER].matic
+            : NETWORK_URLS[PREFERRED_PROVIDER].mainnet,
       },
+      chainId: CHAINID,
     },
+    // matic: {
+    //   url: NETWORK_URLS[PROVIDER.ALCHEMY].matic,
+    //   accounts: [`0x${WALLET_PRIVATE_KEY || ""}`],
+    // },
     // ropsten: {
     //   url: `https://ropsten.infura.io/v3/${INFURA_API_KEY || ""}`,
     //   accounts: [`0x${WALLET_PRIVATE_KEY || ""}`],

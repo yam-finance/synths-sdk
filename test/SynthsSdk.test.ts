@@ -1,4 +1,4 @@
-import { ethers } from "hardhat";
+import { ethers, network } from "hardhat";
 import { BigNumber } from "ethers";
 import { expect } from "chai";
 import Synths from "../src/index";
@@ -15,6 +15,9 @@ describe("Synths SDKs", function () {
     before(async function () {
       provider = ethers.provider;
       const chainId = (await provider.getNetwork()).chainId;
+      if (network.name !== "hardhat" || chainId != 1) {
+        this.skip();
+      }
       const userAssetsConfig: SynthsAssetsConfig = {
         [chainId]: {
           upunks: [
@@ -81,8 +84,12 @@ describe("Synths SDKs", function () {
   describe("LSP Asset", () => {
     let lspAsset: Asset;
 
-    before(async () => {
+    before(async function () {
       provider = ethers.provider;
+      const chainId = (await provider.getNetwork()).chainId;
+      if (network.name !== "hardhat" || chainId != 137) {
+        this.skip();
+      }
       const userAssetsConfig = testAssetConfig as SynthsAssetsConfig;
       const synthsSDK = await Synths.create({
         ethersProvider: provider,

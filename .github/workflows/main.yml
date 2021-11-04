@@ -10,6 +10,7 @@ jobs:
   test:
     env:
       INFURA_API_KEY: ${{ secrets.INFURA_API_KEY }}
+      ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
       ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
     runs-on: ubuntu-latest
     strategy:
@@ -25,6 +26,8 @@ jobs:
       - run: yarn build
       - name: Run unit/intergration tests
         run: yarn test
+      - name: Run sdk tests on Matic network
+        run: yarn test:matic
       - name: Test linting without fixings
         run: yarn eslint .
         continue-on-error: true

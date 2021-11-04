@@ -9,7 +9,7 @@ export enum FinancialContractTemplates {
 
 export interface AssetClassConfig {
   /** ethersProvider - ethers.js provider */
-  ethersProvider: ethers.providers.Web3Provider;
+  ethersProvider: ethers.providers.JsonRpcProvider;
   /** assets - Official contracts of the selected network */
   assets: AssetsConfig;
   /** assetIdentifier - The identifier of the asset contract to use */

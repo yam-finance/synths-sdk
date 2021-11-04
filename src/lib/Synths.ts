@@ -57,8 +57,7 @@ class Synths {
     };
     const chainId = await signer.getChainId();
     if (Object.keys(synthsAssetsConfig).includes(chainId.toString())) {
-      this.assets =
-        synthsAssetsConfig[chainId];
+      this.assets = synthsAssetsConfig[chainId];
     } else {
       throw new Error(
         `Synths not found in the current network ${chainId}. Please check your configuration.`
