@@ -67,9 +67,8 @@ class Asset {
   }
 
   /**
-   * Get expiring multi party (EMP) state
-   *
-   * @return A promise with the info of the metapool contract
+   * @notice Get expiring multi party (EMP) state.
+   * @returns A promise with the info of the metapool contract.
    */
   async getEmpState(): Promise<EmpState | undefined> {
     try {
@@ -133,9 +132,8 @@ class Asset {
   }
 
   /**
-   * Get Long Short Pair (LSP) state
-   *
-   * @return A promise with the info of the metapool contract
+   * @notice Get Long Short Pair (LSP) state.
+   * @returns A promise with the info of the metapool contract.
    */
   async getLSPState() {
     try {
