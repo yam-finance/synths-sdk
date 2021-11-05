@@ -2,8 +2,7 @@ import { ethers } from "ethers";
 import { request } from "graphql-request";
 import axios from "axios";
 import sushiData from "@sushiswap/sushi-data";
-import { Erc20 } from "../types/abi";
-import ERC20Abi from "../abi/erc20.json";
+import { ERC20Ethers__factory } from "@uma/contracts-node";
 import {
   UNISWAP_ENDPOINT,
   SUSHISWAP_ENDPOINT,
@@ -18,15 +17,11 @@ import {
  */
 export async function getTokenDecimals(
   address: string,
-  ethersProvider: ethers.providers.Web3Provider
+  ethersProvider: ethers.providers.Provider
 ): Promise<number | undefined> {
   try {
-    const contract = new ethers.Contract(
-      address,
-      ERC20Abi,
-      ethersProvider
-    ) as Erc20;
-    const decimals: number = await contract.decimals();
+    const contract = ERC20Ethers__factory.connect(address, ethersProvider);
+    const decimals = await contract.decimals();
 
     return decimals;
   } catch (e) {
