@@ -16,6 +16,7 @@
     "build": "hardhat compile --force && tsc",
     "test": "hardhat test",
     "test:w": "hardhat watch test",
+    "test:matic": "cross-env CHAINID=137 hardhat test test/SynthsSdk.test.ts",
     "format": "prettier --write .",
     "cover": "nyc yarn test",
     "cover:sol": "hardhat coverage",
@@ -23,7 +24,6 @@
     "lint:report": "eslint --ext .ts --output-file eslint_report.json --format json .",
     "deploy": "hardhat deploy",
     "docgen": "yarn build && typedoc && hardhat docgen",
-    "test:matic": "cross-env CHAINID=137 hardhat test test/SynthsSdk.test.ts"
   },
   "keywords": [
     "yam",
