@@ -81,7 +81,7 @@ export interface SynthsAssetsConfig {
   [id: string]: AssetsConfig;
 }
 
-/// @todo Check ethersProvider type
+/// @todo Check ethersProvider type.
 export interface InitOptions {
   ethersProvider: any;
   userAssetsConfig: SynthsAssetsConfig;
