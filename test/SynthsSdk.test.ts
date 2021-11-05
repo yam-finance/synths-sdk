@@ -11,7 +11,6 @@ import Synths, {
 import { SynthsAssetsConfig } from "../src/types/assets.t";
 import Asset from "../src/lib/Asset";
 import testAssetConfig from "../src/assetstest.json";
-import { roundNumber } from "../src/utils/helpers";
 
 describe("Synths SDKs", function () {
   let provider: typeof ethers.provider;
