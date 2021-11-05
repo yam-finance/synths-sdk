@@ -1,13 +1,11 @@
 import { BigNumber, ethers } from "ethers";
 import { providers } from "@0xsequence/multicall";
 import {
-  ERC20Ethers__factory,
   ExpiringMultiPartyEthers,
   ExpiringMultiPartyEthers__factory,
   LongShortPairEthers,
   LongShortPairEthers__factory,
 } from "@uma/contracts-node";
-import { request } from "graphql-request";
 import {
   assertAssetConfigEMP,
   assertAssetConfigLSP,
