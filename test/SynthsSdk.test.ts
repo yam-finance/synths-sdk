@@ -10,6 +10,7 @@ import Synths, {
 import { SynthsAssetsConfig } from "../src/types/assets.t";
 import Asset from "../src/lib/Asset";
 import testAssetConfig from "../src/assetstest.json";
+import { roundNumber } from "../src/utils/helpers";
 
 describe("Synths SDKs", function () {
   let provider: typeof ethers.provider;
@@ -66,18 +67,19 @@ describe("Synths SDKs", function () {
           "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
           "0x86140A763077155964754968B6F6e243fE809cBe"
         );
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const synthData = await getSynthData(
           "upunks-0921",
           "0x86140A763077155964754968B6F6e243fE809cBe"
         );
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const synthChartData = await getSynthChartData(
           "0x86140A763077155964754968B6F6e243fE809cBe"
         );
         const response = await axios.get(
           `https://data.yam.finance/degenerative/apr/upunks-0921`
         );
+        const float = 1.23456789;
+        const result = roundNumber(float, 2);
+        expect(result).to.equal(parseFloat(float.toFixed(2)));
 
         expect(synthData).to.deep.include({
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

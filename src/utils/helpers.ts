@@ -117,3 +117,13 @@ export async function getSynthChartData(tokenAddress: string) {
   });
   return tokenData;
 }
+
+/**
+ * @notice Helper function to round a number to a certain number of decimals.
+ * @param number The number to round.
+ * @param decimals The number of decimals to round to.
+ * @returns number The rounded number.
+ */
+export function roundNumber(number: number, decimals: number) {
+  return Math.round(number * 10 ** decimals) / 10 ** decimals;
+}
