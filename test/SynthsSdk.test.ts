@@ -6,6 +6,7 @@ import Synths, {
   getCurrentDexTokenPrice,
   getSynthData,
   getSynthChartData,
+  roundNumber,
 } from "../src/index";
 import { SynthsAssetsConfig } from "../src/types/assets.t";
 import Asset from "../src/lib/Asset";
