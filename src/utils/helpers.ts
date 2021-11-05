@@ -18,7 +18,7 @@ import {
 export async function getTokenDecimals(
   address: string,
   ethersProvider: ethers.providers.Provider
-): Promise<number | undefined> {
+) {
   try {
     const contract = ERC20Ethers__factory.connect(address, ethersProvider);
     const decimals = await contract.decimals();
@@ -41,7 +41,7 @@ export async function getCurrentDexTokenPrice(
   poolLocation: string,
   poolAddress: string,
   tokenAddress: string
-): Promise<number | undefined> {
+) {
   try {
     /// @dev Get pool data from graph endpoints.
     const endpoint =
@@ -72,10 +72,7 @@ export async function getCurrentDexTokenPrice(
  * @param tokenAddress The token address of the synth.
  * @returns `undefined` or an object with the relevant data.
  */
-export async function getSynthData(
-  synthId: string,
-  tokenAddress: string
-): Promise<any | undefined> {
+export async function getSynthData(synthId: string, tokenAddress: string) {
   try {
     const tokenData = await sushiData.exchange.token24h({
       token_address: tokenAddress,
@@ -103,7 +100,7 @@ export async function getSynthData(
  * @notice Helper function to get the YAM Synths total TVL.
  * @returns The total tvl of all yam synths.
  */
-export async function getYamSynthsTotalTVL(): Promise<string> {
+export async function getYamSynthsTotalTVL() {
   const response = await axios.get(`https://api.yam.finance/tvl/degenerative`);
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   return response.data["total"] as string;
@@ -114,9 +111,7 @@ export async function getYamSynthsTotalTVL(): Promise<string> {
  * @param tokenAddress Address of the Synth.
  * @returns An array of synth market data.
  */
-export async function getSynthChartData(
-  tokenAddress: string
-): Promise<any | undefined> {
+export async function getSynthChartData(tokenAddress: string) {
   const tokenData = await sushiData.charts.tokenDaily({
     token_address: tokenAddress,
   });
