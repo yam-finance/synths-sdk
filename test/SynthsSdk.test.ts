@@ -1,7 +1,12 @@
 import { ethers, network } from "hardhat";
 import { BigNumber } from "ethers";
 import { expect } from "chai";
-import Synths from "../src/index";
+import axios from "axios";
+import Synths, {
+  getCurrentDexTokenPrice,
+  getSynthData,
+  getSynthChartData,
+} from "../src/index";
 import { SynthsAssetsConfig } from "../src/types/assets.t";
 import Asset from "../src/lib/Asset";
 import testAssetConfig from "../src/assetstest.json";
@@ -53,9 +58,36 @@ describe("Synths SDKs", function () {
       upunksAsset = synthsSDK.connectAsset("upunks-0921");
     });
 
-    // @todo Add tests
     describe("Interact with asset", function () {
+      it("helpers - success", async function () {
+        this.timeout(100000);
+        const synthPrice = await getCurrentDexTokenPrice(
+          "sushiswap",
+          "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
+          "0x86140A763077155964754968B6F6e243fE809cBe"
+        );
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const synthData = await getSynthData(
+          "upunks-0921",
+          "0x86140A763077155964754968B6F6e243fE809cBe"
+        );
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const synthChartData = await getSynthChartData(
+          "0x86140A763077155964754968B6F6e243fE809cBe"
+        );
+        const response = await axios.get(
+          `https://data.yam.finance/degenerative/apr/upunks-0921`
+        );
+
+        expect(synthData).to.deep.include({
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          apr: response.data["aprMultiplier"] as string,
+        });
+        expect(synthChartData).to.be.an("array");
+        expect(synthPrice).to.not.equal(0);
+      });
       it("getEmpState - success", async function () {
+        this.timeout(100000);
         const empState = await upunksAsset.getEmpState();
         expect(empState).to.deep.include({
           collateralCurrency: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
@@ -77,7 +109,7 @@ describe("Synths SDKs", function () {
       });
       // it("getGCR - success", async function () {
       //   const gcr = await upunksAsset.getGCR();
-      //   expect(parseFloat(gcr ?? "0")).to.be.greaterThan(1.05);
+      //  expect(parseFloat(gcr ?? "0")).to.be.equal(0);
       // });
     });
   });

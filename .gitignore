@@ -38,3 +38,5 @@ coverage.json
 /src/types/contracts/**
 /src/types/abi/**
 
+# Vim
+*.swp

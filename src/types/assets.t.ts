@@ -120,7 +120,7 @@ export interface SynthsAssetsConfig {
   [id: string]: AssetsConfig;
 }
 
-/// @todo Check ethersProvider type
+/// @todo Check ethersProvider type.
 export interface InitOptions {
   ethersProvider: ethers.providers.JsonRpcProvider;
   userAssetsConfig: SynthsAssetsConfig;
