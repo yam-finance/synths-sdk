@@ -109,6 +109,31 @@ export async function getSynthData(synthId: string, networkId: number) {
 }
 
 /**
+ * @notice Helper function to get the data for the most recent synths.
+ * @dev Can be used on the front-end to display the most recent synths.
+ * @param networkId The network / chain id of the synth deployment.
+ */
+export async function getResentSynthData(networkId: number) {
+  const resentSynthData = {};
+
+  for (const synthClassName in defaultAssetsConfig[networkId]) {
+    const synthClass = defaultAssetsConfig[networkId][synthClassName];
+    const lastSynth = synthClass.slice(-1)[0];
+    const synthId = synthClassName + "-" + lastSynth.cycle + lastSynth.year;
+    const synthData = await getSynthData(synthId, networkId);
+
+    if (synthData == undefined) {
+      break;
+    }
+
+    // @ts-ignore
+    resentSynthData[synthClassName] = synthData;
+  }
+
+  return resentSynthData;
+}
+
+/**
  * @notice Helper function to get the total liquidity and volume of all synths in the last 24h.
  * @param networks Array of networks that the user wants to query.
  */

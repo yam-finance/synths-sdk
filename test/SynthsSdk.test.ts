@@ -7,6 +7,7 @@ import Synths, {
   getSynthData,
   getSynthChartData,
   getTotalMarketData,
+  getResentSynthData,
   roundNumber,
 } from "../src/index";
 import { SynthsAssetsConfig } from "../src/types/assets.t";
@@ -61,6 +62,12 @@ describe("Synths SDKs", function () {
     });
 
     describe("Helper functions", function () {
+      it("getResentSynthData - success", async function () {
+        this.timeout(100000);
+        const resentSynthData = await getResentSynthData(1);
+        console.log(resentSynthData);
+        // expect(resentSynthData)
+      });
       it("getTotalMarketData - success", async function () {
         this.timeout(100000);
         const totalMarketData = await getTotalMarketData([1]);
