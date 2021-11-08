@@ -3,11 +3,13 @@ import { request } from "graphql-request";
 import axios from "axios";
 import sushiData from "@sushiswap/sushi-data";
 import { ERC20Ethers__factory } from "@uma/contracts-node";
+import { defaultAssetsConfig } from "../lib/config";
 import {
   UNISWAP_ENDPOINT,
   SUSHISWAP_ENDPOINT,
   UNI_SUSHI_PAIR_DATA,
 } from "./queries";
+import {AssetConfigBase} from "types/assets.t";
 
 /**
  * @notice Helper function to get the decimals of a erc20 token.
@@ -69,13 +71,19 @@ export async function getCurrentDexTokenPrice(
 /**
  * @notice Helper function to get relevant synth market data.
  * @param synthId The synth identifier.
- * @param tokenAddress The token address of the synth.
+ * @param networkId The network / chain id of the synth deployment.
  * @returns `undefined` or an object with the relevant data.
  */
-export async function getSynthData(synthId: string, tokenAddress: string) {
+export async function getSynthData(synthId: string, networkId: number) {
   try {
+    const synthInfo: AssetConfigBase | undefined = getInfoByIdentifier(synthId, networkId);
+
+    if (synthInfo == undefined) {
+        return;
+    }
+
     const tokenData = await sushiData.exchange.token24h({
-      token_address: tokenAddress,
+      token_address: synthInfo.token.address 
     });
 
     const response = await axios.get(
@@ -90,6 +98,30 @@ export async function getSynthData(synthId: string, tokenAddress: string) {
       liquidity24h: tokenData.liquidityUSD,
       volume24h: tokenData.volumeUSDOneDay,
     };
+  } catch (e) {
+    console.error("error", e);
+    return undefined;
+  }
+}
+
+/**
+ * @notice Helper function to get data from `assets.json` according to the synth id.
+ * @param synthId The synth identifier.
+ * @param networkId The network / chain id of the synth deployment.
+ */
+export function getInfoByIdentifier(synthId: string, network: number) {
+  try {
+    const synthClassId = synthId.substr(0, synthId.indexOf('-'));
+    const synthCycle = synthId.substr(synthId.indexOf('-') + 1);
+    const synthClass = defaultAssetsConfig[network][synthClassId];
+
+    for (let i = 0; i < synthClass.length; i++) {
+        if ((synthClass[i].cycle + synthClass[i].year) == synthCycle) {
+            return synthClass[i] as AssetConfigBase;
+        } 
+    }
+
+    return undefined;
   } catch (e) {
     console.error("error", e);
     return undefined;

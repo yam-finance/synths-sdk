@@ -4,6 +4,7 @@ import {
   getYamSynthsTotalTVL,
   getSynthData,
   getSynthChartData,
+  getInfoByIdentifier,
   roundNumber,
 } from "./utils/helpers";
 
@@ -13,5 +14,6 @@ export {
   getYamSynthsTotalTVL,
   getSynthData,
   getSynthChartData,
+  getInfoByIdentifier,
   roundNumber,
 };

@@ -6,6 +6,7 @@ import Synths, {
   getCurrentDexTokenPrice,
   getSynthData,
   getSynthChartData,
+  getInfoByIdentifier,
   roundNumber,
 } from "../src/index";
 import { SynthsAssetsConfig } from "../src/types/assets.t";
@@ -69,7 +70,7 @@ describe("Synths SDKs", function () {
         );
         const synthData = await getSynthData(
           "upunks-0921",
-          "0x86140A763077155964754968B6F6e243fE809cBe"
+          1
         );
         const synthChartData = await getSynthChartData(
           "0x86140A763077155964754968B6F6e243fE809cBe"
