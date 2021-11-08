@@ -12,6 +12,8 @@ jobs:
       INFURA_API_KEY: ${{ secrets.INFURA_API_KEY }}
       ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
       ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+      ALCHEMY_API_KEY_MAINNET: ${{ secrets.ALCHEMY_API_KEY_MAINNET }}
+      ALCHEMY_API_KEY_MATIC: ${{ secrets.ALCHEMY_API_KEY_MATIC }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
