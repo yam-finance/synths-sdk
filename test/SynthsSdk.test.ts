@@ -69,9 +69,7 @@ describe("Synths SDKs", function () {
           "0x86140A763077155964754968B6F6e243fE809cBe"
         );
         const synthData = await getSynthData("upunks-0921", 1);
-        const synthChartData = await getSynthChartData(
-          "0x86140A763077155964754968B6F6e243fE809cBe"
-        );
+        const synthChartData = await getSynthChartData("upunks-0921", 1);
         const response = await axios.get(
           `https://data.yam.finance/degenerative/apr/upunks-0921`
         );

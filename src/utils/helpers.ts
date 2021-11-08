@@ -132,6 +132,29 @@ export function getInfoByIdentifier(synthId: string, network: number) {
 }
 
 /**
+ * @notice Helper function to get market chart data.
+ * @param synthId The synth identifier.
+ * @param networkId The network / chain id of the synth deployment.
+ * @returns An array of synth market data.
+ */
+export async function getSynthChartData(synthId: string, networkId: number) {
+  const synthInfo: AssetConfigBase | undefined = getInfoByIdentifier(
+    synthId,
+    networkId
+  );
+
+  if (synthInfo == undefined) {
+    return;
+  }
+
+  const tokenData = await sushiData.charts.tokenDaily({
+    token_address: synthInfo.token.address,
+  });
+
+  return tokenData;
+}
+
+/**
  * @notice Helper function to get the YAM Synths total TVL.
  * @returns The total tvl of all yam synths.
  */
@@ -139,18 +162,6 @@ export async function getYamSynthsTotalTVL() {
   const response = await axios.get(`https://api.yam.finance/tvl/degenerative`);
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   return response.data["total"] as string;
-}
-
-/**
- * @notice Helper function to get market chart data.
- * @param tokenAddress Address of the Synth.
- * @returns An array of synth market data.
- */
-export async function getSynthChartData(tokenAddress: string) {
-  const tokenData = await sushiData.charts.tokenDaily({
-    token_address: tokenAddress,
-  });
-  return tokenData;
 }
 
 /**
