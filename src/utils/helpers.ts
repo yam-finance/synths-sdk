@@ -9,8 +9,7 @@ import {
   SUSHISWAP_ENDPOINT,
   UNI_SUSHI_PAIR_DATA,
 } from "./queries";
-import { AssetConfigBase } from "types/assets.t";
-import { network } from "hardhat";
+import { AssetConfigBase, IResentSynthsData } from "types/assets.t";
 
 /**
  * @notice Helper function to get the decimals of a erc20 token.
@@ -114,7 +113,7 @@ export async function getSynthData(synthId: string, networkId: number) {
  * @param networkId The network / chain id of the synth deployment.
  */
 export async function getResentSynthData(networkId: number) {
-  const resentSynthData = {};
+  const resentSynthData: IResentSynthsData = {};
 
   for (const synthClassName in defaultAssetsConfig[networkId]) {
     const synthClass = defaultAssetsConfig[networkId][synthClassName];
@@ -126,7 +125,6 @@ export async function getResentSynthData(networkId: number) {
       break;
     }
 
-    // @ts-ignore
     resentSynthData[synthClassName] = synthData;
   }
 

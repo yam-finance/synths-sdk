@@ -96,7 +96,7 @@ describe("Synths SDKs", function () {
         const synthChartData = await getSynthChartData("upunks-0921", 1);
         expect(synthChartData).to.be.an("array");
       });
-      it("roundNumber - success", async function () {
+      it("roundNumber - success", function () {
         const float = 1.23456789;
         const result = roundNumber(float, 2);
         expect(result).to.equal(parseFloat(float.toFixed(2)));

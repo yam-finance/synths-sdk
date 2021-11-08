@@ -5,6 +5,10 @@ export enum FinancialContractTemplates {
   LSP = "LSP",
 }
 
+export interface IResentSynthsData {
+  [key: string]: Object;
+}
+
 /// @notice Asset class interfaces
 
 export interface AssetClassConfig {
