@@ -60,32 +60,42 @@ describe("Synths SDKs", function () {
       upunksAsset = synthsSDK.connectAsset("upunks-0921");
     });
 
-    describe("Interact with asset", function () {
-      it("helpers - success", async function () {
+    describe("Helper functions", function () {
+      it("getTotalMarketData - success", async function () {
         this.timeout(100000);
-        console.log(await getTotalMarketData([1]));
+        const totalMarketData = await getTotalMarketData([1]);
+        expect(totalMarketData.total24hLiquidity).to.be.greaterThan(0);
+        expect(totalMarketData.total24hVolume).to.be.greaterThan(0);
+      });
+      it("getCurrentDexTokenPrice - success", async function () {
         const synthPrice = await getCurrentDexTokenPrice(
           "sushiswap",
           "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
           "0x86140A763077155964754968B6F6e243fE809cBe"
         );
+        expect(synthPrice).to.not.equal(0);
+      });
+      it("getSynthData - success", async function () {
         const synthData = await getSynthData("upunks-0921", 1);
-        console.log(synthData);
-        const synthChartData = await getSynthChartData("upunks-0921", 1);
         const response = await axios.get(
           `https://data.yam.finance/degenerative/apr/upunks-0921`
         );
-        const float = 1.23456789;
-        const result = roundNumber(float, 2);
-        expect(result).to.equal(parseFloat(float.toFixed(2)));
-
         expect(synthData).to.deep.include({
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           apr: response.data["aprMultiplier"] as string,
         });
-        expect(synthChartData).to.be.an("array");
-        expect(synthPrice).to.not.equal(0);
       });
+      it("synthChartData - success", async function () {
+        const synthChartData = await getSynthChartData("upunks-0921", 1);
+        expect(synthChartData).to.be.an("array");
+      });
+      it("roundNumber - success", async function () {
+        const float = 1.23456789;
+        const result = roundNumber(float, 2);
+        expect(result).to.equal(parseFloat(float.toFixed(2)));
+      });
+    });
+    describe("Interact with asset", function () {
       it("getEmpState - success", async function () {
         this.timeout(100000);
         const empState = await upunksAsset.getEmpState();

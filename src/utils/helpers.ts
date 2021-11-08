@@ -38,7 +38,7 @@ export async function getTokenDecimals(
  * @param poolLocation Location string of the DEX pool (e.g. "uni").
  * @param poolAddress Address of the DEX pool.
  * @param tokenAddress Address of the token.
- * @returns `undefined` or the DEX token price.
+ * @returns `undefined` or the DEX token price in WEI.
  */
 export async function getCurrentDexTokenPrice(
   poolLocation: string,
@@ -126,7 +126,7 @@ export async function getTotalMarketData(networks: Array<number>) {
           const synthData = await getSynthData(synthId, networkId);
 
           if (synthData == undefined) {
-            return;
+            break;
           }
 
           totalLiquidity += synthData.liquidity24h;
