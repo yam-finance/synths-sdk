@@ -65,8 +65,7 @@ describe("Synths SDKs", function () {
       it("getResentSynthData - success", async function () {
         this.timeout(100000);
         const resentSynthData = await getResentSynthData(1);
-        console.log(resentSynthData);
-        // expect(resentSynthData)
+        expect(resentSynthData).to.be.an("object");
       });
       it("getTotalMarketData - success", async function () {
         this.timeout(100000);
