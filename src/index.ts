@@ -2,6 +2,7 @@ import Synths from "./lib/Synths";
 import {
   getCurrentDexTokenPrice,
   getYamSynthsTotalTVL,
+  getTotalMarketData,
   getSynthData,
   getSynthChartData,
   getInfoByIdentifier,
@@ -12,6 +13,7 @@ export default Synths;
 export {
   getCurrentDexTokenPrice,
   getYamSynthsTotalTVL,
+  getTotalMarketData,
   getSynthData,
   getSynthChartData,
   getInfoByIdentifier,

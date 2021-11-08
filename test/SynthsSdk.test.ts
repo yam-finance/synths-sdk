@@ -6,7 +6,7 @@ import Synths, {
   getCurrentDexTokenPrice,
   getSynthData,
   getSynthChartData,
-  getInfoByIdentifier,
+  getTotalMarketData,
   roundNumber,
 } from "../src/index";
 import { SynthsAssetsConfig } from "../src/types/assets.t";
@@ -63,12 +63,14 @@ describe("Synths SDKs", function () {
     describe("Interact with asset", function () {
       it("helpers - success", async function () {
         this.timeout(100000);
+        console.log(await getTotalMarketData([1]));
         const synthPrice = await getCurrentDexTokenPrice(
           "sushiswap",
           "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
           "0x86140A763077155964754968B6F6e243fE809cBe"
         );
         const synthData = await getSynthData("upunks-0921", 1);
+        console.log(synthData);
         const synthChartData = await getSynthChartData("upunks-0921", 1);
         const response = await axios.get(
           `https://data.yam.finance/degenerative/apr/upunks-0921`

@@ -10,6 +10,7 @@ import {
   UNI_SUSHI_PAIR_DATA,
 } from "./queries";
 import { AssetConfigBase } from "types/assets.t";
+import { network } from "hardhat";
 
 /**
  * @notice Helper function to get the decimals of a erc20 token.
@@ -108,6 +109,37 @@ export async function getSynthData(synthId: string, networkId: number) {
 }
 
 /**
+ * @notice Helper function to get the total liquidity and volume of all synths in the last 24h.
+ * @param networks Array of networks that the user wants to query.
+ */
+export async function getTotalMarketData(networks: Array<number>) {
+  let totalLiquidity = 0;
+  let totalVolume = 0;
+
+  for (const networkId of networks) {
+    for (const synthClassName in defaultAssetsConfig[networkId]) {
+      const synthClass = defaultAssetsConfig[networkId][synthClassName];
+      for (let i = 0; i < synthClass.length; i++) {
+        if (!synthClass[i].expired) {
+          const synthId =
+            synthClassName + "-" + synthClass[i].cycle + synthClass[i].year;
+          const synthData = await getSynthData(synthId, networkId);
+
+          if (synthData == undefined) {
+            return;
+          }
+
+          totalLiquidity += synthData.liquidity24h;
+          totalVolume += synthData.volume24h;
+        }
+      }
+    }
+  }
+
+  return { total24hLiquidity: totalLiquidity, total24hVolume: totalVolume };
+}
+
+/**
  * @notice Helper function to get data from `assets.json` according to the synth id.
  * @param synthId The synth identifier.
  * @param networkId The network / chain id of the synth deployment.
@@ -133,6 +165,7 @@ export function getInfoByIdentifier(synthId: string, network: number) {
 
 /**
  * @notice Helper function to get market chart data.
+ * @dev The data gets fetched from Sushiswap every 24h.
  * @param synthId The synth identifier.
  * @param networkId The network / chain id of the synth deployment.
  * @returns An array of synth market data.
