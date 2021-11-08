@@ -159,7 +159,14 @@ export async function getTotalMarketData(networks: Array<number>) {
     }
   }
 
-  return { total24hLiquidity: totalLiquidity, total24hVolume: totalVolume };
+  const response = await axios.get(`https://api.yam.finance/tvl/degenerative`);
+
+  return {
+    total24hLiquidity: totalLiquidity,
+    total24hVolume: totalVolume,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    totalTVL: response.data["total"] as string,
+  };
 }
 
 /**
@@ -208,16 +215,6 @@ export async function getSynthChartData(synthId: string, networkId: number) {
   });
 
   return tokenData;
-}
-
-/**
- * @notice Helper function to get the YAM Synths total TVL.
- * @returns The total tvl of all yam synths.
- */
-export async function getYamSynthsTotalTVL() {
-  const response = await axios.get(`https://api.yam.finance/tvl/degenerative`);
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  return response.data["total"] as string;
 }
 
 /**
