@@ -1,4 +1,4 @@
-import { ethers } from "hardhat";
+import { ethers, network } from "hardhat";
 import { BigNumber } from "ethers";
 import { expect } from "chai";
 import axios from "axios";
@@ -6,9 +6,11 @@ import Synths, {
   getCurrentDexTokenPrice,
   getSynthData,
   getSynthChartData,
+  roundNumber,
 } from "../src/index";
 import { SynthsAssetsConfig } from "../src/types/assets.t";
 import Asset from "../src/lib/Asset";
+import testAssetConfig from "../src/assetstest.json";
 
 describe("Synths SDKs", function () {
   let provider: typeof ethers.provider;
@@ -19,6 +21,9 @@ describe("Synths SDKs", function () {
     before(async function () {
       provider = ethers.provider;
       const chainId = (await provider.getNetwork()).chainId;
+      if (network.name !== "hardhat" || chainId != 1) {
+        this.skip();
+      }
       const userAssetsConfig: SynthsAssetsConfig = {
         [chainId]: {
           upunks: [
@@ -62,18 +67,19 @@ describe("Synths SDKs", function () {
           "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
           "0x86140A763077155964754968B6F6e243fE809cBe"
         );
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const synthData = await getSynthData(
           "upunks-0921",
           "0x86140A763077155964754968B6F6e243fE809cBe"
         );
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const synthChartData = await getSynthChartData(
           "0x86140A763077155964754968B6F6e243fE809cBe"
         );
         const response = await axios.get(
           `https://data.yam.finance/degenerative/apr/upunks-0921`
         );
+        const float = 1.23456789;
+        const result = roundNumber(float, 2);
+        expect(result).to.equal(parseFloat(float.toFixed(2)));
 
         expect(synthData).to.deep.include({
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -97,7 +103,8 @@ describe("Synths SDKs", function () {
         const positionCR = await upunksAsset.getPositionCR();
         expect(positionCR).to.equal("0");
       });
-      it("getPositions - success", async function () {
+      //@todo find a valid position to test.
+      it.skip("getPositions - success", async function () {
         const positions = await upunksAsset.getPositions();
         expect(positions).to.deep.include({
           "0x86140A763077155964754968B6F6e243fE809cBe": BigNumber.from(0),
@@ -107,6 +114,31 @@ describe("Synths SDKs", function () {
       //   const gcr = await upunksAsset.getGCR();
       //  expect(parseFloat(gcr ?? "0")).to.be.equal(0);
       // });
+    });
+  });
+  describe("LSP Asset", () => {
+    let lspAsset: Asset;
+
+    before(async function () {
+      provider = ethers.provider;
+      const chainId = (await provider.getNetwork()).chainId;
+      if (network.name !== "hardhat" || chainId != 137) {
+        this.skip();
+      }
+      const userAssetsConfig = testAssetConfig as SynthsAssetsConfig;
+      const synthsSDK = await Synths.create({
+        ethersProvider: provider,
+        userAssetsConfig: userAssetsConfig,
+      });
+      lspAsset = synthsSDK.connectAsset("2xdpi-1021");
+    });
+    describe("Interact with LSP asset", () => {
+      it("getLSPState - Success", async function () {
+        const lspState = await lspAsset.getLSPState();
+        expect(lspState).to.deep.include({
+          pairName: "2XDPI Oct26",
+        });
+      });
     });
   });
 });

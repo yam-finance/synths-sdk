@@ -4,6 +4,7 @@ import {
   getYamSynthsTotalTVL,
   getSynthData,
   getSynthChartData,
+  roundNumber,
 } from "./utils/helpers";
 
 export default Synths;
@@ -12,4 +13,5 @@ export {
   getYamSynthsTotalTVL,
   getSynthData,
   getSynthChartData,
+  roundNumber,
 };

@@ -6,16 +6,18 @@
         "cycle": "10",
         "year": "21",
         "collateral": "WETH",
-        "contract": {
-          "address": "0x4707b810b75C2DF8Ffeb50f7f33Af617Fbf3d766"
+        "lsp": {
+          "address": "0x4707b810b75C2DF8Ffeb50f7f33Af617Fbf3d766",
+          "library": "0x"
         },
-        "pool": {
-          "address": "",
-          "location": "sushiswap"
-        },
+        "pools": [
+          {
+            "address": "",
+            "location": "sushiswap"
+          }
+        ],
         "expired": true,
-        "type": "lsp",
-        "version": "1"
+        "type": "LSP"
       }
     ]
   }

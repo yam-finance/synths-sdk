@@ -1,21 +1,40 @@
-import { ethers, BigNumber } from "ethers";
+import { BigNumber, ethers } from "ethers";
+import { providers } from "@0xsequence/multicall";
 import {
+  ExpiringMultiPartyEthers,
+  ExpiringMultiPartyEthers__factory,
+  LongShortPairEthers,
+  LongShortPairEthers__factory,
+} from "@uma/contracts-node";
+import {
+  assertAssetConfigEMP,
+  assertAssetConfigLSP,
   AssetClassConfig,
-  EmpState,
-  AssetsConfig,
   AssetConfig,
+  AssetsConfig,
+  EmpState,
+  isAssetConfigEMP,
+  isAssetConfigLSP,
 } from "../types/assets.t";
-import { Emp as ExpiringMultiParty } from "../types/abi";
-import EmpAbi from "../abi/emp.json";
-import { WETH, USDC } from "./config/contracts";
 import { getTokenDecimals, getCurrentDexTokenPrice } from "../utils/helpers";
+import { USDC, WETH } from "./config/contracts";
+
+// typeof here is important, otherwise we get a TS error. The type of the value of providers.MulticallProvider is not a constructor.
+type MulticallParameter = ConstructorParameters<
+  typeof providers.MulticallProvider
+>[1];
+
+const MulticallWrapper = providers.MulticallProvider as unknown as new (
+  provider: ethers.providers.BaseProvider,
+  multicall?: MulticallParameter
+) => ethers.providers.JsonRpcProvider;
 
 class Asset {
-  #ethersProvider!: ethers.providers.Web3Provider;
+  #ethersProvider!: ethers.providers.Provider;
   #signer!: ethers.Signer;
   #assets!: AssetsConfig;
   #config!: AssetConfig;
-  #contract!: ExpiringMultiParty;
+  #contract!: ExpiringMultiPartyEthers | LongShortPairEthers;
 
   /**
    * @notice Connects an instance of the Asset.
@@ -28,9 +47,10 @@ class Asset {
     assetIdentifier,
   }: AssetClassConfig): Asset {
     const asset = new Asset();
+    const provider = new MulticallWrapper(ethersProvider);
 
     asset.init({
-      ethersProvider,
+      ethersProvider: provider,
       assets,
       assetIdentifier,
     });
@@ -45,6 +65,9 @@ class Asset {
   async getEmpState(): Promise<EmpState | undefined> {
     try {
       /// @dev Because of an overload error, we split the calls into separate promises.
+      assertAssetConfigEMP(this.#config);
+      this.#contract = this.#contract as ExpiringMultiPartyEthers;
+      /// @dev Because of an overload error, we split the calls into separate promises
 
       const result1 = await Promise.all([
         this.#contract.expirationTimestamp(),
@@ -102,12 +125,54 @@ class Asset {
   }
 
   /**
+   * @notice Get Long Short Pair (LSP) state.
+   * @returns A promise with the info of the metapool contract.
+   */
+  async getLSPState() {
+    try {
+      assertAssetConfigLSP(this.#config);
+      if ("collateralToken" in this.#contract) {
+        const results = await Promise.all([
+          this.#contract.expirationTimestamp(),
+          this.#contract.collateralToken(),
+          this.#contract.priceIdentifier(),
+          this.#contract.pairName(),
+          this.#contract.longToken(),
+          this.#contract.shortToken(),
+          this.#contract.collateralPerPair(),
+          this.#contract.timerAddress(),
+        ]);
+
+        const lspData = {
+          expirationTimestamp: results[0],
+          collateralToken: results[1],
+          priceIdentifier: results[2],
+          pairName: results[3],
+          longToken: results[4],
+          shortToken: results[5],
+          collateralPerPair: results[6],
+          timerAddress: results[7],
+        };
+
+        return lspData;
+      } else {
+        return undefined;
+      }
+    } catch (e) {
+      console.error("error", e);
+      return undefined;
+    }
+  }
+
+  /**
    * @notice Fetch the position of an asset in relation to the connected user address.
    * @returns A promise with the user position.
    */
   async getPosition() {
     try {
       const address = await this.#signer.getAddress();
+      assertAssetConfigEMP(this.#config);
+      this.#contract = this.#contract as ExpiringMultiPartyEthers;
       return this.#contract.positions(address);
     } catch (e) {
       console.error("error", e);
@@ -166,10 +231,11 @@ class Asset {
           //   EmpAbi,
           //   this.#ethersProvider
           // ) as ExpiringMultiParty;
-
-          const position = await this.getPosition();
-          positions[asset.token.address] =
-            position?.tokensOutstanding["rawValue"];
+          if (asset.type === "EMP") {
+            const position = await this.getPosition();
+            positions[asset.token.address] =
+              position?.tokensOutstanding["rawValue"];
+          }
         }
       }
 
@@ -189,7 +255,7 @@ class Asset {
       let gcr: string;
       const empState = await this.getEmpState();
 
-      if (empState != undefined) {
+      if (empState != undefined && isAssetConfigEMP(this.#config)) {
         const tokenDecimals = await getTokenDecimals(
           this.#config.token.address,
           this.#ethersProvider
@@ -249,7 +315,6 @@ class Asset {
     this.#assets = assets;
 
     // @todo Check alternatives
-    // this.#signer = await this.#ethersProvider.getSigner();
     this.#signer = ethers.Wallet.createRandom();
 
     const assetIdentifierSplit = assetIdentifier.split("-");
@@ -257,12 +322,21 @@ class Asset {
     // @todo Check EmpAbi error
     for (const assetCycle of assets[assetIdentifierSplit[0]]) {
       if (assetCycle.cycle + assetCycle.year == assetIdentifierSplit[1]) {
-        this.#config = assetCycle;
-        this.#contract = new ethers.Contract(
-          assetCycle.emp.address,
-          EmpAbi,
-          this.#ethersProvider
-        ) as ExpiringMultiParty;
+        if (isAssetConfigEMP(assetCycle)) {
+          this.#config = assetCycle;
+          this.#contract = ExpiringMultiPartyEthers__factory.connect(
+            this.#config.emp.address,
+            this.#ethersProvider
+          );
+          break;
+        } else if (isAssetConfigLSP(assetCycle)) {
+          this.#config = assetCycle;
+          this.#contract = LongShortPairEthers__factory.connect(
+            this.#config.lsp.address,
+            this.#ethersProvider
+          );
+          break;
+        }
         break;
       }
     }
@@ -274,4 +348,5 @@ class Asset {
     }
   }
 }
+
 export default Asset;
