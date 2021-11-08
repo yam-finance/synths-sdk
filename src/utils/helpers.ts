@@ -9,7 +9,7 @@ import {
   SUSHISWAP_ENDPOINT,
   UNI_SUSHI_PAIR_DATA,
 } from "./queries";
-import {AssetConfigBase} from "types/assets.t";
+import { AssetConfigBase } from "types/assets.t";
 
 /**
  * @notice Helper function to get the decimals of a erc20 token.
@@ -76,14 +76,17 @@ export async function getCurrentDexTokenPrice(
  */
 export async function getSynthData(synthId: string, networkId: number) {
   try {
-    const synthInfo: AssetConfigBase | undefined = getInfoByIdentifier(synthId, networkId);
+    const synthInfo: AssetConfigBase | undefined = getInfoByIdentifier(
+      synthId,
+      networkId
+    );
 
     if (synthInfo == undefined) {
-        return;
+      return;
     }
 
     const tokenData = await sushiData.exchange.token24h({
-      token_address: synthInfo.token.address 
+      token_address: synthInfo.token.address,
     });
 
     const response = await axios.get(
@@ -111,14 +114,14 @@ export async function getSynthData(synthId: string, networkId: number) {
  */
 export function getInfoByIdentifier(synthId: string, network: number) {
   try {
-    const synthClassId = synthId.substr(0, synthId.indexOf('-'));
-    const synthCycle = synthId.substr(synthId.indexOf('-') + 1);
+    const synthClassId = synthId.substr(0, synthId.indexOf("-"));
+    const synthCycle = synthId.substr(synthId.indexOf("-") + 1);
     const synthClass = defaultAssetsConfig[network][synthClassId];
 
     for (let i = 0; i < synthClass.length; i++) {
-        if ((synthClass[i].cycle + synthClass[i].year) == synthCycle) {
-            return synthClass[i] as AssetConfigBase;
-        } 
+      if (synthClass[i].cycle + synthClass[i].year == synthCycle) {
+        return synthClass[i] as AssetConfigBase;
+      }
     }
 
     return undefined;

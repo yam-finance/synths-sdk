@@ -68,10 +68,7 @@ describe("Synths SDKs", function () {
           "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
           "0x86140A763077155964754968B6F6e243fE809cBe"
         );
-        const synthData = await getSynthData(
-          "upunks-0921",
-          1
-        );
+        const synthData = await getSynthData("upunks-0921", 1);
         const synthChartData = await getSynthChartData(
           "0x86140A763077155964754968B6F6e243fE809cBe"
         );
