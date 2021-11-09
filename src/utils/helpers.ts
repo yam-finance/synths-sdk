@@ -13,6 +13,7 @@ import {
   TIMESTAMP_TO_BLOCK
 } from "./queries";
 import { isAssetConfigEMP, isAssetConfigLSP, IResentSynthsData, AssetConfigLSP, AssetConfigEMP } from "types/assets.t";
+import { pool } from "@sushiswap/sushi-data/typings/masterchef";
 
 /**
  * @notice Helper function to get the decimals of a erc20 token.
@@ -124,8 +125,8 @@ export async function getSynthData(synthId: string, networkId: number) {
         apr: data.aprMultiplier,
         price: poolData.tokenPriceCurrently,
         priceChanged24h: getPercentageChange(poolData.tokenPriceCurrently, poolData.tokenPriceYesterday),
-        liquidity24h: poolData.liquidityCurrently,
-        volume24h: poolData.volumeCurrently
+        liquidity: poolData.liquidityCurrently,
+        volume24h: Math.abs(poolData.volumeCurrently - poolData.volumeYesterday)
       }
     } else if (isAssetConfigLSP(synthInfo)) {
       for (const pool of synthInfo.pools) {
@@ -147,8 +148,8 @@ export async function getSynthData(synthId: string, networkId: number) {
           apr: data.aprMultiplier,
           price: poolData.tokenPriceCurrently,
           priceChanged24h: getPercentageChange(poolData.tokenPriceCurrently, poolData.tokenPriceYesterday),
-          liquidity24h: poolData.liquidityCurrently,
-          volume24h: poolData.volumeCurrently
+          liquidity: poolData.liquidityCurrently,
+          volume24h: Math.abs(poolData.volumeCurrently - poolData.volumeYesterday)
         }
       }
     } 
@@ -174,16 +175,16 @@ function extractPoolData(poolDataCurrently, poolDataYesterday, collateral) {
       tokenId = poolDataCurrently["pair"].token1.symbol;
       tokenPriceCurrently = poolDataCurrently["pair"].reserve0 / poolDataCurrently["pair"].reserve1;
       tokenPriceYesterday = poolDataYesterday["pair"].reserve0 / poolDataYesterday["pair"].reserve1;
-      volumeCurrently = poolDataCurrently["pair"].volumeUSD;
-      volumeYesterday = poolDataYesterday["pair"].volumeUSD;
+      volumeCurrently = poolDataCurrently["pair"].volumeToken1;
+      volumeYesterday = poolDataYesterday["pair"].volumeToken1;
       liquidityCurrently = poolDataCurrently["pair"].reserveUSD;
       liquidityYesterday = poolDataYesterday["pair"].reserveUSD;
     } else {
       tokenId = poolDataCurrently["pair"].token0.symbol;
       tokenPriceCurrently = poolDataCurrently["pair"].reserve1 / poolDataCurrently["pair"].reserve0;
       tokenPriceYesterday = poolDataYesterday["pair"].reserve1 / poolDataYesterday["pair"].reserve0;
-      volumeCurrently = poolDataCurrently["pair"].volumeUSD;
-      volumeYesterday = poolDataYesterday["pair"].volumeUSD;
+      volumeCurrently = poolDataCurrently["pair"].volumeToken0;
+      volumeYesterday = poolDataYesterday["pair"].volumeToken0;
       liquidityCurrently = poolDataCurrently["pair"].reserveUSD;
       liquidityYesterday = poolDataYesterday["pair"].reserveUSD;
     }
@@ -246,7 +247,7 @@ export async function getTotalMarketData(networks: Array<number>) {
 
           for (const key in synthData) {
             // @ts-ignore
-            totalLiquidity += Number(synthData[key]["liquidity24h"]);
+            totalLiquidity += Number(synthData[key]["liquidity"]);
             // @ts-ignore
             totalVolume += Number(synthData[key]["volume24h"]);
           }
@@ -258,7 +259,7 @@ export async function getTotalMarketData(networks: Array<number>) {
   const response = await axios.get(`https://api.yam.finance/tvl/degenerative`);
 
   return {
-    total24hLiquidity: totalLiquidity,
+    totalLiquidity: totalLiquidity,
     total24hVolume: totalVolume,
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     totalTVL: response.data["total"] as string,
@@ -323,12 +324,12 @@ export async function getSynthChartData(synthId: string, networkId: number) {
       startingTime: tsMonthAgo,
       endingTime: ts
     });
-    console.log(pairData);
+    // console.log(pairData);
 
     pairData = await sushiData.charts.pairDaily({
       pair_address: synthInfo.pool.address,
     });
-    console.log(pairData);
+    // console.log(pairData);
   } 
 
   return pairData;

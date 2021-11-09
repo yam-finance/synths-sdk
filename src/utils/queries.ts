@@ -28,6 +28,8 @@ export const UNI_SUSHI_PAIR_DATA = gql`
       reserve0
       reserve1
       volumeUSD
+      volumeToken0
+      volumeToken1
       reserveUSD
     }
   }

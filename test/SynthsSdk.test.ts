@@ -65,13 +65,14 @@ describe("Synths SDKs", function () {
       it("getRecentSynthData - success", async function () {
         this.timeout(100000);
         const recentSynthData = await getRecentSynthData(1);
+        console.log(recentSynthData);
         expect(recentSynthData).to.be.an("object");
       });
       it("getTotalMarketData - success", async function () {
         this.timeout(100000);
         const totalMarketData = await getTotalMarketData([1]);
-        expect(totalMarketData.total24hLiquidity).to.be.greaterThan(0);
-        expect(totalMarketData.total24hVolume).to.be.greaterThan(0);
+        console.log(totalMarketData);
+        expect(totalMarketData.totalLiquidity).to.be.greaterThan(0);
       });
       it("getCurrentDexTokenPrice - success", async function () {
         const synthPrice = await getCurrentDexTokenPrice(
@@ -79,10 +80,12 @@ describe("Synths SDKs", function () {
           "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
           "0x86140A763077155964754968B6F6e243fE809cBe"
         );
+        console.log(synthPrice);
         expect(synthPrice).to.not.equal(0);
       });
       it("getSynthData - success", async function () {
         const synthData = await getSynthData("upunks-0921", 1);
+        console.log(synthData);
         expect(synthData).to.be.an("object");
       });
       it("synthChartData - success", async function () {
