@@ -1,15 +1,18 @@
 import { ethers } from "ethers";
 import { request } from "graphql-request";
 import axios from "axios";
-import sushiData from "@sushiswap/sushi-data";
 import { ERC20Ethers__factory } from "@uma/contracts-node";
-import { defaultAssetsConfig } from "../lib/config";
+import { defaultAssetsConfig, defaultTestAssetsConfig } from "../lib/config";
+import sushiData from '@sushiswap/sushi-data';
 import {
   UNISWAP_ENDPOINT,
   SUSHISWAP_ENDPOINT,
+  BLOCKLYTICS_ENDPOINT,
   UNI_SUSHI_PAIR_DATA,
+  UNI_SUSHI_DAILY_PAIR_DATA,
+  TIMESTAMP_TO_BLOCK
 } from "./queries";
-import { AssetConfigBase, IResentSynthsData } from "types/assets.t";
+import { isAssetConfigEMP, isAssetConfigLSP, IResentSynthsData, AssetConfigLSP, AssetConfigEMP } from "types/assets.t";
 
 /**
  * @notice Helper function to get the decimals of a erc20 token.
@@ -45,6 +48,8 @@ export async function getCurrentDexTokenPrice(
   tokenAddress: string
 ) {
   try {
+    const ts = Math.round(new Date().getTime() / 1000);
+    const blockNow = await timestampToBlock(ts);
     /// @dev Get pool data from graph endpoints.
     const endpoint =
       poolLocation === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
@@ -52,6 +57,7 @@ export async function getCurrentDexTokenPrice(
     // eslint-disable-next-line
     const poolData: any = await request(endpoint, query, {
       pairAddress: poolAddress,
+      blockNumber: blockNow - 5
     });
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -76,7 +82,7 @@ export async function getCurrentDexTokenPrice(
  */
 export async function getSynthData(synthId: string, networkId: number) {
   try {
-    const synthInfo: AssetConfigBase | undefined = getInfoByIdentifier(
+    const synthInfo = getInfoByIdentifier(
       synthId,
       networkId
     );
@@ -85,26 +91,112 @@ export async function getSynthData(synthId: string, networkId: number) {
       return;
     }
 
-    const tokenData = await sushiData.exchange.token24h({
-      token_address: synthInfo.token.address,
-    });
-
     const response = await axios.get(
       `https://data.yam.finance/degenerative/apr/${synthId}`
     );
 
-    return {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      apr: response.data["aprMultiplier"] as string,
-      price: tokenData.priceUSD,
-      priceChanged24h: tokenData.priceUSDChange,
-      liquidity24h: tokenData.liquidityUSD,
-      volume24h: tokenData.volumeUSDOneDay,
-    };
+    const data = response.data as { aprMultiplier: string };
+    const synthData = {};
+    const ts = Math.round(new Date().getTime() / 1000);
+    const tsYesterday = ts - (24 * 3600);
+    const blockNow = await timestampToBlock(ts);
+    const block24hAgo = await timestampToBlock(tsYesterday);
+
+    let poolDataCurrently;
+    let poolDataYesterday;
+
+    if (isAssetConfigEMP(synthInfo)) {
+      const endpoint = synthInfo.pool.location === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
+      const query = UNI_SUSHI_PAIR_DATA;
+      poolDataCurrently = await request(endpoint, query, {
+        pairAddress: synthInfo.pool.address,
+        blockNumber: blockNow - 5
+      });
+      poolDataYesterday = await request(endpoint, query, {
+        pairAddress: synthInfo.pool.address,
+        blockNumber: block24hAgo
+      });
+
+      const poolData = extractPoolData(poolDataCurrently, poolDataYesterday, synthInfo.collateral);
+
+      // @ts-ignore
+      synthData[poolData.tokenId] = {
+        apr: data.aprMultiplier,
+        price: poolData.tokenPriceCurrently,
+        priceChanged24h: getPercentageChange(poolData.tokenPriceCurrently, poolData.tokenPriceYesterday),
+        liquidity24h: poolData.liquidityCurrently,
+        volume24h: poolData.volumeCurrently
+      }
+    } else if (isAssetConfigLSP(synthInfo)) {
+      for (const pool of synthInfo.pools) {
+        const endpoint = pool.location === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
+        const query = UNI_SUSHI_PAIR_DATA;
+        poolDataCurrently = await request(endpoint, query, {
+          pairAddress: pool.address,
+          blockNumber: blockNow - 5
+        });
+        poolDataYesterday = await request(endpoint, query, {
+          pairAddress: pool.address,
+          blockNumber: block24hAgo
+        });
+
+        const poolData = extractPoolData(poolDataCurrently, poolDataYesterday, synthInfo.collateral);
+
+        // @ts-ignore
+        synthData[poolData.tokenId] = {
+          apr: data.aprMultiplier,
+          price: poolData.tokenPriceCurrently,
+          priceChanged24h: getPercentageChange(poolData.tokenPriceCurrently, poolData.tokenPriceYesterday),
+          liquidity24h: poolData.liquidityCurrently,
+          volume24h: poolData.volumeCurrently
+        }
+      }
+    } 
+
+    return synthData;
   } catch (e) {
     console.error("error", e);
     return undefined;
   }
+}
+
+// @ts-ignore
+function extractPoolData(poolDataCurrently, poolDataYesterday, collateral) {
+    let tokenId;
+    let tokenPriceCurrently;
+    let tokenPriceYesterday;
+    let volumeCurrently;
+    let volumeYesterday;
+    let liquidityCurrently;
+    let liquidityYesterday;
+
+    if (poolDataCurrently["pair"].token0.symbol === collateral) {
+      tokenId = poolDataCurrently["pair"].token1.symbol;
+      tokenPriceCurrently = poolDataCurrently["pair"].reserve0 / poolDataCurrently["pair"].reserve1;
+      tokenPriceYesterday = poolDataYesterday["pair"].reserve0 / poolDataYesterday["pair"].reserve1;
+      volumeCurrently = poolDataCurrently["pair"].volumeUSD;
+      volumeYesterday = poolDataYesterday["pair"].volumeUSD;
+      liquidityCurrently = poolDataCurrently["pair"].reserveUSD;
+      liquidityYesterday = poolDataYesterday["pair"].reserveUSD;
+    } else {
+      tokenId = poolDataCurrently["pair"].token0.symbol;
+      tokenPriceCurrently = poolDataCurrently["pair"].reserve1 / poolDataCurrently["pair"].reserve0;
+      tokenPriceYesterday = poolDataYesterday["pair"].reserve1 / poolDataYesterday["pair"].reserve0;
+      volumeCurrently = poolDataCurrently["pair"].volumeUSD;
+      volumeYesterday = poolDataYesterday["pair"].volumeUSD;
+      liquidityCurrently = poolDataCurrently["pair"].reserveUSD;
+      liquidityYesterday = poolDataYesterday["pair"].reserveUSD;
+    }
+
+    return {
+      tokenId,
+      tokenPriceCurrently,
+      tokenPriceYesterday,
+      volumeCurrently,
+      volumeYesterday,
+      liquidityCurrently,
+      liquidityYesterday
+    }
 }
 
 /**
@@ -112,8 +204,8 @@ export async function getSynthData(synthId: string, networkId: number) {
  * @dev Can be used on the front-end to display the most recent synths.
  * @param networkId The network / chain id of the synth deployment.
  */
-export async function getResentSynthData(networkId: number) {
-  const resentSynthData: IResentSynthsData = {};
+export async function getRecentSynthData(networkId: number) {
+  const recentSynthData: IResentSynthsData = {};
 
   for (const synthClassName in defaultAssetsConfig[networkId]) {
     const synthClass = defaultAssetsConfig[networkId][synthClassName];
@@ -121,14 +213,14 @@ export async function getResentSynthData(networkId: number) {
     const synthId = synthClassName + "-" + lastSynth.cycle + lastSynth.year;
     const synthData = await getSynthData(synthId, networkId);
 
-    if (synthData == undefined) {
+    if (synthData === undefined) {
       break;
     }
 
-    resentSynthData[synthClassName] = synthData;
+    recentSynthData[synthClassName] = synthData;
   }
 
-  return resentSynthData;
+  return recentSynthData;
 }
 
 /**
@@ -152,8 +244,12 @@ export async function getTotalMarketData(networks: Array<number>) {
             break;
           }
 
-          totalLiquidity += synthData.liquidity24h;
-          totalVolume += synthData.volume24h;
+          for (const key in synthData) {
+            // @ts-ignore
+            totalLiquidity += Number(synthData[key]["liquidity24h"]);
+            // @ts-ignore
+            totalVolume += Number(synthData[key]["volume24h"]);
+          }
         }
       }
     }
@@ -182,7 +278,11 @@ export function getInfoByIdentifier(synthId: string, network: number) {
 
     for (let i = 0; i < synthClass.length; i++) {
       if (synthClass[i].cycle + synthClass[i].year == synthCycle) {
-        return synthClass[i] as AssetConfigBase;
+        if (isAssetConfigEMP(synthClass[i])) {
+          return synthClass[i] as AssetConfigEMP;
+        } else if (isAssetConfigLSP(synthClass[i])) {
+          return synthClass[i] as AssetConfigLSP;
+        }
       }
     }
 
@@ -199,9 +299,10 @@ export function getInfoByIdentifier(synthId: string, network: number) {
  * @param synthId The synth identifier.
  * @param networkId The network / chain id of the synth deployment.
  * @returns An array of synth market data.
+ * TODO Fill dates with no entries.
  */
 export async function getSynthChartData(synthId: string, networkId: number) {
-  const synthInfo: AssetConfigBase | undefined = getInfoByIdentifier(
+  const synthInfo = getInfoByIdentifier(
     synthId,
     networkId
   );
@@ -210,11 +311,27 @@ export async function getSynthChartData(synthId: string, networkId: number) {
     return;
   }
 
-  const tokenData = await sushiData.charts.tokenDaily({
-    token_address: synthInfo.token.address,
-  });
+  const ts = Math.round(new Date().getTime() / 1000);
+  const tsMonthAgo = ts - (30 * 24 * 3600);
+  let pairData;
 
-  return tokenData;
+  if (isAssetConfigEMP(synthInfo)) {
+    const endpoint = synthInfo.pool.location === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
+    const query = UNI_SUSHI_DAILY_PAIR_DATA;
+    pairData = await request(endpoint, query, {
+      pairAddress: synthInfo.pool.address,
+      startingTime: tsMonthAgo,
+      endingTime: ts
+    });
+    console.log(pairData);
+
+    pairData = await sushiData.charts.pairDaily({
+      pair_address: synthInfo.pool.address,
+    });
+    console.log(pairData);
+  } 
+
+  return pairData;
 }
 
 /**
@@ -225,4 +342,31 @@ export async function getSynthChartData(synthId: string, networkId: number) {
  */
 export function roundNumber(number: number, decimals: number) {
   return Math.round(number * 10 ** decimals) / 10 ** decimals;
+}
+
+/**
+ * @notice Calculates the change between 2 numbers in percentage.
+ * @param oldNumber The initial value.
+ * @param newNumber The value that changed.
+ */
+export function getPercentageChange(oldNumber: number, newNumber: number){
+  const decreaseValue = oldNumber - newNumber;
+
+  return (decreaseValue / oldNumber) * 100;
+}
+
+/**
+ * @notice Converts a given timestamp into a block number.
+ * @param timestamp The timestamp that should be converted.
+ */
+export async function timestampToBlock(timestamp: number) {
+  timestamp = String(timestamp).length > 10 ? Math.floor(timestamp / 1000) : timestamp;
+
+  const endpoint = BLOCKLYTICS_ENDPOINT;
+  const query = TIMESTAMP_TO_BLOCK;
+  const result = await request(endpoint, query, {
+    timestamp: timestamp,
+  });
+
+  return Number(result.blocks[0].number);
 }

@@ -7,7 +7,7 @@ import Synths, {
   getSynthData,
   getSynthChartData,
   getTotalMarketData,
-  getResentSynthData,
+  getRecentSynthData,
   roundNumber,
 } from "../src/index";
 import { SynthsAssetsConfig } from "../src/types/assets.t";
@@ -62,10 +62,10 @@ describe("Synths SDKs", function () {
     });
 
     describe("Helper functions", function () {
-      it("getResentSynthData - success", async function () {
+      it("getRecentSynthData - success", async function () {
         this.timeout(100000);
-        const resentSynthData = await getResentSynthData(1);
-        expect(resentSynthData).to.be.an("object");
+        const recentSynthData = await getRecentSynthData(1);
+        expect(recentSynthData).to.be.an("object");
       });
       it("getTotalMarketData - success", async function () {
         this.timeout(100000);
@@ -83,13 +83,7 @@ describe("Synths SDKs", function () {
       });
       it("getSynthData - success", async function () {
         const synthData = await getSynthData("upunks-0921", 1);
-        const response = await axios.get(
-          `https://data.yam.finance/degenerative/apr/upunks-0921`
-        );
-        expect(synthData).to.deep.include({
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          apr: response.data["aprMultiplier"] as string,
-        });
+        expect(synthData).to.be.an("object");
       });
       it("synthChartData - success", async function () {
         const synthChartData = await getSynthChartData("upunks-0921", 1);

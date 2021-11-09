@@ -5,7 +5,7 @@ import {
   getSynthData,
   getSynthChartData,
   getInfoByIdentifier,
-  getResentSynthData,
+  getRecentSynthData,
   roundNumber,
 } from "./utils/helpers";
 
@@ -16,6 +16,6 @@ export {
   getSynthData,
   getSynthChartData,
   getInfoByIdentifier,
-  getResentSynthData,
+  getRecentSynthData,
   roundNumber,
 };
