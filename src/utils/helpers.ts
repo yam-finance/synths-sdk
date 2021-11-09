@@ -230,7 +230,7 @@ export async function getRecentSynthData(networkId: number) {
  */
 export async function getTotalMarketData(networks: Array<number>) {
   let totalLiquidity = 0;
-  let totalVolume = 0;
+  let total24hVolume = 0;
 
   for (const networkId of networks) {
     for (const synthClassName in defaultAssetsConfig[networkId]) {
@@ -249,7 +249,7 @@ export async function getTotalMarketData(networks: Array<number>) {
             // @ts-ignore
             totalLiquidity += Number(synthData[key]["liquidity"]);
             // @ts-ignore
-            totalVolume += Number(synthData[key]["volume24h"]);
+            total24hVolume += Number(synthData[key]["volume24h"]);
           }
         }
       }
@@ -260,7 +260,7 @@ export async function getTotalMarketData(networks: Array<number>) {
 
   return {
     totalLiquidity: totalLiquidity,
-    total24hVolume: totalVolume,
+    total24hVolume: total24hVolume,
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     totalTVL: response.data["total"] as string,
   };
