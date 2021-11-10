@@ -23,6 +23,8 @@ enum PROVIDER {
 // const WALLET_PRIVATE_KEY = process.env["WALLET_PRIVATE_KEY"] ?? undefined;
 const INFURA_API_KEY = process.env["INFURA_API_KEY"] ?? "";
 const ALCHEMY_API_KEY = process.env["ALCHEMY_API_KEY"] ?? "";
+const ALCHEMY_API_KEY_MAINNET = process.env["ALCHEMY_API_KEY_MAINNET"] ?? "";
+const ALCHEMY_API_KEY_MATIC = process.env["ALCHEMY_API_KEY_MATIC"] ?? "";
 const PREFERRED_PROVIDER =
   process.env["INFURA_API_KEY"]?.toLowerCase() === PROVIDER.INFURA
     ? PROVIDER.INFURA
@@ -61,8 +63,8 @@ const NETWORK_URLS = {
     matic: `https://polygon-mainnet.infura.io/v3/${INFURA_API_KEY}`,
   },
   [PROVIDER.ALCHEMY]: {
-    mainnet: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_API_KEY}`,
-    matic: `https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+    mainnet: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_API_KEY_MAINNET}`,
+    matic: `https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY_MATIC}`,
   },
 };
 
