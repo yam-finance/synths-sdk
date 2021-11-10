@@ -36,8 +36,8 @@ export const UNI_SUSHI_PAIR_DATA = gql`
 `;
 
 export const UNI_SUSHI_DAILY_PAIR_DATA = gql`
-  query pairDayDatas($pairAddress: Bytes!, $startingTime: Int!, $endingTime: Int!) {
-    pairDayDatas(orderDirection: desc, where: { pair: $pairAddress, date_gte: $startingTime, date_lte: $endingTime }) {
+  query pairDayDatas($pairAddress: Bytes!) {
+    pairDayDatas(orderDirection: desc, where: { pair: $pairAddress }) {
       token0 {
         symbol
       }

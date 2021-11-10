@@ -3,7 +3,6 @@ import { request } from "graphql-request";
 import axios from "axios";
 import { ERC20Ethers__factory } from "@uma/contracts-node";
 import { defaultAssetsConfig, defaultTestAssetsConfig } from "../lib/config";
-import sushiData from '@sushiswap/sushi-data';
 import {
   UNISWAP_ENDPOINT,
   SUSHISWAP_ENDPOINT,
@@ -13,7 +12,6 @@ import {
   TIMESTAMP_TO_BLOCK
 } from "./queries";
 import { isAssetConfigEMP, isAssetConfigLSP, IResentSynthsData, AssetConfigLSP, AssetConfigEMP } from "types/assets.t";
-import { pool } from "@sushiswap/sushi-data/typings/masterchef";
 
 /**
  * @notice Helper function to get the decimals of a erc20 token.
@@ -172,7 +170,7 @@ function extractPoolData(poolDataCurrently, poolDataYesterday, collateral) {
     let liquidityYesterday;
 
     if (poolDataCurrently["pair"].token0.symbol === collateral) {
-      tokenId = poolDataCurrently["pair"].token1.symbol;
+      tokenId = poolDataCurrently["pair"].token1.id;
       tokenPriceCurrently = poolDataCurrently["pair"].reserve0 / poolDataCurrently["pair"].reserve1;
       tokenPriceYesterday = poolDataYesterday["pair"].reserve0 / poolDataYesterday["pair"].reserve1;
       volumeCurrently = poolDataCurrently["pair"].volumeToken1;
@@ -180,7 +178,7 @@ function extractPoolData(poolDataCurrently, poolDataYesterday, collateral) {
       liquidityCurrently = poolDataCurrently["pair"].reserveUSD;
       liquidityYesterday = poolDataYesterday["pair"].reserveUSD;
     } else {
-      tokenId = poolDataCurrently["pair"].token0.symbol;
+      tokenId = poolDataCurrently["pair"].token0.id;
       tokenPriceCurrently = poolDataCurrently["pair"].reserve1 / poolDataCurrently["pair"].reserve0;
       tokenPriceYesterday = poolDataYesterday["pair"].reserve1 / poolDataYesterday["pair"].reserve0;
       volumeCurrently = poolDataCurrently["pair"].volumeToken0;
@@ -295,44 +293,97 @@ export function getInfoByIdentifier(synthId: string, network: number) {
 }
 
 /**
- * @notice Helper function to get market chart data.
- * @dev The data gets fetched from Sushiswap every 24h.
- * @param synthId The synth identifier.
- * @param networkId The network / chain id of the synth deployment.
- * @returns An array of synth market data.
- * TODO Fill dates with no entries.
+ * @notice Helper function to get pool data.
+ * @param poolAddress The pool address you want to get the data from.
+ * @param tokenAddress The token of which you want to get the price.
+ * @param location The pool location:
+ * @returns An array of token market data.
  */
-export async function getSynthChartData(synthId: string, networkId: number) {
-  const synthInfo = getInfoByIdentifier(
-    synthId,
-    networkId
-  );
+export async function getPoolChartData(poolAddress: string, tokenAddress: string, location: string) {
+  const TWENTY_FOUR_HOURS = 86400;
+  let dayIndexSet = new Set();
+  // @ts-ignore
+  let dayIndexArray = [];
+  const tsEnd = Math.round(new Date().getTime() / 1000);
+  const tsStart = tsEnd - (365 * 24 * 3600);
 
-  if (synthInfo == undefined) {
-    return;
+  const endpoint = location === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
+  const query = UNI_SUSHI_DAILY_PAIR_DATA;
+  const pairData = await request(endpoint, query, {
+    pairAddress: poolAddress,
+  });
+
+  let data = [];
+  let graphData = pairData.pairDayDatas;
+
+  // @ts-ignore
+  graphData.forEach((dayData, i ) => {
+    let price;
+
+    if (graphData[i].token0.id == tokenAddress) {
+      price = graphData[i].reserve0 / graphData[i].reserve1
+    } else {
+      price = graphData[i].reserve1 / graphData[i].reserve0
+    }
+
+    graphData[i].price = price;
+    
+    // @ts-ignore
+    dayIndexSet.add((graphData[i].date / TWENTY_FOUR_HOURS).toFixed(0));
+    // @ts-ignore
+    dayIndexArray.push(graphData[i]);
+    data.push({
+      date: new Date(graphData[i].date * 1000),
+      timestamp: graphData[i].date,
+      reserveUSD : graphData[i].reserveUSD,
+      volumeUSD: graphData[i].volumeUSD,
+      price: graphData[i].price
+    });
+
+  });
+
+  let timestamp = graphData[0] && graphData[0].date ? graphData[0].date : tsStart;
+  let latestReserveUSD = graphData[0] && graphData[0].reserveUSD;
+  let latestVolumeUSD = graphData[0] && graphData[0].volumeUSD;
+  let latestPrice = graphData[0] && graphData[0].price;
+  let index = 1;
+
+  while (timestamp < tsEnd - TWENTY_FOUR_HOURS) {
+    const nextDay = timestamp + TWENTY_FOUR_HOURS;
+    let currentDayIndex = (nextDay / TWENTY_FOUR_HOURS).toFixed(0);
+    if (!dayIndexSet.has(currentDayIndex)) {
+        data.push({
+            // id: `${data[0].id.split("-")[0]}-${nextDay / TWENTY_FOUR_HOURS}`,
+            date: new Date(nextDay * 1000),
+            timestamp: nextDay,
+            reserveUSD: latestReserveUSD,
+            volumeUSD : latestVolumeUSD,
+            price: latestPrice,
+        });
+    } else {
+        // @ts-ignore
+        latestReserveUSD = dayIndexArray[index].reserveUSD;
+        // @ts-ignore
+        latestVolumeUSD = dayIndexArray[index].volumeUSD;
+        // @ts-ignore
+        if (dayIndexArray[index].token0.id == tokenAddress) {
+          // @ts-ignore
+            latestPrice = dayIndexArray[index].reserve0 / dayIndexArray[index].reserve1
+          } else {
+            // @ts-ignore
+            latestPrice = dayIndexArray[index].reserve1 / dayIndexArray[index].reserve0
+          }
+              index = index + 1;
+          }
+    timestamp = nextDay;
   }
 
-  const ts = Math.round(new Date().getTime() / 1000);
-  const tsMonthAgo = ts - (30 * 24 * 3600);
-  let pairData;
+  // @ts-ignore
+  data = data.sort((a, b) => (parseInt(a.timestamp) > parseInt(b.timestamp) ? 1 : -1));
 
-  if (isAssetConfigEMP(synthInfo)) {
-    const endpoint = synthInfo.pool.location === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
-    const query = UNI_SUSHI_DAILY_PAIR_DATA;
-    pairData = await request(endpoint, query, {
-      pairAddress: synthInfo.pool.address,
-      startingTime: tsMonthAgo,
-      endingTime: ts
-    });
-    // console.log(pairData);
+  console.log(data)
 
-    pairData = await sushiData.charts.pairDaily({
-      pair_address: synthInfo.pool.address,
-    });
-    // console.log(pairData);
-  } 
-
-  return pairData;
+  return data;
 }
 
 /**
