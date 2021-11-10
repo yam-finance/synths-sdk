@@ -89,7 +89,11 @@ describe("Synths SDKs", function () {
         expect(synthData).to.be.an("object");
       });
       it("synthChartData - success", async function () {
-        const synthChartData = await getPoolChartData("0x9469313a1702dc275015775249883cfc35aa94d8", "0x86140A763077155964754968B6F6e243fE809cBe", "sushiswap");
+        const synthChartData = await getPoolChartData(
+          "0x9469313a1702dc275015775249883cfc35aa94d8",
+          "0x86140A763077155964754968B6F6e243fE809cBe",
+          "sushiswap"
+        );
         expect(synthChartData).to.be.an("array");
       });
       it("roundNumber - success", function () {

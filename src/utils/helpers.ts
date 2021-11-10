@@ -9,9 +9,15 @@ import {
   BLOCKLYTICS_ENDPOINT,
   UNI_SUSHI_PAIR_DATA,
   UNI_SUSHI_DAILY_PAIR_DATA,
-  TIMESTAMP_TO_BLOCK
+  TIMESTAMP_TO_BLOCK,
 } from "./queries";
-import { isAssetConfigEMP, isAssetConfigLSP, IResentSynthsData, AssetConfigLSP, AssetConfigEMP } from "types/assets.t";
+import {
+  isAssetConfigEMP,
+  isAssetConfigLSP,
+  IResentSynthsData,
+  AssetConfigLSP,
+  AssetConfigEMP,
+} from "types/assets.t";
 
 /**
  * @notice Helper function to get the decimals of a erc20 token.
@@ -56,7 +62,7 @@ export async function getCurrentDexTokenPrice(
     // eslint-disable-next-line
     const poolData: any = await request(endpoint, query, {
       pairAddress: poolAddress,
-      blockNumber: blockNow - 5
+      blockNumber: blockNow - 5,
     });
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -81,10 +87,7 @@ export async function getCurrentDexTokenPrice(
  */
 export async function getSynthData(synthId: string, networkId: number) {
   try {
-    const synthInfo = getInfoByIdentifier(
-      synthId,
-      networkId
-    );
+    const synthInfo = getInfoByIdentifier(synthId, networkId);
 
     if (synthInfo == undefined) {
       return;
@@ -97,7 +100,7 @@ export async function getSynthData(synthId: string, networkId: number) {
     const data = response.data as { aprMultiplier: string };
     const synthData = {};
     const ts = Math.round(new Date().getTime() / 1000);
-    const tsYesterday = ts - (24 * 3600);
+    const tsYesterday = ts - 24 * 3600;
     const blockNow = await timestampToBlock(ts);
     const block24hAgo = await timestampToBlock(tsYesterday);
 
@@ -105,52 +108,74 @@ export async function getSynthData(synthId: string, networkId: number) {
     let poolDataYesterday;
 
     if (isAssetConfigEMP(synthInfo)) {
-      const endpoint = synthInfo.pool.location === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
+      const endpoint =
+        synthInfo.pool.location === "uni"
+          ? UNISWAP_ENDPOINT
+          : SUSHISWAP_ENDPOINT;
       const query = UNI_SUSHI_PAIR_DATA;
       poolDataCurrently = await request(endpoint, query, {
         pairAddress: synthInfo.pool.address,
-        blockNumber: blockNow - 5
+        blockNumber: blockNow - 5,
       });
       poolDataYesterday = await request(endpoint, query, {
         pairAddress: synthInfo.pool.address,
-        blockNumber: block24hAgo
+        blockNumber: block24hAgo,
       });
 
-      const poolData = extractPoolData(poolDataCurrently, poolDataYesterday, synthInfo.collateral);
+      const poolData = extractPoolData(
+        poolDataCurrently,
+        poolDataYesterday,
+        synthInfo.collateral
+      );
 
       // @ts-ignore
       synthData[poolData.tokenId] = {
         apr: data.aprMultiplier,
         price: poolData.tokenPriceCurrently,
-        priceChanged24h: getPercentageChange(poolData.tokenPriceCurrently, poolData.tokenPriceYesterday),
+        priceChanged24h: getPercentageChange(
+          poolData.tokenPriceCurrently,
+          poolData.tokenPriceYesterday
+        ),
         liquidity: poolData.liquidityCurrently,
-        volume24h: Math.abs(poolData.volumeCurrently - poolData.volumeYesterday)
-      }
+        volume24h: Math.abs(
+          poolData.volumeCurrently - poolData.volumeYesterday
+        ),
+      };
     } else if (isAssetConfigLSP(synthInfo)) {
       for (const pool of synthInfo.pools) {
-        const endpoint = pool.location === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
+        const endpoint =
+          pool.location === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
         const query = UNI_SUSHI_PAIR_DATA;
         poolDataCurrently = await request(endpoint, query, {
           pairAddress: pool.address,
-          blockNumber: blockNow - 5
+          blockNumber: blockNow - 5,
         });
         poolDataYesterday = await request(endpoint, query, {
           pairAddress: pool.address,
-          blockNumber: block24hAgo
+          blockNumber: block24hAgo,
         });
 
-        const poolData = extractPoolData(poolDataCurrently, poolDataYesterday, synthInfo.collateral);
+        const poolData = extractPoolData(
+          poolDataCurrently,
+          poolDataYesterday,
+          synthInfo.collateral
+        );
 
         // @ts-ignore
         synthData[poolData.tokenId] = {
           apr: data.aprMultiplier,
           price: poolData.tokenPriceCurrently,
-          priceChanged24h: getPercentageChange(poolData.tokenPriceCurrently, poolData.tokenPriceYesterday),
+          priceChanged24h: getPercentageChange(
+            poolData.tokenPriceCurrently,
+            poolData.tokenPriceYesterday
+          ),
           liquidity: poolData.liquidityCurrently,
-          volume24h: Math.abs(poolData.volumeCurrently - poolData.volumeYesterday)
-        }
+          volume24h: Math.abs(
+            poolData.volumeCurrently - poolData.volumeYesterday
+          ),
+        };
       }
-    } 
+    }
 
     return synthData;
   } catch (e) {
@@ -161,41 +186,45 @@ export async function getSynthData(synthId: string, networkId: number) {
 
 // @ts-ignore
 function extractPoolData(poolDataCurrently, poolDataYesterday, collateral) {
-    let tokenId;
-    let tokenPriceCurrently;
-    let tokenPriceYesterday;
-    let volumeCurrently;
-    let volumeYesterday;
-    let liquidityCurrently;
-    let liquidityYesterday;
+  let tokenId;
+  let tokenPriceCurrently;
+  let tokenPriceYesterday;
+  let volumeCurrently;
+  let volumeYesterday;
+  let liquidityCurrently;
+  let liquidityYesterday;
 
-    if (poolDataCurrently["pair"].token0.symbol === collateral) {
-      tokenId = poolDataCurrently["pair"].token1.id;
-      tokenPriceCurrently = poolDataCurrently["pair"].reserve0 / poolDataCurrently["pair"].reserve1;
-      tokenPriceYesterday = poolDataYesterday["pair"].reserve0 / poolDataYesterday["pair"].reserve1;
-      volumeCurrently = poolDataCurrently["pair"].volumeToken1;
-      volumeYesterday = poolDataYesterday["pair"].volumeToken1;
-      liquidityCurrently = poolDataCurrently["pair"].reserveUSD;
-      liquidityYesterday = poolDataYesterday["pair"].reserveUSD;
-    } else {
-      tokenId = poolDataCurrently["pair"].token0.id;
-      tokenPriceCurrently = poolDataCurrently["pair"].reserve1 / poolDataCurrently["pair"].reserve0;
-      tokenPriceYesterday = poolDataYesterday["pair"].reserve1 / poolDataYesterday["pair"].reserve0;
-      volumeCurrently = poolDataCurrently["pair"].volumeToken0;
-      volumeYesterday = poolDataYesterday["pair"].volumeToken0;
-      liquidityCurrently = poolDataCurrently["pair"].reserveUSD;
-      liquidityYesterday = poolDataYesterday["pair"].reserveUSD;
-    }
+  if (poolDataCurrently["pair"].token0.symbol === collateral) {
+    tokenId = poolDataCurrently["pair"].token1.id;
+    tokenPriceCurrently =
+      poolDataCurrently["pair"].reserve0 / poolDataCurrently["pair"].reserve1;
+    tokenPriceYesterday =
+      poolDataYesterday["pair"].reserve0 / poolDataYesterday["pair"].reserve1;
+    volumeCurrently = poolDataCurrently["pair"].volumeToken1;
+    volumeYesterday = poolDataYesterday["pair"].volumeToken1;
+    liquidityCurrently = poolDataCurrently["pair"].reserveUSD;
+    liquidityYesterday = poolDataYesterday["pair"].reserveUSD;
+  } else {
+    tokenId = poolDataCurrently["pair"].token0.id;
+    tokenPriceCurrently =
+      poolDataCurrently["pair"].reserve1 / poolDataCurrently["pair"].reserve0;
+    tokenPriceYesterday =
+      poolDataYesterday["pair"].reserve1 / poolDataYesterday["pair"].reserve0;
+    volumeCurrently = poolDataCurrently["pair"].volumeToken0;
+    volumeYesterday = poolDataYesterday["pair"].volumeToken0;
+    liquidityCurrently = poolDataCurrently["pair"].reserveUSD;
+    liquidityYesterday = poolDataYesterday["pair"].reserveUSD;
+  }
 
-    return {
-      tokenId,
-      tokenPriceCurrently,
-      tokenPriceYesterday,
-      volumeCurrently,
-      volumeYesterday,
-      liquidityCurrently,
-      liquidityYesterday
-    }
+  return {
+    tokenId,
+    tokenPriceCurrently,
+    tokenPriceYesterday,
+    volumeCurrently,
+    volumeYesterday,
+    liquidityCurrently,
+    liquidityYesterday,
+  };
 }
 
 /**
@@ -299,13 +328,17 @@ export function getInfoByIdentifier(synthId: string, network: number) {
  * @param location The pool location:
  * @returns An array of token market data.
  */
-export async function getPoolChartData(poolAddress: string, tokenAddress: string, location: string) {
+export async function getPoolChartData(
+  poolAddress: string,
+  tokenAddress: string,
+  location: string
+) {
   const TWENTY_FOUR_HOURS = 86400;
-  let dayIndexSet = new Set();
+  const dayIndexSet = new Set();
   // @ts-ignore
-  let dayIndexArray = [];
+  const dayIndexArray = [];
   const tsEnd = Math.round(new Date().getTime() / 1000);
-  const tsStart = tsEnd - (365 * 24 * 3600);
+  const tsStart = tsEnd - 365 * 24 * 3600;
 
   const endpoint = location === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
   const query = UNI_SUSHI_DAILY_PAIR_DATA;
@@ -314,20 +347,20 @@ export async function getPoolChartData(poolAddress: string, tokenAddress: string
   });
 
   let data = [];
-  let graphData = pairData.pairDayDatas;
+  const graphData = pairData.pairDayDatas;
 
   // @ts-ignore
-  graphData.forEach((dayData, i ) => {
+  graphData.forEach((dayData, i) => {
     let price;
 
     if (graphData[i].token0.id == tokenAddress) {
-      price = graphData[i].reserve0 / graphData[i].reserve1
+      price = graphData[i].reserve0 / graphData[i].reserve1;
     } else {
-      price = graphData[i].reserve1 / graphData[i].reserve0
+      price = graphData[i].reserve1 / graphData[i].reserve0;
     }
 
     graphData[i].price = price;
-    
+
     // @ts-ignore
     dayIndexSet.add((graphData[i].date / TWENTY_FOUR_HOURS).toFixed(0));
     // @ts-ignore
@@ -335,14 +368,14 @@ export async function getPoolChartData(poolAddress: string, tokenAddress: string
     data.push({
       date: new Date(graphData[i].date * 1000),
       timestamp: graphData[i].date,
-      reserveUSD : graphData[i].reserveUSD,
+      reserveUSD: graphData[i].reserveUSD,
       volumeUSD: graphData[i].volumeUSD,
-      price: graphData[i].price
+      price: graphData[i].price,
     });
-
   });
 
-  let timestamp = graphData[0] && graphData[0].date ? graphData[0].date : tsStart;
+  let timestamp =
+    graphData[0] && graphData[0].date ? graphData[0].date : tsStart;
   let latestReserveUSD = graphData[0] && graphData[0].reserveUSD;
   let latestVolumeUSD = graphData[0] && graphData[0].volumeUSD;
   let latestPrice = graphData[0] && graphData[0].price;
@@ -350,38 +383,42 @@ export async function getPoolChartData(poolAddress: string, tokenAddress: string
 
   while (timestamp < tsEnd - TWENTY_FOUR_HOURS) {
     const nextDay = timestamp + TWENTY_FOUR_HOURS;
-    let currentDayIndex = (nextDay / TWENTY_FOUR_HOURS).toFixed(0);
+    const currentDayIndex = (nextDay / TWENTY_FOUR_HOURS).toFixed(0);
     if (!dayIndexSet.has(currentDayIndex)) {
-        data.push({
-            // id: `${data[0].id.split("-")[0]}-${nextDay / TWENTY_FOUR_HOURS}`,
-            date: new Date(nextDay * 1000),
-            timestamp: nextDay,
-            reserveUSD: latestReserveUSD,
-            volumeUSD : latestVolumeUSD,
-            price: latestPrice,
-        });
+      data.push({
+        // id: `${data[0].id.split("-")[0]}-${nextDay / TWENTY_FOUR_HOURS}`,
+        date: new Date(nextDay * 1000),
+        timestamp: nextDay,
+        reserveUSD: latestReserveUSD,
+        volumeUSD: latestVolumeUSD,
+        price: latestPrice,
+      });
     } else {
+      // @ts-ignore
+      latestReserveUSD = dayIndexArray[index].reserveUSD;
+      // @ts-ignore
+      latestVolumeUSD = dayIndexArray[index].volumeUSD;
+      // @ts-ignore
+      if (dayIndexArray[index].token0.id == tokenAddress) {
         // @ts-ignore
-        latestReserveUSD = dayIndexArray[index].reserveUSD;
+        latestPrice =
+          dayIndexArray[index].reserve0 / dayIndexArray[index].reserve1;
+      } else {
         // @ts-ignore
-        latestVolumeUSD = dayIndexArray[index].volumeUSD;
-        // @ts-ignore
-        if (dayIndexArray[index].token0.id == tokenAddress) {
-          // @ts-ignore
-            latestPrice = dayIndexArray[index].reserve0 / dayIndexArray[index].reserve1
-          } else {
-            // @ts-ignore
-            latestPrice = dayIndexArray[index].reserve1 / dayIndexArray[index].reserve0
-          }
-              index = index + 1;
-          }
+        latestPrice =
+          dayIndexArray[index].reserve1 / dayIndexArray[index].reserve0;
+      }
+      index = index + 1;
+    }
     timestamp = nextDay;
   }
 
   // @ts-ignore
-  data = data.sort((a, b) => (parseInt(a.timestamp) > parseInt(b.timestamp) ? 1 : -1));
+  data = data.sort((a, b) =>
+    parseInt(a.timestamp) > parseInt(b.timestamp) ? 1 : -1
+  );
 
-  console.log(data)
+  console.log(data);
 
   return data;
 }
@@ -401,7 +438,7 @@ export function roundNumber(number: number, decimals: number) {
  * @param oldNumber The initial value.
  * @param newNumber The value that changed.
  */
-export function getPercentageChange(oldNumber: number, newNumber: number){
+export function getPercentageChange(oldNumber: number, newNumber: number) {
   const decreaseValue = oldNumber - newNumber;
 
   return (decreaseValue / oldNumber) * 100;
@@ -412,7 +449,8 @@ export function getPercentageChange(oldNumber: number, newNumber: number){
  * @param timestamp The timestamp that should be converted.
  */
 export async function timestampToBlock(timestamp: number) {
-  timestamp = String(timestamp).length > 10 ? Math.floor(timestamp / 1000) : timestamp;
+  timestamp =
+    String(timestamp).length > 10 ? Math.floor(timestamp / 1000) : timestamp;
 
   const endpoint = BLOCKLYTICS_ENDPOINT;
   const query = TIMESTAMP_TO_BLOCK;
