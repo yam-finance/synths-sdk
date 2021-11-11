@@ -137,41 +137,6 @@ export async function getSynthData(
       liquidity: poolData.liquidityCurrently,
       volume24h: Math.abs(poolData.volumeCurrently - poolData.volumeYesterday),
     };
-    // } else if (isAssetConfigLSP(synthInfo)) {
-    //   for (const pool of synthInfo.pools) {
-    //     const endpoint =
-    //       pool.location === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
-    //     const query = UNI_SUSHI_PAIR_DATA;
-    //     poolDataCurrently = await request(endpoint, query, {
-    //       pairAddress: pool.address,
-    //       blockNumber: blockNow - 5,
-    //     });
-    //     poolDataYesterday = await request(endpoint, query, {
-    //       pairAddress: pool.address,
-    //       blockNumber: block24hAgo,
-    //     });
-
-    //     const poolData = extractPoolData(
-    //       poolDataCurrently,
-    //       poolDataYesterday,
-    //       synthInfo.collateral
-    //     );
-
-    //     // @ts-ignore
-    //     synthData[poolData.tokenId] = {
-    //       apr: data.aprMultiplier,
-    //       price: poolData.tokenPriceCurrently,
-    //       priceChanged24h: getPercentageChange(
-    //         poolData.tokenPriceCurrently,
-    //         poolData.tokenPriceYesterday
-    //       ),
-    //       liquidity: poolData.liquidityCurrently,
-    //       volume24h: Math.abs(
-    //         poolData.volumeCurrently - poolData.volumeYesterday
-    //       ),
-    //     };
-    //   }
-    // }
 
     return synthData;
   } catch (e) {
@@ -297,20 +262,16 @@ export async function getTotalMarketData(networks: Array<number>) {
               totalSynthData[pool.address] = synthData;
             }
           }
-
-          // if (synthData == undefined) {
-          //   break;
-          // }
-
-          for (const key in totalSynthData) {
-            // @ts-ignore
-            totalLiquidity += Number(totalSynthData[key]["liquidity"]);
-            // @ts-ignore
-            total24hVolume += Number(totalSynthData[key]["volume24h"]);
-          }
         }
       }
     }
+  }
+
+  for (const key in totalSynthData) {
+    // @ts-ignore
+    totalLiquidity += Number(totalSynthData[key]["liquidity"]);
+    // @ts-ignore
+    total24hVolume += Number(totalSynthData[key]["volume24h"]);
   }
 
   const response = await axios.get(`https://api.yam.finance/tvl/degenerative`);
