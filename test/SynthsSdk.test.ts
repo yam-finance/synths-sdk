@@ -1,7 +1,7 @@
 import { ethers, network } from "hardhat";
 import { BigNumber } from "ethers";
 import { expect } from "chai";
-import axios from "axios";
+// import axios from "axios";
 import Synths, {
   getCurrentDexTokenPrice,
   getSynthData,
@@ -58,6 +58,7 @@ describe("Synths SDKs", function () {
         userAssetsConfig: userAssetsConfig,
       });
 
+      // TODO Connect asset with emp / lsp address.
       upunksAsset = synthsSDK.connectAsset("upunks-0921");
     });
 
@@ -84,15 +85,15 @@ describe("Synths SDKs", function () {
         expect(synthPrice).to.not.equal(0);
       });
       it("getSynthData - success", async function () {
-        const synthData = await getSynthData("upunks-0921", 1);
+        const synthData = await getSynthData("sushiswap", "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa", "WETH");
         console.log(synthData);
         expect(synthData).to.be.an("object");
       });
       it("synthChartData - success", async function () {
         const synthChartData = await getPoolChartData(
+          "sushiswap",
           "0x9469313a1702dc275015775249883cfc35aa94d8",
-          "0x86140A763077155964754968B6F6e243fE809cBe",
-          "sushiswap"
+          "0x86140A763077155964754968B6F6e243fE809cBe"
         );
         expect(synthChartData).to.be.an("array");
       });

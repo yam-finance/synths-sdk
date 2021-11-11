@@ -5,6 +5,7 @@ import { task } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle"; // imports hardhat-ethers https://hardhat.org/guides/waffle-testing.html#setting-up
 import "@nomiclabs/hardhat-solhint";
 import "@nomiclabs/hardhat-etherscan";
+import "@nomiclabs/hardhat-ethers";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "hardhat-deploy";
