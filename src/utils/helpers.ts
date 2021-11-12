@@ -17,6 +17,9 @@ import {
   IResentSynthsData,
   AssetConfigLSP,
   AssetConfigEMP,
+  IPoolData,
+  IPoolToken,
+  AssetConfigBase,
 } from "types/assets.t";
 
 /**
@@ -60,18 +63,14 @@ export async function getCurrentDexTokenPrice(
     const endpoint =
       poolLocation === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
     const query = UNI_SUSHI_PAIR_DATA;
-    // eslint-disable-next-line
-    const poolData: any = await request(endpoint, query, {
+    const poolData: IPoolData = await request(endpoint, query, {
       pairAddress: poolAddress,
       blockNumber: blockNow - 5,
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (poolData["pair"].token0.id === tokenAddress) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       return poolData["pair"].reserve0 / poolData["pair"].reserve1;
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       return poolData["pair"].reserve1 / poolData["pair"].reserve0;
     }
   } catch (e) {
@@ -93,27 +92,20 @@ export async function getSynthData(
   collateralSymbol: string
 ) {
   try {
-    // const response = await axios.get<{ aprMultiplier: string }>(
-    //   `https://data.yam.finance/degenerative/apr/${synthId}`
-    // );
-
-    // const data = response.data;
+    const rewards = await getYamRewardsByPoolAddress(poolAddress);
     const ts = Math.round(new Date().getTime() / 1000);
     const tsYesterday = ts - 24 * 3600;
     const blockNow = await timestampToBlock(ts);
     const block24hAgo = await timestampToBlock(tsYesterday);
 
-    let poolDataCurrently;
-    let poolDataYesterday;
-
     const endpoint =
       poolLocation === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
     const query = UNI_SUSHI_PAIR_DATA;
-    poolDataCurrently = await request(endpoint, query, {
+    const poolDataCurrently: IPoolData = await request(endpoint, query, {
       pairAddress: poolAddress,
       blockNumber: blockNow - 5,
     });
-    poolDataYesterday = await request(endpoint, query, {
+    const poolDataYesterday: IPoolData = await request(endpoint, query, {
       pairAddress: poolAddress,
       blockNumber: block24hAgo,
     });
@@ -124,11 +116,10 @@ export async function getSynthData(
       collateralSymbol
     );
 
-    // @ts-ignore
     const synthData = {
       tokenId: poolData.tokenId,
       tokenSymbol: poolData.tokenSymbol,
-      // apr: data.aprMultiplier,
+      apr: rewards,
       price: poolData.tokenPriceCurrently,
       priceChanged24h: getPercentageChange(
         poolData.tokenPriceCurrently,
@@ -145,8 +136,11 @@ export async function getSynthData(
   }
 }
 
-// @ts-ignore
-function extractPoolData(poolDataCurrently, poolDataYesterday, collateral) {
+function extractPoolData(
+  poolDataCurrently: IPoolData,
+  poolDataYesterday: IPoolData,
+  collateral: string
+) {
   let tokenId;
   let tokenSymbol;
   let tokenPriceCurrently;
@@ -201,13 +195,11 @@ function extractPoolData(poolDataCurrently, poolDataYesterday, collateral) {
  */
 export async function getRecentSynthData(networkId: number) {
   const recentSynthData: IResentSynthsData = {};
-  let recentTokenData = {};
 
   for (const synthClassName in defaultAssetsConfig[networkId]) {
     const synthClass = defaultAssetsConfig[networkId][synthClassName];
     const lastSynth = synthClass.slice(-1)[0];
     const synthId = synthClassName + "-" + lastSynth.cycle + lastSynth.year;
-
 
     if (isAssetConfigEMP(lastSynth)) {
       const data = await getSynthData(
@@ -220,7 +212,11 @@ export async function getRecentSynthData(networkId: number) {
       recentSynthData[lastSynth.pool.address] = data;
     } else if (isAssetConfigLSP(lastSynth)) {
       for (const pool of lastSynth.pools) {
-        const data = await getSynthData(pool.location, pool.address, lastSynth.collateral);
+        const data = await getSynthData(
+          pool.location,
+          pool.address,
+          lastSynth.collateral
+        );
 
         // @ts-ignore
         recentSynthData[pool.address] = data;
@@ -250,14 +246,23 @@ export async function getTotalMarketData(networks: Array<number>) {
             synthClassName + "-" + synthClass[i].cycle + synthClass[i].year;
 
           if (isAssetConfigEMP(synthClass[i])) {
-            // @ts-ignore
-            const synthData = await getSynthData(synthClass[i].pool.location, synthClass[i].pool.address, synthClass[i].collateral);
+            const synthData = await getSynthData(
+              // @ts-ignore
+              synthClass[i].pool.location,
+              // @ts-ignore
+              synthClass[i].pool.address,
+              synthClass[i].collateral
+            );
             // @ts-ignore
             totalSynthData[synthClass[i].pool.address] = synthData;
           } else if (isAssetConfigLSP(synthClass[i])) {
             // @ts-ignore
             for (const pool of synthClass[i].pools) {
-              const synthData = await getSynthData(pool.location, pool.address, synthClass[i].collateral);
+              const synthData = await getSynthData(
+                pool.location,
+                pool.address,
+                synthClass[i].collateral
+              );
               // @ts-ignore
               totalSynthData[pool.address] = synthData;
             }
@@ -274,13 +279,14 @@ export async function getTotalMarketData(networks: Array<number>) {
     total24hVolume += Number(totalSynthData[key]["volume24h"]);
   }
 
-  const response = await axios.get(`https://api.yam.finance/tvl/degenerative`);
+  const response = await axios.get<{ total: string }>(
+    `https://api.yam.finance/tvl/degenerative`
+  );
 
   return {
     totalLiquidity: totalLiquidity,
     total24hVolume: total24hVolume,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    totalTVL: response.data["total"] as string,
+    totalTVL: response.data["total"],
   };
 }
 
@@ -313,6 +319,61 @@ export function getInfoByIdentifier(synthId: string, network: number) {
 }
 
 /**
+ * @notice Helper function to get the rewards by pool address.
+ * @dev Should be removed after api accepts a pool address instead of an id.
+ */
+export async function getYamRewardsByPoolAddress(poolAddress: string) {
+  try {
+    let synthId;
+    let poolCount: number = 0;
+
+    for (const networkId in defaultAssetsConfig) {
+      for (const synthClassName in defaultAssetsConfig[networkId]) {
+        const synthClass = defaultAssetsConfig[networkId][synthClassName];
+        for (let i = 0; i < synthClass.length; i++) {
+          if (isAssetConfigEMP(synthClass[i])) {
+            // @ts-ignore
+            if (synthClass[i].pool.address == poolAddress) {
+              synthId =
+                synthClassName + "-" + synthClass[i].cycle + synthClass[i].year;
+              poolCount += 1;
+              break;
+            }
+          } else if (isAssetConfigLSP(synthClass[i])) {
+            // @ts-ignore
+            for (const pool of synthClass[i].pools) {
+              if (pool.address == poolAddress) {
+                synthId =
+                  synthClassName +
+                  "-" +
+                  synthClass[i].cycle +
+                  synthClass[i].year;
+                // @ts-ignore
+                poolCount += synthClass[i].pools.length;
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    const response = await axios.get<{ aprMultiplier: string }>(
+      `https://data.yam.finance/degenerative/apr/${synthId}`
+    );
+
+    const rewards = Number(response.data.aprMultiplier) / poolCount;
+
+    return String(rewards);
+  } catch (e) {
+    console.error("error", e);
+    return undefined;
+  }
+}
+
+export interface IPairData {}
+
+/**
  * @notice Helper function to get pool data.
  * @dev Since the subgraph only indexes data if something has changed we fill the data manually.
  * @param poolAddress The pool address you want to get the data from.
@@ -327,8 +388,7 @@ export async function getPoolChartData(
 ) {
   const TWENTY_FOUR_HOURS = 86400;
   const dayIndexSet = new Set();
-  // @ts-ignore
-  const dayIndexArray = [];
+  const dayIndexArray: any[] = [];
   const tsEnd = Math.round(new Date().getTime() / 1000);
   const tsStart = tsEnd - 365 * 24 * 3600;
 
@@ -342,8 +402,7 @@ export async function getPoolChartData(
   let data = [];
   const graphData = pairData.pairDayDatas;
 
-  // @ts-ignore
-  graphData.forEach((dayData, i) => {
+  graphData.forEach((_: any, i: string | number) => {
     let price;
 
     if (graphData[i].token0.id == tokenAddress) {
@@ -353,11 +412,9 @@ export async function getPoolChartData(
     }
 
     graphData[i].price = price;
-
-    // @ts-ignore
     dayIndexSet.add((graphData[i].date / TWENTY_FOUR_HOURS).toFixed(0));
-    // @ts-ignore
     dayIndexArray.push(graphData[i]);
+
     data.push({
       date: new Date(graphData[i].date * 1000),
       timestamp: graphData[i].date,
@@ -387,18 +444,13 @@ export async function getPoolChartData(
         price: latestPrice,
       });
     } else {
-      // @ts-ignore
       latestReserveUSD = dayIndexArray[index].reserveUSD;
-      // @ts-ignore
       latestVolumeUSD = dayIndexArray[index].volumeUSD;
-      // @ts-ignore
       if (dayIndexArray[index].token0.id == tokenAddress) {
         latestPrice =
-          // @ts-ignore
           dayIndexArray[index].reserve0 / dayIndexArray[index].reserve1;
       } else {
         latestPrice =
-          // @ts-ignore
           dayIndexArray[index].reserve1 / dayIndexArray[index].reserve0;
       }
       index = index + 1;
@@ -406,7 +458,6 @@ export async function getPoolChartData(
     timestamp = nextDay;
   }
 
-  // @ts-ignore
   data = data.sort((a, b) =>
     parseInt(a.timestamp) > parseInt(b.timestamp) ? 1 : -1
   );

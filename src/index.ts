@@ -6,6 +6,7 @@ import {
   getPoolChartData,
   getInfoByIdentifier,
   getRecentSynthData,
+  getYamRewardsByPoolAddress,
   roundNumber,
 } from "./utils/helpers";
 
@@ -17,5 +18,6 @@ export {
   getPoolChartData,
   getInfoByIdentifier,
   getRecentSynthData,
+  getYamRewardsByPoolAddress,
   roundNumber,
 };

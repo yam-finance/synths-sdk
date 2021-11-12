@@ -8,6 +8,7 @@ import Synths, {
   getPoolChartData,
   getTotalMarketData,
   getRecentSynthData,
+  getYamRewardsByPoolAddress,
   roundNumber,
 } from "../src/index";
 import { SynthsAssetsConfig } from "../src/types/assets.t";
@@ -63,6 +64,12 @@ describe("Synths SDKs", function () {
     });
 
     describe("Helper functions", function () {
+      it("getYamRewardsByPoolAddress - success", async function () {
+        const rewards = await getYamRewardsByPoolAddress(
+          "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa"
+        );
+        expect(rewards).to.be.an("string");
+      });
       it("getRecentSynthData - success", async function () {
         this.timeout(100000);
         const recentSynthData = await getRecentSynthData(1);
@@ -85,7 +92,11 @@ describe("Synths SDKs", function () {
         expect(synthPrice).to.not.equal(0);
       });
       it("getSynthData - success", async function () {
-        const synthData = await getSynthData("sushiswap", "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa", "WETH");
+        const synthData = await getSynthData(
+          "sushiswap",
+          "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
+          "WETH"
+        );
         console.log(synthData);
         expect(synthData).to.be.an("object");
       });

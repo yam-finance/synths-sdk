@@ -20,6 +20,23 @@ export interface AssetClassConfig {
   assetIdentifier: string;
 }
 
+export interface IPoolData {
+  [x: string]: {
+    reserveUSD: number;
+    token0: IPoolToken;
+    token1: IPoolToken;
+    reserve0: number;
+    reserve1: number;
+    volumeToken0: number;
+    volumeToken1: number;
+  };
+}
+
+export interface IPoolToken {
+  id: string;
+  symbol: string;
+}
+
 export interface EmpState {
   expirationTimestamp: ethers.BigNumber;
   collateralCurrency: string;
