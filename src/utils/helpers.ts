@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import { request } from "graphql-request";
 import axios from "axios";
 import { ERC20Ethers__factory } from "@uma/contracts-node";
-import { defaultAssetsConfig } from "lib/config";
+import { defaultAssetsConfig } from "../lib/config";
 import {
   UNISWAP_ENDPOINT,
   SUSHISWAP_ENDPOINT,
@@ -24,7 +24,7 @@ import {
   assertAssetConfigEMP,
   assertAssetConfigLSP,
   SynthsAssetsConfig,
-} from "types/assets.t";
+} from "../types/assets.t";
 
 /**
  * @notice Helper function to get the decimals of a erc20 token.
