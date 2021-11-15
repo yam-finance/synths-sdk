@@ -24,18 +24,14 @@ export interface IDailyPoolData {
   price: number;
 }
 
-export interface IResentSynthsData {
-  [key: string]:
-    | {
-        tokenId: string;
-        tokenSymbol: string;
-        apr: string | undefined;
-        price: number;
-        priceChanged24h: number;
-        liquidity: number;
-        volume24h: number;
-      }
-    | undefined;
+export interface ISynthsData {
+  tokenId: string;
+  tokenSymbol: string;
+  apr: string | undefined;
+  price: number;
+  priceChanged24h: number;
+  liquidity: number;
+  volume24h: number;
 }
 
 /// @notice Asset class interfaces

@@ -15,7 +15,6 @@ import {
 import {
   isAssetConfigEMP,
   isAssetConfigLSP,
-  IResentSynthsData,
   AssetConfigLSP,
   AssetConfigEMP,
   IPoolData,
@@ -24,6 +23,7 @@ import {
   assertAssetConfigEMP,
   assertAssetConfigLSP,
   SynthsAssetsConfig,
+  ISynthsData,
 } from "../types/assets.t";
 
 /**
@@ -136,7 +136,7 @@ export async function getSynthData(
       collateralSymbol
     );
 
-    const synthData = {
+    const synthData: ISynthsData = {
       tokenId: poolData.tokenId,
       tokenSymbol: poolData.tokenSymbol,
       apr: rewards,
@@ -218,7 +218,7 @@ export async function getRecentSynthData(
   userConfig?: SynthsAssetsConfig
 ) {
   const config = userConfig ?? defaultAssetsConfig;
-  const recentSynthData: IResentSynthsData = {};
+  const recentSynthData: ISynthsData[] = [];
 
   for (const synthClassName in config[networkId]) {
     const synthClass = config[networkId][synthClassName];
@@ -231,7 +231,7 @@ export async function getRecentSynthData(
         lastSynth.collateral
       );
 
-      recentSynthData[lastSynth.pool.address] = data;
+      data && recentSynthData.push(data);
     } else if (isAssetConfigLSP(lastSynth)) {
       for (const pool of lastSynth.pools) {
         const data = await getSynthData(
@@ -240,7 +240,7 @@ export async function getRecentSynthData(
           lastSynth.collateral
         );
 
-        recentSynthData[pool.address] = data;
+        data && recentSynthData.push(data);
       }
     }
   }
@@ -259,7 +259,7 @@ export async function getTotalMarketData(
   userConfig?: SynthsAssetsConfig
 ) {
   const config = userConfig ?? defaultAssetsConfig;
-  const totalSynthData: IResentSynthsData = {};
+  const totalSynthData: { [x: string]: ISynthsData | undefined } = {};
   let totalTVL;
   let totalLiquidity = 0;
   let total24hVolume = 0;
