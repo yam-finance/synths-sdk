@@ -1,14 +1,69 @@
 import type { ethers } from "ethers";
 
+export enum FinancialContractTemplates {
+  EMP = "EMP",
+  LSP = "LSP",
+}
+
+export interface IPairData {
+  date: Date;
+  timestamp: string;
+  reserveUSD: string;
+  volumeUSD: string;
+  price: number;
+}
+
+export interface IDailyPoolData {
+  date: number;
+  reserve0: string;
+  reserve1: string;
+  reserveUSD: string;
+  token0: { id: string; symbol: string };
+  token1: { id: string; symbol: string };
+  volumeUSD: string;
+  price: number;
+}
+
+export interface IResentSynthsData {
+  [key: string]:
+    | {
+        tokenId: string;
+        tokenSymbol: string;
+        apr: string | undefined;
+        price: number;
+        priceChanged24h: number;
+        liquidity: number;
+        volume24h: number;
+      }
+    | undefined;
+}
+
 /// @notice Asset class interfaces
 
 export interface AssetClassConfig {
   /** ethersProvider - ethers.js provider */
-  ethersProvider: ethers.providers.Web3Provider;
+  ethersProvider: ethers.providers.JsonRpcProvider;
   /** assets - Official contracts of the selected network */
   assets: AssetsConfig;
   /** assetIdentifier - The identifier of the asset contract to use */
   assetIdentifier: string;
+}
+
+export interface IPoolData {
+  [x: string]: {
+    reserveUSD: number;
+    token0: IPoolToken;
+    token1: IPoolToken;
+    reserve0: number;
+    reserve1: number;
+    volumeToken0: number;
+    volumeToken1: number;
+  };
+}
+
+export interface IPoolToken {
+  id: string;
+  symbol: string;
 }
 
 export interface EmpState {
@@ -43,13 +98,24 @@ export interface PoolConfig {
   location: string;
 }
 
-export interface EmpConfig {
-  /** address - Address of the emp contract */
+// @notice Financial Contract Configuration
+export interface FinancialContractConfigBase {
+  /** address - Address of the Financial contract */
   address: string;
+}
+
+export interface FinancialContractConfigEMP
+  extends FinancialContractConfigBase {
   /** new - Identifier to distinguish between the new and the old emp contracts */
   new: boolean;
   /** type - Identifier to clarify the emp contract type */
   type?: string;
+}
+
+export interface FinancialContractConfigLSP
+  extends FinancialContractConfigBase {
+  /** library - Financial Product Library's Address for LSP */
+  library: string;
 }
 
 export interface TokenConfig {
@@ -60,19 +126,42 @@ export interface TokenConfig {
 }
 
 /** AssetConfig - Asset specifications */
-export interface AssetConfig {
+export interface AssetConfigBase {
   name: string;
   cycle: string;
   year: string;
   collateral: string;
   token: TokenConfig;
-  emp: EmpConfig;
-  pool: PoolConfig;
-  expired: boolean; // Force expiration of the asset
+  /** Expiration status */
+  expired: boolean;
 }
 
+export interface AssetConfigEMP extends AssetConfigBase {
+  /** ExpiringMultipartyContract config options */
+  emp: FinancialContractConfigEMP;
+  /** Incentivized Pool */
+  pool: PoolConfig;
+  type?: FinancialContractTemplates.EMP;
+}
+
+export interface AssetConfigLSP extends Omit<AssetConfigBase, "token"> {
+  /** address - Address of the LSP contract */
+  lsp: FinancialContractConfigLSP;
+  pools: PoolConfig[];
+  tokens?: TokenConfig;
+  type: string;
+}
+
+export interface FPLConfig {
+  /** address - Address of the FPL contract */
+  address: string;
+  type: string;
+}
+
+export type AssetConfig = AssetConfigEMP | AssetConfigLSP;
+
 export interface AssetsConfig {
-  /** assetType - Object of all official asset contracts of a type in a network */
+  /** assetType - Object of all official Asset contracts of a type in a network */
   [assetType: string]: AssetConfig[];
 }
 
@@ -81,8 +170,38 @@ export interface SynthsAssetsConfig {
   [id: string]: AssetsConfig;
 }
 
-/// @todo Check ethersProvider type
+/// @todo Check ethersProvider type.
 export interface InitOptions {
-  ethersProvider: any;
+  ethersProvider: ethers.providers.JsonRpcProvider;
   userAssetsConfig: SynthsAssetsConfig;
 }
+
+export const isAssetConfigEMP = (
+  assetConfig: AssetConfig
+): assetConfig is AssetConfigEMP => {
+  return (assetConfig as AssetConfigEMP).emp !== undefined;
+};
+
+export const isAssetConfigLSP = (
+  assetConfig: AssetConfig
+): assetConfig is AssetConfigLSP => {
+  return (assetConfig as AssetConfigLSP).lsp !== undefined;
+};
+
+export const assertAssetConfigEMP = (
+  assetConfig: AssetConfig
+): AssetConfigEMP => {
+  if (!isAssetConfigEMP(assetConfig)) {
+    throw new Error(`AssetConfig is not an AssetConfigEMP`);
+  }
+  return assetConfig as AssetConfigEMP;
+};
+
+export const assertAssetConfigLSP = (
+  assetConfig: AssetConfig
+): AssetConfigLSP => {
+  if (!isAssetConfigLSP(assetConfig)) {
+    throw new Error(`AssetConfig is not an AssetConfigLSP`);
+  }
+  return assetConfig as AssetConfigLSP;
+};

@@ -1,5 +1,6 @@
 #Coverage
 .nyc_output
+coverage/
 
 # Hardhat
 artifacts
@@ -15,7 +16,7 @@ cache
 src/types/contracts
 
 # Build Files
-dist
+dist/
 
 # Documentation
 docs/*

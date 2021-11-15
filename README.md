@@ -3,6 +3,7 @@
 [![CI](https://github.com/yam-finance/synths-sdk/actions/workflows/main.yml/badge.svg)](https://github.com/yam-finance/synths-sdk/actions/workflows/main.yml)
 
 # Documentation
+
 - [SDK](https://yam-finance.github.io/synths-sdk/)
 - [Synth Contracts](https://yam-finance.github.io/synths-sdk/contracts/)
 

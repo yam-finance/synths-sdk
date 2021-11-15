@@ -8,45 +8,20 @@ import {
 import { ethers } from "ethers";
 
 class Synths {
-  #ethersProvider!: ethers.providers.Web3Provider;
   assets!: AssetsConfig;
+  #ethersProvider!: ethers.providers.Web3Provider;
 
   /**
-   * Creates an instance of the Synths SDK.
-   * @param options - Ethers Synths configuration
-   * @return The Synths SDK instance
-   * @throws "Synths not found in the current network"
+   * @notice Creates an instance of the Synths SDK.
+   * @param options - Ethers Synths configuration.
+   * @returns The Synths SDK instance.
+   * @throws "Synths not found in the current network".
    */
-  // @todo Add options type
+  // @todo Add options type.
   static async create(options: InitOptions): Promise<Synths> {
     const synthsSdk = new Synths();
     await synthsSdk.init(options);
     return synthsSdk;
-  }
-
-  /**
-   * Initializes the Synths SDK instance.
-   * @param options - Ethers Synths configuration
-   * @throws "Synths not found in the current network"
-   */
-  // @todo Add options type
-  private async init(options: InitOptions): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    this.#ethersProvider =
-      options.ethersProvider as ethers.providers.Web3Provider;
-
-    const signer = this.#ethersProvider.getSigner();
-    const chainId = await signer.getChainId();
-    const synthsAssetsConfig: SynthsAssetsConfig = {
-      ...defaultAssetsConfig,
-      ...options.userAssetsConfig,
-    };
-
-    this.assets = synthsAssetsConfig[chainId];
-
-    if (!this.assets) {
-      throw new Error("Synths not found in the current network");
-    }
   }
 
   /**
@@ -61,6 +36,37 @@ class Synths {
     });
 
     return asset;
+  }
+
+  /**
+   * Initializes the Synths SDK instance.
+   * @param options - Ethers Synths configuration
+   * @throws "Synths not found in the current network"
+   */
+  // @todo Add options type.
+  private async init(options: InitOptions): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    this.#ethersProvider =
+      options.ethersProvider as ethers.providers.Web3Provider;
+
+    const signer = this.#ethersProvider.getSigner();
+
+    const synthsAssetsConfig: SynthsAssetsConfig = {
+      ...defaultAssetsConfig,
+      ...options.userAssetsConfig,
+    };
+    const chainId = await signer.getChainId();
+    if (Object.keys(synthsAssetsConfig).includes(chainId.toString())) {
+      this.assets = synthsAssetsConfig[chainId];
+    } else {
+      throw new Error(
+        `Synths not found in the current network ${chainId}. Please check your configuration.`
+      );
+    }
+
+    if (!this.assets) {
+      throw new Error("Synths not found in the current network");
+    }
   }
 }
 
