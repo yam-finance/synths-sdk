@@ -229,6 +229,10 @@ export async function getRecentSynthData(
     const synthClass = config[networkId][synthClassName];
     const lastSynth = synthClass.slice(-1)[0];
 
+    if (lastSynth.expired) {
+        break;
+    }
+
     if (isAssetConfigEMP(lastSynth)) {
       const data = await getSynthData(
         lastSynth.pool.location,
