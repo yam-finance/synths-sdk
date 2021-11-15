@@ -27,7 +27,7 @@ import {
  * @notice Helper function to get the decimals of a erc20 token.
  * @param address Address of the erc20 contract.
  * @param ethersProvider Ethers provider instance.
- * @returns `undefined` or the erc20 token decimals.
+ * @returns The erc20 token decimals.
  */
 export async function getTokenDecimals(
   address: string,
@@ -50,8 +50,7 @@ export async function getTokenDecimals(
  * @param poolAddress Address of the DEX pool.
  * @param tokenAddress Address of the token.
  * @param network? Chain id to decide which subgraph endpoint to use, defaults to mainnet.
- * @returns `undefined` or the DEX token price in WEI.
- * @todo Change returns statements.
+ * @returns The DEX token price in WEI.
  */
 export async function getCurrentDexTokenPrice(
   poolLocation: string,
@@ -62,7 +61,6 @@ export async function getCurrentDexTokenPrice(
   try {
     const ts = Math.round(new Date().getTime() / 1000);
     const blockNow = await timestampToBlock(ts);
-    /// @dev Get pool data from graph endpoints.
     let endpoint =
       poolLocation === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
 
@@ -92,8 +90,7 @@ export async function getCurrentDexTokenPrice(
  * @param synthId The synth identifier.
  * @param networkId The network / chain id of the synth deployment.
  * @param network? Chain id to decide which subgraph endpoint to use, defaults to mainnet.
- * @returns `undefined` or an object with the relevant data.
- * @TODO Update params to use addresses.
+ * @returns An object with the synth market data.
  */
 export async function getSynthData(
   poolLocation: string,
@@ -205,8 +202,8 @@ function extractPoolData(
  * @notice Helper function to get the data for the most recent synths.
  * @dev Can be used on the front-end to display the most recent synths.
  * @param networkId The network / chain id of the synth deployment.
- * TODO Update params to use addresses.
- * TODO Pass asset config from user.
+ * @returns The most recent synth market data.
+ * @todo Pass asset config from user.
  */
 export async function getRecentSynthData(networkId: number) {
   const recentSynthData: IResentSynthsData = {};
@@ -242,6 +239,7 @@ export async function getRecentSynthData(networkId: number) {
 /**
  * @notice Helper function to get the total liquidity and volume of all synths in the last 24h.
  * @param networks Array of networks that the user wants to query.
+ * @returns The total synths market data.
  * @todo Pass asset config from user.
  */
 export async function getTotalMarketData(networks: Array<number>) {
@@ -307,6 +305,7 @@ export async function getTotalMarketData(networks: Array<number>) {
  * @notice Helper function to get data from `assets.json` according to the synth id.
  * @param synthId The synth identifier.
  * @param networkId The network / chain id of the synth deployment.
+ * @returns The synth info from the `assets.json`.
  */
 export function getInfoByIdentifier(synthId: string, network: number) {
   try {
@@ -334,6 +333,8 @@ export function getInfoByIdentifier(synthId: string, network: number) {
 /**
  * @notice Helper function to get the rewards by pool address.
  * @dev Should be removed after api accepts a pool address instead of an id.
+ * @param poolAddress The DEX pool address.
+ * @returns The rewards for the given pool.
  */
 export async function getYamRewardsByPoolAddress(poolAddress: string) {
   try {
@@ -505,7 +506,7 @@ export async function getPoolChartData(
  * @notice Helper function to round a number to a certain number of decimals.
  * @param number The number to round.
  * @param decimals The number of decimals to round to.
- * @returns number The rounded number.
+ * @returns The rounded number.
  */
 export function roundNumber(number: number, decimals: number) {
   return Math.round(number * 10 ** decimals) / 10 ** decimals;
@@ -525,6 +526,7 @@ export function getPercentageChange(oldNumber: number, newNumber: number) {
 /**
  * @notice Converts a given timestamp into a block number.
  * @param timestamp The timestamp that should be converted.
+ * @returns A block number.
  */
 export async function timestampToBlock(timestamp: number) {
   timestamp =
