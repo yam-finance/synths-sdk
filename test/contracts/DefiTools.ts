@@ -34,24 +34,24 @@ interface ImpermanentLossLeveragedReserveLSPLValidParams {
   leverageFactor: BigNumber; // Must be > 0 ether
 }
 
-type LSPParams =
+type LSPValidParams =
   | ReserveLSPLValidParams
   | LeveragedReserveLSPLValidParams
   | ImpermanentLossLeveragedReserveLSPLValidParams;
 
-type ParamsFor<T = DefiToolLibs> = LSPParams &
+type ValidParamsFor<T = DefiToolLibs> = LSPValidParams &
   T extends DefiToolLibs.ReserveLSPL
   ? ReserveLSPLValidParams
   : T extends DefiToolLibs.LeveragedReserveLSPL
   ? LeveragedReserveLSPLValidParams
   : T extends DefiToolLibs.ImpermanentLossLeveragedReserveLSPL
   ? ImpermanentLossLeveragedReserveLSPLValidParams
-  : LSPParams;
+  : LSPValidParams;
 
 type LSPLConfiguration<T = DefiToolLibs> = {
   library: T;
-  validParameters: ParamsFor<T>;
-  invalidParameters: [params: Partial<ParamsFor<T>>, reason: string][];
+  validParameters: ValidParamsFor<T>;
+  invalidParameters: [params: Partial<ValidParamsFor<T>>, reason: string][];
   knownResults?: { price: BigNumber; result: BigNumber }[];
 };
 
@@ -99,7 +99,7 @@ const createDefiToolsFixture = deployments.createFixture(
 
 const setParams = async (
   library: DefiToolLibs,
-  validParams: Partial<ParamsFor>,
+  validParams: Partial<ValidParamsFor>,
   fixture?: Awaited<ReturnType<typeof createDefiToolsFixture>>,
   mockAddress?: string
 ) => {
