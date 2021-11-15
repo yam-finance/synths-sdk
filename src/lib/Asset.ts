@@ -131,7 +131,7 @@ class Asset {
   async getLSPState(lspContract?: LongShortPairEthers) {
     try {
       assertAssetConfigLSP(this.#config);
-      const contract = lspContract || this.#contract as LongShortPairEthers;
+      const contract = lspContract || (this.#contract as LongShortPairEthers);
       if ("collateralToken" in this.#contract) {
         const results = await Promise.all([
           contract.expirationTimestamp(),
@@ -165,43 +165,43 @@ class Asset {
     }
   }
 
-  async getLSPPortfolio(userAddress: string) {
+  async getLSPPortfolio() {
     try {
       let state = this.getLSPState();
-    
-      let portfolio = {}
+
+      let portfolio = {};
 
       for (const assetCycles in this.#assets) {
         for (const asset of this.#assets[assetCycles]) {
-            if (isAssetConfigLSP(asset)) {
-                const state = this.getLSPState(asset.lsp.address);
-                // get synthCollateralSymbol
-                // get status
+          if (isAssetConfigLSP(asset)) {
+            const state = this.getLSPState(asset.lsp.address);
+            // get synthCollateralSymbol
+            // get status
 
-                // get pairName + long
-                // get balance of longToken
-                // get lp amount of user
-                // get tokenPrice
-                  portfolio[0] = {
-                    balance: 0,
-                    lpAmount: 0,
-                    price: 0, 
-                    collateral: 0,
-                    status: true,
-                  };
+            // get pairName + long
+            // get balance of longToken
+            // get lp amount of user
+            // get tokenPrice
+            portfolio[0] = {
+              balance: 0,
+              lpAmount: 0,
+              price: 0,
+              collateral: 0,
+              status: true,
+            };
 
-                // get pairName + short 
-                // get balance of shortToken
-                // get lp amount of user
-                // get tokenPrice
-                  portfolio[0] = {
-                    balance: 0,
-                    lpAmount: 0,
-                    price: 0, 
-                    collateral: 0,
-                    status: true,
-                  };
-            }
+            // get pairName + short
+            // get balance of shortToken
+            // get lp amount of user
+            // get tokenPrice
+            portfolio[0] = {
+              balance: 0,
+              lpAmount: 0,
+              price: 0,
+              collateral: 0,
+              status: true,
+            };
+          }
         }
       }
 

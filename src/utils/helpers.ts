@@ -272,6 +272,7 @@ export async function getTotalMarketData(
   let totalTVL;
   let totalLiquidity = 0;
   let total24hVolume = 0;
+  let synthCount = 0;
 
   for (const networkId of networks) {
     for (const synthClassName in config[networkId]) {
@@ -287,6 +288,7 @@ export async function getTotalMarketData(
             );
 
             totalSynthData[synth.pool.address] = synthData;
+            // synthCount += 1;
           } else if (isAssetConfigLSP(synthClass[i])) {
             const synth = assertAssetConfigLSP(synthClass[i]);
             for (const pool of synth.pools) {
@@ -297,6 +299,7 @@ export async function getTotalMarketData(
               );
 
               totalSynthData[pool.address] = synthData;
+              synthCount += 1;
             }
           }
         }
@@ -322,6 +325,7 @@ export async function getTotalMarketData(
     totalLiquidity: totalLiquidity,
     total24hVolume: total24hVolume,
     totalTVL: totalTVL,
+    totalSynthCound: synthCount,
   };
 }
 
