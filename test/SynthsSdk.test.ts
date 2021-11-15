@@ -1,13 +1,8 @@
 import { ethers, network } from "hardhat";
 import { BigNumber } from "ethers";
 import { expect } from "chai";
-import axios from "axios";
-import Synths, {
-  getCurrentDexTokenPrice,
-  getSynthData,
-  getSynthChartData,
-  roundNumber,
-} from "../src/index";
+// import axios from "axios";
+import Synths from "../src/index";
 import { SynthsAssetsConfig } from "../src/types/assets.t";
 import Asset from "../src/lib/Asset";
 import testAssetConfig from "../src/assetstest.json";
@@ -56,38 +51,10 @@ describe("Synths SDKs", function () {
         userAssetsConfig: userAssetsConfig,
       });
 
+      // TODO Connect asset with emp / lsp address.
       upunksAsset = synthsSDK.connectAsset("upunks-0921");
     });
-
     describe("Interact with asset", function () {
-      it("helpers - success", async function () {
-        this.timeout(100000);
-        const synthPrice = await getCurrentDexTokenPrice(
-          "sushiswap",
-          "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
-          "0x86140A763077155964754968B6F6e243fE809cBe"
-        );
-        const synthData = await getSynthData(
-          "upunks-0921",
-          "0x86140A763077155964754968B6F6e243fE809cBe"
-        );
-        const synthChartData = await getSynthChartData(
-          "0x86140A763077155964754968B6F6e243fE809cBe"
-        );
-        const response = await axios.get(
-          `https://data.yam.finance/degenerative/apr/upunks-0921`
-        );
-        const float = 1.23456789;
-        const result = roundNumber(float, 2);
-        expect(result).to.equal(parseFloat(float.toFixed(2)));
-
-        expect(synthData).to.deep.include({
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          apr: response.data["aprMultiplier"] as string,
-        });
-        expect(synthChartData).to.be.an("array");
-        expect(synthPrice).to.not.equal(0);
-      });
       it("getEmpState - success", async function () {
         this.timeout(100000);
         const empState = await upunksAsset.getEmpState();

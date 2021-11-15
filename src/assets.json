@@ -282,5 +282,27 @@
         "expired": false
       }
     ]
+  },
+  "137": {
+    "2xdpi": [
+      {
+        "name": "October26",
+        "cycle": "10",
+        "year": "21",
+        "collateral": "WETH",
+        "lsp": {
+          "address": "0x4707b810b75C2DF8Ffeb50f7f33Af617Fbf3d766",
+          "library": "0x"
+        },
+        "pools": [
+          {
+            "address": "",
+            "location": "sushiswap"
+          }
+        ],
+        "expired": true,
+        "type": "LSP"
+      }
+    ]
   }
 }

@@ -231,9 +231,10 @@ class Asset {
           //   EmpAbi,
           //   this.#ethersProvider
           // ) as ExpiringMultiParty;
-          if (asset.type === "EMP") {
+          if (isAssetConfigEMP(asset)) {
+            const synth = assertAssetConfigEMP(asset);
             const position = await this.getPosition();
-            positions[asset.token.address] =
+            positions[synth.token.address] =
               position?.tokensOutstanding["rawValue"];
           }
         }

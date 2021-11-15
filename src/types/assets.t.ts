@@ -5,6 +5,20 @@ export enum FinancialContractTemplates {
   LSP = "LSP",
 }
 
+export interface IResentSynthsData {
+  [key: string]:
+    | {
+        tokenId: string;
+        tokenSymbol: string;
+        apr: string | undefined;
+        price: number;
+        priceChanged24h: number;
+        liquidity: number;
+        volume24h: number;
+      }
+    | undefined;
+}
+
 /// @notice Asset class interfaces
 
 export interface AssetClassConfig {
@@ -14,6 +28,23 @@ export interface AssetClassConfig {
   assets: AssetsConfig;
   /** assetIdentifier - The identifier of the asset contract to use */
   assetIdentifier: string;
+}
+
+export interface IPoolData {
+  [x: string]: {
+    reserveUSD: number;
+    token0: IPoolToken;
+    token1: IPoolToken;
+    reserve0: number;
+    reserve1: number;
+    volumeToken0: number;
+    volumeToken1: number;
+  };
+}
+
+export interface IPoolToken {
+  id: string;
+  symbol: string;
 }
 
 export interface EmpState {
@@ -99,7 +130,7 @@ export interface AssetConfigLSP extends Omit<AssetConfigBase, "token"> {
   lsp: FinancialContractConfigLSP;
   pools: PoolConfig[];
   tokens?: TokenConfig;
-  type: FinancialContractTemplates.LSP;
+  type: string;
 }
 
 export interface FPLConfig {
