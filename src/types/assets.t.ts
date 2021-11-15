@@ -6,7 +6,17 @@ export enum FinancialContractTemplates {
 }
 
 export interface IResentSynthsData {
-  [key: string]: Object;
+  [key: string]:
+    | {
+        tokenId: string;
+        tokenSymbol: string;
+        apr: string | undefined;
+        price: number;
+        priceChanged24h: number;
+        liquidity: number;
+        volume24h: number;
+      }
+    | undefined;
 }
 
 /// @notice Asset class interfaces
@@ -120,7 +130,7 @@ export interface AssetConfigLSP extends Omit<AssetConfigBase, "token"> {
   lsp: FinancialContractConfigLSP;
   pools: PoolConfig[];
   tokens?: TokenConfig;
-  type: FinancialContractTemplates.LSP;
+  type: string;
 }
 
 export interface FPLConfig {

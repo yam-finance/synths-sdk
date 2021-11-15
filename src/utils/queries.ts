@@ -45,9 +45,11 @@ export const UNI_SUSHI_DAILY_PAIR_DATA = gql`
   query pairDayDatas($pairAddress: Bytes!) {
     pairDayDatas(orderDirection: desc, where: { pair: $pairAddress }) {
       token0 {
+        id
         symbol
       }
       token1 {
+        id
         symbol
       }
       date

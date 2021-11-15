@@ -110,7 +110,7 @@ describe("Synths SDKs", function () {
       });
       it("roundNumber - success", function () {
         const float = 1.23456789;
-        const result = roundNumber(float, 2);
+        const result: number = roundNumber(float, 2);
         expect(result).to.equal(parseFloat(float.toFixed(2)));
       });
     });

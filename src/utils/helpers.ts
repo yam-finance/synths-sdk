@@ -18,8 +18,8 @@ import {
   AssetConfigLSP,
   AssetConfigEMP,
   IPoolData,
-  IPoolToken,
-  AssetConfigBase,
+  assertAssetConfigEMP,
+  assertAssetConfigLSP,
 } from "types/assets.t";
 
 /**
@@ -199,7 +199,6 @@ export async function getRecentSynthData(networkId: number) {
   for (const synthClassName in defaultAssetsConfig[networkId]) {
     const synthClass = defaultAssetsConfig[networkId][synthClassName];
     const lastSynth = synthClass.slice(-1)[0];
-    const synthId = synthClassName + "-" + lastSynth.cycle + lastSynth.year;
 
     if (isAssetConfigEMP(lastSynth)) {
       const data = await getSynthData(
@@ -208,7 +207,6 @@ export async function getRecentSynthData(networkId: number) {
         lastSynth.collateral
       );
 
-      // @ts-ignore
       recentSynthData[lastSynth.pool.address] = data;
     } else if (isAssetConfigLSP(lastSynth)) {
       for (const pool of lastSynth.pools) {
@@ -218,7 +216,6 @@ export async function getRecentSynthData(networkId: number) {
           lastSynth.collateral
         );
 
-        // @ts-ignore
         recentSynthData[pool.address] = data;
       }
     }
@@ -242,28 +239,24 @@ export async function getTotalMarketData(networks: Array<number>) {
       const synthClass = defaultAssetsConfig[networkId][synthClassName];
       for (let i = 0; i < synthClass.length; i++) {
         if (!synthClass[i].expired) {
-          const synthId =
-            synthClassName + "-" + synthClass[i].cycle + synthClass[i].year;
-
           if (isAssetConfigEMP(synthClass[i])) {
+            const synth = assertAssetConfigEMP(synthClass[i]);
             const synthData = await getSynthData(
-              // @ts-ignore
-              synthClass[i].pool.location,
-              // @ts-ignore
-              synthClass[i].pool.address,
-              synthClass[i].collateral
+              synth.pool.location,
+              synth.pool.address,
+              synth.collateral
             );
-            // @ts-ignore
-            totalSynthData[synthClass[i].pool.address] = synthData;
+
+            totalSynthData[synth.pool.address] = synthData;
           } else if (isAssetConfigLSP(synthClass[i])) {
-            // @ts-ignore
-            for (const pool of synthClass[i].pools) {
+            const synth = assertAssetConfigLSP(synthClass[i]);
+            for (const pool of synth.pools) {
               const synthData = await getSynthData(
                 pool.location,
                 pool.address,
                 synthClass[i].collateral
               );
-              // @ts-ignore
+
               totalSynthData[pool.address] = synthData;
             }
           }
@@ -273,10 +266,8 @@ export async function getTotalMarketData(networks: Array<number>) {
   }
 
   for (const key in totalSynthData) {
-    // @ts-ignore
-    totalLiquidity += Number(totalSynthData[key]["liquidity"]);
-    // @ts-ignore
-    total24hVolume += Number(totalSynthData[key]["volume24h"]);
+    totalLiquidity += Number(totalSynthData[key]?.liquidity) || 0;
+    total24hVolume += Number(totalSynthData[key]?.liquidity) || 0;
   }
 
   const response = await axios.get<{ total: string }>(
@@ -324,32 +315,26 @@ export function getInfoByIdentifier(synthId: string, network: number) {
  */
 export async function getYamRewardsByPoolAddress(poolAddress: string) {
   try {
-    let synthId;
-    let poolCount: number = 0;
+    let synthId = "";
+    let poolCount = 0;
 
     for (const networkId in defaultAssetsConfig) {
       for (const synthClassName in defaultAssetsConfig[networkId]) {
         const synthClass = defaultAssetsConfig[networkId][synthClassName];
         for (let i = 0; i < synthClass.length; i++) {
           if (isAssetConfigEMP(synthClass[i])) {
-            // @ts-ignore
-            if (synthClass[i].pool.address == poolAddress) {
-              synthId =
-                synthClassName + "-" + synthClass[i].cycle + synthClass[i].year;
+            const synth = assertAssetConfigEMP(synthClass[i]);
+            if (synth.pool.address == poolAddress) {
+              synthId = synthClassName + "-" + synth.cycle + synth.year;
               poolCount += 1;
               break;
             }
           } else if (isAssetConfigLSP(synthClass[i])) {
-            // @ts-ignore
-            for (const pool of synthClass[i].pools) {
+            const synth = assertAssetConfigLSP(synthClass[i]);
+            for (const pool of synth.pools) {
               if (pool.address == poolAddress) {
-                synthId =
-                  synthClassName +
-                  "-" +
-                  synthClass[i].cycle +
-                  synthClass[i].year;
-                // @ts-ignore
-                poolCount += synthClass[i].pools.length;
+                synthId = synthClassName + "-" + synth.cycle + synth.year;
+                poolCount += synth.pools.length;
                 break;
               }
             }
@@ -371,7 +356,24 @@ export async function getYamRewardsByPoolAddress(poolAddress: string) {
   }
 }
 
-export interface IPairData {}
+export interface IPairData {
+  date: Date;
+  timestamp: string;
+  reserveUSD: string;
+  volumeUSD: string;
+  price: number;
+}
+
+export interface IDailyPoolData {
+  date: number;
+  reserve0: string;
+  reserve1: string;
+  reserveUSD: string;
+  token0: { id: string; symbol: string };
+  token1: { id: string; symbol: string };
+  volumeUSD: string;
+  price: number;
+}
 
 /**
  * @notice Helper function to get pool data.
@@ -388,70 +390,76 @@ export async function getPoolChartData(
 ) {
   const TWENTY_FOUR_HOURS = 86400;
   const dayIndexSet = new Set();
-  const dayIndexArray: any[] = [];
+  const dayIndexArray: IDailyPoolData[] = [];
   const tsEnd = Math.round(new Date().getTime() / 1000);
   const tsStart = tsEnd - 365 * 24 * 3600;
 
   const endpoint =
     poolLocation === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
   const query = UNI_SUSHI_DAILY_PAIR_DATA;
-  const pairData = await request(endpoint, query, {
-    pairAddress: poolAddress,
-  });
+  const pairData = await request<{ pairDayDatas: IDailyPoolData[] }>(
+    endpoint,
+    query,
+    {
+      pairAddress: poolAddress,
+    }
+  );
 
   let data = [];
-  const graphData = pairData.pairDayDatas;
+  const graphData: IDailyPoolData[] = pairData.pairDayDatas;
 
-  graphData.forEach((_: any, i: string | number) => {
+  for (const i of graphData) {
     let price;
 
-    if (graphData[i].token0.id == tokenAddress) {
-      price = graphData[i].reserve0 / graphData[i].reserve1;
+    if (i.token0.id == tokenAddress) {
+      price = parseInt(i.reserve0) / parseInt(i.reserve1);
     } else {
-      price = graphData[i].reserve1 / graphData[i].reserve0;
+      price = parseInt(i.reserve1) / parseInt(i.reserve0);
     }
 
-    graphData[i].price = price;
-    dayIndexSet.add((graphData[i].date / TWENTY_FOUR_HOURS).toFixed(0));
-    dayIndexArray.push(graphData[i]);
+    i.price = price;
+    dayIndexSet.add((i.date / TWENTY_FOUR_HOURS).toFixed(0));
+    dayIndexArray.push(i);
 
     data.push({
-      date: new Date(graphData[i].date * 1000),
-      timestamp: graphData[i].date,
-      reserveUSD: graphData[i].reserveUSD,
-      volumeUSD: graphData[i].volumeUSD,
-      price: graphData[i].price,
-    });
-  });
+      date: new Date(i.date * 1000),
+      timestamp: String(i.date),
+      reserveUSD: i.reserveUSD,
+      volumeUSD: i.volumeUSD,
+      price: i.price,
+    } as IPairData);
+  }
 
-  let timestamp =
+  let timestamp: number =
     graphData[0] && graphData[0].date ? graphData[0].date : tsStart;
-  let latestReserveUSD = graphData[0] && graphData[0].reserveUSD;
-  let latestVolumeUSD = graphData[0] && graphData[0].volumeUSD;
-  let latestPrice = graphData[0] && graphData[0].price;
+  let latestReserveUSD: string = graphData[0] && graphData[0].reserveUSD;
+  let latestVolumeUSD: string = graphData[0] && graphData[0].volumeUSD;
+  let latestPrice: number = graphData[0] && graphData[0].price;
   let index = 1;
 
   while (timestamp < tsEnd - TWENTY_FOUR_HOURS) {
-    const nextDay = timestamp + TWENTY_FOUR_HOURS;
+    const nextDay: number = timestamp + TWENTY_FOUR_HOURS;
     const currentDayIndex = (nextDay / TWENTY_FOUR_HOURS).toFixed(0);
     if (!dayIndexSet.has(currentDayIndex)) {
       data.push({
         // id: `${data[0].id.split("-")[0]}-${nextDay / TWENTY_FOUR_HOURS}`,
         date: new Date(nextDay * 1000),
-        timestamp: nextDay,
+        timestamp: String(nextDay),
         reserveUSD: latestReserveUSD,
         volumeUSD: latestVolumeUSD,
         price: latestPrice,
-      });
+      } as IPairData);
     } else {
       latestReserveUSD = dayIndexArray[index].reserveUSD;
       latestVolumeUSD = dayIndexArray[index].volumeUSD;
       if (dayIndexArray[index].token0.id == tokenAddress) {
         latestPrice =
-          dayIndexArray[index].reserve0 / dayIndexArray[index].reserve1;
+          parseInt(dayIndexArray[index].reserve0) /
+          parseInt(dayIndexArray[index].reserve1);
       } else {
         latestPrice =
-          dayIndexArray[index].reserve1 / dayIndexArray[index].reserve0;
+          parseInt(dayIndexArray[index].reserve1) /
+          parseInt(dayIndexArray[index].reserve0);
       }
       index = index + 1;
     }
@@ -461,8 +469,6 @@ export async function getPoolChartData(
   data = data.sort((a, b) =>
     parseInt(a.timestamp) > parseInt(b.timestamp) ? 1 : -1
   );
-
-  console.log(data);
 
   return data;
 }
@@ -498,9 +504,13 @@ export async function timestampToBlock(timestamp: number) {
 
   const endpoint = BLOCKLYTICS_ENDPOINT;
   const query = TIMESTAMP_TO_BLOCK;
-  const result = await request(endpoint, query, {
-    timestamp: timestamp,
-  });
+  const result = await request<{ blocks: [{ number: string }] }>(
+    endpoint,
+    query,
+    {
+      timestamp: timestamp,
+    }
+  );
 
   return Number(result.blocks[0].number);
 }
