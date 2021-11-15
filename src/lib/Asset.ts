@@ -16,7 +16,7 @@ import {
   isAssetConfigEMP,
   isAssetConfigLSP,
 } from "../types/assets.t";
-import { getTokenDecimals, getCurrentDexTokenPrice } from "../utils/helpers";
+import { prepareLSPStateCall, getTokenDecimals, getCurrentDexTokenPrice } from "../utils/helpers";
 import { USDC, WETH } from "./config/contracts";
 
 // typeof here is important, otherwise we get a TS error. The type of the value of providers.MulticallProvider is not a constructor.
@@ -120,7 +120,7 @@ class Asset {
       return data;
     } catch (e) {
       console.error("error", e);
-      return undefined;
+      return;
     }
   }
 
@@ -128,84 +128,36 @@ class Asset {
    * @notice Get Long Short Pair (LSP) state.
    * @returns A promise with the info of the metapool contract.
    */
-  async getLSPState(lspContract?: LongShortPairEthers) {
+  async getLSPState() {
     try {
       assertAssetConfigLSP(this.#config);
-      const contract = lspContract || (this.#contract as LongShortPairEthers);
       if ("collateralToken" in this.#contract) {
-        const results = await Promise.all([
-          contract.expirationTimestamp(),
-          contract.collateralToken(),
-          contract.priceIdentifier(),
-          contract.pairName(),
-          contract.longToken(),
-          contract.shortToken(),
-          contract.collateralPerPair(),
-          contract.timerAddress(),
-        ]);
+        const call = prepareLSPStateCall(this.#contract);
 
-        const lspData = {
-          expirationTimestamp: results[0],
-          collateralToken: results[1],
-          priceIdentifier: results[2],
-          pairName: results[3],
-          longToken: results[4],
-          shortToken: results[5],
-          collateralPerPair: results[6],
-          timerAddress: results[7],
+        const [
+          expirationTimestamp,
+          collateralToken,
+          priceIdentifier,
+          pairName,
+          longToken,
+          shortToken,
+          collateralPerPair, 
+          timerAddress
+        ] = await call; 
+
+        return  {
+          expirationTimestamp,
+          collateralToken,
+          priceIdentifier,
+          pairName,
+          longToken,
+          shortToken,
+          collateralPerPair,
+          timerAddress
         };
-
-        return lspData;
       } else {
-        return undefined;
+        return;
       }
-    } catch (e) {
-      console.error("error", e);
-      return undefined;
-    }
-  }
-
-  async getLSPPortfolio() {
-    try {
-      let state = this.getLSPState();
-
-      let portfolio = {};
-
-      for (const assetCycles in this.#assets) {
-        for (const asset of this.#assets[assetCycles]) {
-          if (isAssetConfigLSP(asset)) {
-            const state = this.getLSPState(asset.lsp.address);
-            // get synthCollateralSymbol
-            // get status
-
-            // get pairName + long
-            // get balance of longToken
-            // get lp amount of user
-            // get tokenPrice
-            portfolio[0] = {
-              balance: 0,
-              lpAmount: 0,
-              price: 0,
-              collateral: 0,
-              status: true,
-            };
-
-            // get pairName + short
-            // get balance of shortToken
-            // get lp amount of user
-            // get tokenPrice
-            portfolio[0] = {
-              balance: 0,
-              lpAmount: 0,
-              price: 0,
-              collateral: 0,
-              status: true,
-            };
-          }
-        }
-      }
-
-      return portfolio;
     } catch (e) {
       console.error("error", e);
       return;
@@ -224,7 +176,7 @@ class Asset {
       return this.#contract.positions(address);
     } catch (e) {
       console.error("error", e);
-      return undefined;
+      return;
     }
   }
 
@@ -251,7 +203,7 @@ class Asset {
       return collateralRatio;
     } catch (e) {
       console.error("error", e);
-      return undefined;
+      return;
     }
   }
 
@@ -291,7 +243,7 @@ class Asset {
       return positions;
     } catch (e) {
       console.error("error", e);
-      return undefined;
+      return;
     }
   }
 
@@ -347,7 +299,7 @@ class Asset {
       return gcr;
     } catch (e) {
       console.error("error", e);
-      return undefined;
+      return;
     }
   }
 
@@ -368,7 +320,6 @@ class Asset {
 
     const assetIdentifierSplit = assetIdentifier.split("-");
 
-    // @todo Check EmpAbi error
     for (const assetCycle of assets[assetIdentifierSplit[0]]) {
       if (assetCycle.cycle + assetCycle.year == assetIdentifierSplit[1]) {
         if (isAssetConfigEMP(assetCycle)) {

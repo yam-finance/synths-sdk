@@ -1,11 +1,12 @@
 import Asset from "./Asset";
+import { ethers } from "ethers";
 import { defaultAssetsConfig } from "./config";
 import {
   SynthsAssetsConfig,
   AssetsConfig,
   InitOptions,
+  isAssetConfigLSP
 } from "../types/assets.t";
-import { ethers } from "ethers";
 
 class Synths {
   assets!: AssetsConfig;
@@ -17,7 +18,6 @@ class Synths {
    * @returns The Synths SDK instance.
    * @throws "Synths not found in the current network".
    */
-  // @todo Add options type.
   static async create(options: InitOptions): Promise<Synths> {
     const synthsSdk = new Synths();
     await synthsSdk.init(options);
@@ -38,12 +38,57 @@ class Synths {
     return asset;
   }
 
+  async getLSPPortfolio() {
+    try {
+      /// @todo Call helper function for multicall.
+      let portfolio: { [key: string]: {} } = {};
+
+      for (const assetCycles in this.assets) {
+        for (const asset of this.assets[assetCycles]) {
+          if (isAssetConfigLSP(asset)) {
+            // const state = this.getLSPState(asset.lsp.address);
+            // get synthCollateralSymbol
+            // get status
+
+            // get pairName + long
+            // get balance of longToken
+            // get lp amount of user
+            // get tokenPrice
+            portfolio[0] = {
+              balance: 0,
+              lpAmount: 0,
+              price: 0,
+              collateral: 0,
+              status: true,
+            };
+
+            // get pairName + short
+            // get balance of shortToken
+            // get lp amount of user
+            // get tokenPrice
+            portfolio[0] = {
+              balance: 0,
+              lpAmount: 0,
+              price: 0,
+              collateral: 0,
+              status: true,
+            };
+          }
+        }
+      }
+
+      return portfolio;
+    } catch (e) {
+        console.error("error", e);
+        return;
+    }
+  }
+
   /**
    * Initializes the Synths SDK instance.
    * @param options - Ethers Synths configuration
    * @throws "Synths not found in the current network"
    */
-  // @todo Add options type.
   private async init(options: InitOptions): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     this.#ethersProvider =

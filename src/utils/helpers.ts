@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { request } from "graphql-request";
 import axios from "axios";
-import { ERC20Ethers__factory } from "@uma/contracts-node";
+import { ERC20Ethers__factory, LongShortPairEthers } from "@uma/contracts-node";
 import { defaultAssetsConfig } from "../lib/config";
 import {
   UNISWAP_ENDPOINT,
@@ -25,6 +25,21 @@ import {
   SynthsAssetsConfig,
   ISynthsData,
 } from "../types/assets.t";
+
+export async function prepareLSPStateCall(contract: LongShortPairEthers) {
+    const lspStatePromise = Promise.all([
+        contract.expirationTimestamp(),
+        contract.collateralToken(),
+        contract.priceIdentifier(),
+        contract.pairName(),
+        contract.longToken(),
+        contract.shortToken(),
+        contract.collateralPerPair(),
+        contract.timerAddress(),
+    ]);
+
+    return lspStatePromise;
+}
 
 /**
  * @notice Helper function to get the decimals of a erc20 token.
