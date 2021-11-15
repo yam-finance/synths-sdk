@@ -2,15 +2,7 @@ import { ethers, network } from "hardhat";
 import { BigNumber } from "ethers";
 import { expect } from "chai";
 // import axios from "axios";
-import Synths, {
-  getCurrentDexTokenPrice,
-  getSynthData,
-  getPoolChartData,
-  getTotalMarketData,
-  getRecentSynthData,
-  getYamRewardsByPoolAddress,
-  roundNumber,
-} from "../src/index";
+import Synths from "../src/index";
 import { SynthsAssetsConfig } from "../src/types/assets.t";
 import Asset from "../src/lib/Asset";
 import testAssetConfig from "../src/assetstest.json";
@@ -61,54 +53,6 @@ describe("Synths SDKs", function () {
 
       // TODO Connect asset with emp / lsp address.
       upunksAsset = synthsSDK.connectAsset("upunks-0921");
-    });
-
-    describe("Helper functions", function () {
-      it("getYamRewardsByPoolAddress - success", async function () {
-        const rewards = await getYamRewardsByPoolAddress(
-          "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa"
-        );
-        expect(rewards).to.be.an("string");
-      });
-      it("getRecentSynthData - success", async function () {
-        this.timeout(100000);
-        const recentSynthData = await getRecentSynthData(1);
-        expect(recentSynthData).to.be.an("object");
-      });
-      it("getTotalMarketData - success", async function () {
-        this.timeout(100000);
-        const totalMarketData = await getTotalMarketData([1]);
-        expect(totalMarketData.totalLiquidity).to.be.greaterThan(0);
-      });
-      it("getCurrentDexTokenPrice - success", async function () {
-        const synthPrice = await getCurrentDexTokenPrice(
-          "sushiswap",
-          "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
-          "0x86140A763077155964754968B6F6e243fE809cBe"
-        );
-        expect(synthPrice).to.not.equal(0);
-      });
-      it("getSynthData - success", async function () {
-        const synthData = await getSynthData(
-          "sushiswap",
-          "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
-          "WETH"
-        );
-        expect(synthData).to.be.an("object");
-      });
-      it("synthChartData - success", async function () {
-        const synthChartData = await getPoolChartData(
-          "sushiswap",
-          "0x9469313a1702dc275015775249883cfc35aa94d8",
-          "0x86140A763077155964754968B6F6e243fE809cBe"
-        );
-        expect(synthChartData).to.be.an("array");
-      });
-      it("roundNumber - success", function () {
-        const float = 1.23456789;
-        const result: number = roundNumber(float, 2);
-        expect(result).to.equal(parseFloat(float.toFixed(2)));
-      });
     });
     describe("Interact with asset", function () {
       it("getEmpState - success", async function () {
