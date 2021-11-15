@@ -300,7 +300,7 @@ export async function getTotalMarketData(
     total24hVolume += Number(totalSynthData[key]?.liquidity) || 0;
   }
 
-  axios
+  await axios
     .get<{ total: string }>(`https://api.yam.finance/tvl/degenerative`)
     .then((response) => {
       totalTVL = response.data["total"];
