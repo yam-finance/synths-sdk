@@ -1,5 +1,4 @@
 import { BigNumber, ethers } from "ethers";
-import { providers } from "@0xsequence/multicall";
 import {
   ExpiringMultiPartyEthers,
   ExpiringMultiPartyEthers__factory,
@@ -16,22 +15,16 @@ import {
   isAssetConfigEMP,
   isAssetConfigLSP,
 } from "../types/assets.t";
-import { prepareLSPStateCall, getTokenDecimals, getCurrentDexTokenPrice } from "../utils/helpers";
+import {
+  prepareLSPStateCall,
+  getTokenDecimals,
+  getCurrentDexTokenPrice,
+} from "../utils/helpers";
 import { USDC, WETH } from "./config/contracts";
 
-// typeof here is important, otherwise we get a TS error. The type of the value of providers.MulticallProvider is not a constructor.
-type MulticallParameter = ConstructorParameters<
-  typeof providers.MulticallProvider
->[1];
-
-const MulticallWrapper = providers.MulticallProvider as unknown as new (
-  provider: ethers.providers.BaseProvider,
-  multicall?: MulticallParameter
-) => ethers.providers.JsonRpcProvider;
-
 class Asset {
-  #ethersProvider!: ethers.providers.Provider;
   #signer!: ethers.Signer;
+  #multicallProvider!: ethers.providers.Provider;
   #assets!: AssetsConfig;
   #config!: AssetConfig;
   #contract!: ExpiringMultiPartyEthers | LongShortPairEthers;
@@ -42,15 +35,16 @@ class Asset {
    * @returns The Asset instance.
    */
   static connect({
-    ethersProvider,
+    signer,
+    multicallProvider,
     assets,
     assetIdentifier,
   }: AssetClassConfig): Asset {
     const asset = new Asset();
-    const provider = new MulticallWrapper(ethersProvider);
 
     asset.init({
-      ethersProvider: provider,
+      signer,
+      multicallProvider,
       assets,
       assetIdentifier,
     });
@@ -141,11 +135,11 @@ class Asset {
           pairName,
           longToken,
           shortToken,
-          collateralPerPair, 
-          timerAddress
-        ] = await call; 
+          collateralPerPair,
+          timerAddress,
+        ] = await call;
 
-        return  {
+        return {
           expirationTimestamp,
           collateralToken,
           priceIdentifier,
@@ -153,7 +147,7 @@ class Asset {
           longToken,
           shortToken,
           collateralPerPair,
-          timerAddress
+          timerAddress,
         };
       } else {
         return;
@@ -191,7 +185,7 @@ class Asset {
       const collateralAddress = this.#config.collateral == "WETH" ? WETH : USDC;
       const collateralDecimals = BigNumber.from(10).pow(
         BigNumber.from(
-          await getTokenDecimals(collateralAddress, this.#ethersProvider)
+          await getTokenDecimals(collateralAddress, this.#multicallProvider)
         )
       );
       const collateralRatio = BigNumber.from(
@@ -259,7 +253,7 @@ class Asset {
       if (empState != undefined && isAssetConfigEMP(this.#config)) {
         const tokenDecimals = await getTokenDecimals(
           this.#config.token.address,
-          this.#ethersProvider
+          this.#multicallProvider
         );
         const totalTokens = empState["totalTokensOutstanding"]
           .div(BigNumber.from(10).pow(BigNumber.from(tokenDecimals)))
@@ -269,7 +263,7 @@ class Asset {
           this.#config.collateral == "WETH" ? WETH : USDC;
         const collateralDecimals = BigNumber.from(10).pow(
           BigNumber.from(
-            await getTokenDecimals(collateralAddress, this.#ethersProvider)
+            await getTokenDecimals(collateralAddress, this.#multicallProvider)
           )
         );
 
@@ -308,15 +302,14 @@ class Asset {
    * @param config - Ethers Asset configuration.
    */
   private init({
-    ethersProvider,
+    signer,
+    multicallProvider,
     assets,
     assetIdentifier,
   }: AssetClassConfig): void {
-    this.#ethersProvider = ethersProvider;
+    this.#multicallProvider = multicallProvider;
     this.#assets = assets;
-
-    // @todo Check alternatives
-    this.#signer = ethers.Wallet.createRandom();
+    this.#signer = signer;
 
     const assetIdentifierSplit = assetIdentifier.split("-");
 
@@ -326,14 +319,14 @@ class Asset {
           this.#config = assetCycle;
           this.#contract = ExpiringMultiPartyEthers__factory.connect(
             this.#config.emp.address,
-            this.#ethersProvider
+            this.#multicallProvider
           );
           break;
         } else if (isAssetConfigLSP(assetCycle)) {
           this.#config = assetCycle;
           this.#contract = LongShortPairEthers__factory.connect(
             this.#config.lsp.address,
-            this.#ethersProvider
+            this.#multicallProvider
           );
           break;
         }

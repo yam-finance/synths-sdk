@@ -1,16 +1,26 @@
 import Asset from "./Asset";
 import { ethers } from "ethers";
+import { providers } from "@0xsequence/multicall";
+import { LongShortPairEthers__factory } from "@uma/contracts-node";
 import { defaultAssetsConfig } from "./config";
+import { prepareLSPStateCall } from "../utils/helpers";
 import {
   SynthsAssetsConfig,
   AssetsConfig,
   InitOptions,
-  isAssetConfigLSP
+  isAssetConfigLSP,
+  MulticallParameter,
 } from "../types/assets.t";
+
+const MulticallWrapper = providers.MulticallProvider as unknown as new (
+  provider: ethers.providers.BaseProvider,
+  multicall?: MulticallParameter
+) => ethers.providers.JsonRpcProvider;
 
 class Synths {
   assets!: AssetsConfig;
-  #ethersProvider!: ethers.providers.Web3Provider;
+  #multicallProvider!: ethers.providers.Provider;
+  #signer!: ethers.Signer;
 
   /**
    * @notice Creates an instance of the Synths SDK.
@@ -30,7 +40,8 @@ class Synths {
    */
   connectAsset(assetIdentifier: string): Asset {
     const asset = Asset.connect({
-      ethersProvider: this.#ethersProvider,
+      signer: this.#signer,
+      multicallProvider: this.#multicallProvider,
       assets: this.assets,
       assetIdentifier: assetIdentifier,
     });
@@ -41,11 +52,27 @@ class Synths {
   async getLSPPortfolio() {
     try {
       /// @todo Call helper function for multicall.
-      let portfolio: { [key: string]: {} } = {};
+      const portfolio: { [key: string]: Record<string, unknown> } = {};
 
       for (const assetCycles in this.assets) {
         for (const asset of this.assets[assetCycles]) {
           if (isAssetConfigLSP(asset)) {
+            const contract = LongShortPairEthers__factory.connect(
+              asset.lsp.address,
+              this.#multicallProvider
+            );
+            const call = prepareLSPStateCall(contract);
+            const [
+              expirationTimestamp,
+              collateralToken,
+              priceIdentifier,
+              pairName,
+              longToken,
+              shortToken,
+              collateralPerPair,
+              timerAddress,
+            ] = await call;
+
             // const state = this.getLSPState(asset.lsp.address);
             // get synthCollateralSymbol
             // get status
@@ -79,8 +106,8 @@ class Synths {
 
       return portfolio;
     } catch (e) {
-        console.error("error", e);
-        return;
+      console.error("error", e);
+      return;
     }
   }
 
@@ -91,16 +118,17 @@ class Synths {
    */
   private async init(options: InitOptions): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    this.#ethersProvider =
-      options.ethersProvider as ethers.providers.Web3Provider;
+    this.#multicallProvider = new MulticallWrapper(options.ethersProvider);
 
-    const signer = this.#ethersProvider.getSigner();
+    this.#signer = options.ethersProvider.getSigner();
 
     const synthsAssetsConfig: SynthsAssetsConfig = {
       ...defaultAssetsConfig,
       ...options.userAssetsConfig,
     };
-    const chainId = await signer.getChainId();
+
+    const chainId = await this.#signer.getChainId();
+
     if (Object.keys(synthsAssetsConfig).includes(chainId.toString())) {
       this.assets = synthsAssetsConfig[chainId];
     } else {

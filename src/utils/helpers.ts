@@ -27,18 +27,18 @@ import {
 } from "../types/assets.t";
 
 export async function prepareLSPStateCall(contract: LongShortPairEthers) {
-    const lspStatePromise = Promise.all([
-        contract.expirationTimestamp(),
-        contract.collateralToken(),
-        contract.priceIdentifier(),
-        contract.pairName(),
-        contract.longToken(),
-        contract.shortToken(),
-        contract.collateralPerPair(),
-        contract.timerAddress(),
-    ]);
+  const lspStatePromise = Promise.all([
+    contract.expirationTimestamp(),
+    contract.collateralToken(),
+    contract.priceIdentifier(),
+    contract.pairName(),
+    contract.longToken(),
+    contract.shortToken(),
+    contract.collateralPerPair(),
+    contract.timerAddress(),
+  ]);
 
-    return lspStatePromise;
+  return lspStatePromise;
 }
 
 /**
