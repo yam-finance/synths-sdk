@@ -19,6 +19,8 @@ import {
   AssetConfigLSP,
   AssetConfigEMP,
   IPoolData,
+  IDailyPoolData,
+  IPairData,
   assertAssetConfigEMP,
   assertAssetConfigLSP,
 } from "types/assets.t";
@@ -377,25 +379,6 @@ export async function getYamRewardsByPoolAddress(poolAddress: string) {
     console.error("error", e);
     return;
   }
-}
-
-export interface IPairData {
-  date: Date;
-  timestamp: string;
-  reserveUSD: string;
-  volumeUSD: string;
-  price: number;
-}
-
-export interface IDailyPoolData {
-  date: number;
-  reserve0: string;
-  reserve1: string;
-  reserveUSD: string;
-  token0: { id: string; symbol: string };
-  token1: { id: string; symbol: string };
-  volumeUSD: string;
-  price: number;
 }
 
 /**
