@@ -21,8 +21,7 @@ describe("Synths SDKs", function () {
     it("getRecentSynthData - success", async function () {
       this.timeout(100000);
       const recentSynthData = await getRecentSynthData(1, defaultAssetsConfig);
-      console.log(recentSynthData);
-      expect(recentSynthData).to.be.an("object");
+      expect(recentSynthData).to.be.an("array");
     });
     it("getTotalMarketData - success", async function () {
       this.timeout(100000);
@@ -30,7 +29,6 @@ describe("Synths SDKs", function () {
         [1],
         defaultAssetsConfig
       );
-      console.log(totalMarketData);
       expect(totalMarketData.totalLiquidity).to.be.greaterThan(0);
     });
     it("getCurrentDexTokenPrice - success", async function () {
