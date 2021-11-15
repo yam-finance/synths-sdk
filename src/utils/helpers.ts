@@ -6,6 +6,7 @@ import { defaultAssetsConfig, defaultTestAssetsConfig } from "../lib/config";
 import {
   UNISWAP_ENDPOINT,
   SUSHISWAP_ENDPOINT,
+  MATIC_SUSHISWAP_ENDPOINT,
   BLOCKLYTICS_ENDPOINT,
   UNI_SUSHI_PAIR_DATA,
   UNI_SUSHI_DAILY_PAIR_DATA,
