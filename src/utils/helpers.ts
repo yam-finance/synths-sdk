@@ -26,6 +26,11 @@ import {
   ISynthsData,
 } from "../types/assets.t";
 
+/**
+ * @notice Helper function to prepare the lsp state multicall.
+ * @param contract The lsp contract instance.
+ * @returns A promise with the lsp state.
+ */
 export async function prepareLSPStateCall(contract: LongShortPairEthers) {
   const lspStatePromise = Promise.all([
     contract.expirationTimestamp(),

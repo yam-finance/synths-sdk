@@ -1,7 +1,10 @@
 import Asset from "./Asset";
 import { ethers } from "ethers";
 import { providers } from "@0xsequence/multicall";
-import { LongShortPairEthers__factory } from "@uma/contracts-node";
+import {
+  ERC20Ethers__factory,
+  LongShortPairEthers__factory,
+} from "@uma/contracts-node";
 import { defaultAssetsConfig } from "./config";
 import { prepareLSPStateCall } from "../utils/helpers";
 import {
@@ -51,12 +54,12 @@ class Synths {
 
   async getLSPPortfolio() {
     try {
-      /// @todo Call helper function for multicall.
       const portfolio: { [key: string]: Record<string, unknown> } = {};
 
       for (const assetCycles in this.assets) {
         for (const asset of this.assets[assetCycles]) {
           if (isAssetConfigLSP(asset)) {
+            const userAddress = await this.#signer.getAddress();
             const contract = LongShortPairEthers__factory.connect(
               asset.lsp.address,
               this.#multicallProvider
@@ -73,32 +76,49 @@ class Synths {
               timerAddress,
             ] = await call;
 
-            // const state = this.getLSPState(asset.lsp.address);
-            // get synthCollateralSymbol
-            // get status
+            console.log(priceIdentifier, collateralPerPair, timerAddress);
 
-            // get pairName + long
-            // get balance of longToken
-            // get lp amount of user
-            // get tokenPrice
-            portfolio[0] = {
-              balance: 0,
-              lpAmount: 0,
-              price: 0,
-              collateral: 0,
-              status: true,
+            const collateralContract = ERC20Ethers__factory.connect(
+              collateralToken,
+              this.#multicallProvider
+            );
+            const longTokenContract = ERC20Ethers__factory.connect(
+              longToken,
+              this.#multicallProvider
+            );
+            const shortTokenContract = ERC20Ethers__factory.connect(
+              shortToken,
+              this.#multicallProvider
+            );
+
+            const currentUnixTs = Math.floor(Date.now() / 1000);
+            const expired = expirationTimestamp.gte(
+              ethers.BigNumber.from(currentUnixTs)
+            )
+              ? true
+              : false;
+
+            const [collateralSymbol, longBalance, shortBalance] =
+              await Promise.all([
+                collateralContract.symbol(),
+                longTokenContract.balanceOf(userAddress),
+                shortTokenContract.balanceOf(userAddress),
+              ]);
+
+            /// @todo Get lp amount of user
+            /// @todo Get tokenPrice
+            portfolio[pairName + "long"] = {
+              balance: longBalance,
+              collateralSymbol: collateralSymbol,
+              status: expired,
             };
 
-            // get pairName + short
-            // get balance of shortToken
             // get lp amount of user
             // get tokenPrice
-            portfolio[0] = {
-              balance: 0,
-              lpAmount: 0,
-              price: 0,
-              collateral: 0,
-              status: true,
+            portfolio[pairName + "short"] = {
+              balance: shortBalance,
+              collateralSymbol: collateralSymbol,
+              status: expired,
             };
           }
         }
