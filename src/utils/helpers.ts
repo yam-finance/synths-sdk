@@ -229,20 +229,20 @@ export async function getRecentSynthData(
     const synthClass = config[networkId][synthClassName];
     const lastSynth = synthClass.slice(-1)[0];
 
-    if (lastSynth.expired) {
-        break;
-    }
+    if (lastSynth.expired) continue;
 
     if (isAssetConfigEMP(lastSynth)) {
+      const synth = assertAssetConfigEMP(lastSynth);
       const data = await getSynthData(
-        lastSynth.pool.location,
-        lastSynth.pool.address,
-        lastSynth.collateral
+        synth.pool.location,
+        synth.pool.address,
+        synth.collateral
       );
 
       data && recentSynthData.push(data);
     } else if (isAssetConfigLSP(lastSynth)) {
-      for (const pool of lastSynth.pools) {
+      const synth = assertAssetConfigLSP(lastSynth);
+      for (const pool of synth.pools) {
         const data = await getSynthData(
           pool.location,
           pool.address,
