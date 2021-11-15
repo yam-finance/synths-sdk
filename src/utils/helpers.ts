@@ -139,6 +139,7 @@ export async function getSynthData(
     const synthData: ISynthsData = {
       tokenId: poolData.tokenId,
       tokenSymbol: poolData.tokenSymbol,
+      collateralSymbol: poolData.collateralSymbol,
       apr: rewards,
       price: poolData.tokenPriceCurrently,
       priceChanged24h: getPercentageChange(
@@ -163,6 +164,7 @@ function extractPoolData(
 ) {
   let tokenId;
   let tokenSymbol;
+  let collateralSymbol;
   let tokenPriceCurrently;
   let tokenPriceYesterday;
   let volumeCurrently;
@@ -173,6 +175,7 @@ function extractPoolData(
   if (poolDataCurrently["pair"].token0.symbol === collateral) {
     tokenId = poolDataCurrently["pair"].token1.id;
     tokenSymbol = poolDataCurrently["pair"].token1.symbol;
+    collateralSymbol = poolDataCurrently["pair"].token0.symbol;
     tokenPriceCurrently =
       poolDataCurrently["pair"].reserve0 / poolDataCurrently["pair"].reserve1;
     tokenPriceYesterday =
@@ -184,6 +187,7 @@ function extractPoolData(
   } else {
     tokenId = poolDataCurrently["pair"].token0.id;
     tokenSymbol = poolDataCurrently["pair"].token0.symbol;
+    collateralSymbol = poolDataCurrently["pair"].token1.symbol;
     tokenPriceCurrently =
       poolDataCurrently["pair"].reserve1 / poolDataCurrently["pair"].reserve0;
     tokenPriceYesterday =
@@ -197,6 +201,7 @@ function extractPoolData(
   return {
     tokenId,
     tokenSymbol,
+    collateralSymbol,
     tokenPriceCurrently,
     tokenPriceYesterday,
     volumeCurrently,

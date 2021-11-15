@@ -27,6 +27,7 @@ export interface IDailyPoolData {
 export interface ISynthsData {
   tokenId: string;
   tokenSymbol: string;
+  collateralSymbol: string;
   apr: string | undefined;
   price: number;
   priceChanged24h: number;
