@@ -1,5 +1,4 @@
 import Synths from "./lib/Synths";
-import { defaultAssetsConfig } from "./lib/config/index";
 import {
   getCurrentDexTokenPrice,
   getTotalMarketData,
@@ -21,5 +20,4 @@ export {
   getRecentSynthData,
   getYamRewardsByPoolAddress,
   roundNumber,
-  defaultAssetsConfig,
 };

@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 import { request } from "graphql-request";
 import axios from "axios";
 import { ERC20Ethers__factory } from "@uma/contracts-node";
+import { defaultAssetsConfig } from "lib/config";
 import {
   UNISWAP_ENDPOINT,
   SUSHISWAP_ENDPOINT,
@@ -92,7 +93,7 @@ export async function getCurrentDexTokenPrice(
  * @param synthId The synth identifier.
  * @param networkId The network / chain id of the synth deployment.
  * @param network? Chain id to decide which subgraph endpoint to use, defaults to mainnet.
- * @param config? A user assets config.
+ * @param userConfig? A user assets userConfig.
  * @returns An object with the synth market data.
  */
 export async function getSynthData(
@@ -100,9 +101,10 @@ export async function getSynthData(
   poolAddress: string,
   collateralSymbol: string,
   network?: string,
-  config?: SynthsAssetsConfig
+  userConfig?: SynthsAssetsConfig
 ) {
   try {
+    const config = userConfig ?? defaultAssetsConfig;
     const rewards = config
       ? await getYamRewardsByPoolAddress(poolAddress, config)
       : "0";
@@ -208,12 +210,14 @@ function extractPoolData(
  * @notice Helper function to get the data for the most recent synths.
  * @dev Can be used on the front-end to display the most recent synths.
  * @param networkId The network / chain id of the synth deployment.
+ * @param userConfig? A user assets userConfig.
  * @returns The most recent synth market data.
  */
 export async function getRecentSynthData(
   networkId: number,
-  config: SynthsAssetsConfig
+  userConfig?: SynthsAssetsConfig
 ) {
+  const config = userConfig ?? defaultAssetsConfig;
   const recentSynthData: IResentSynthsData = {};
 
   for (const synthClassName in config[networkId]) {
@@ -247,12 +251,14 @@ export async function getRecentSynthData(
 /**
  * @notice Helper function to get the total liquidity and volume of all synths in the last 24h.
  * @param networks Array of networks that the user wants to query.
+ * @param userConfig? A user assets userConfig.
  * @returns The total synths market data.
  */
 export async function getTotalMarketData(
   networks: Array<number>,
-  config: SynthsAssetsConfig
+  userConfig?: SynthsAssetsConfig
 ) {
+  const config = userConfig ?? defaultAssetsConfig;
   const totalSynthData: IResentSynthsData = {};
   let totalTVL;
   let totalLiquidity = 0;
@@ -314,14 +320,16 @@ export async function getTotalMarketData(
  * @notice Helper function to get data from `assets.json` according to the synth id.
  * @param synthId The synth identifier.
  * @param networkId The network / chain id of the synth deployment.
+ * @param userConfig? A user assets userConfig.
  * @returns The synth info from the `assets.json`.
  */
 export function getInfoByIdentifier(
   synthId: string,
   network: number,
-  config: SynthsAssetsConfig
+  userConfig?: SynthsAssetsConfig
 ) {
   try {
+    const config = userConfig ?? defaultAssetsConfig;
     const synthClassId = synthId.substr(0, synthId.indexOf("-"));
     const synthCycle = synthId.substr(synthId.indexOf("-") + 1);
     const synthClass = config[network][synthClassId];
@@ -347,13 +355,15 @@ export function getInfoByIdentifier(
  * @notice Helper function to get the rewards by pool address.
  * @dev Should be removed after api accepts a pool address instead of an id.
  * @param poolAddress The DEX pool address.
+ * @param userConfig? A user assets userConfig.
  * @returns The rewards for the given pool.
  */
 export async function getYamRewardsByPoolAddress(
   poolAddress: string,
-  config: SynthsAssetsConfig
+  userConfig?: SynthsAssetsConfig
 ) {
   try {
+    const config = userConfig ?? defaultAssetsConfig;
     let synthId = "";
     let poolCount = 0;
 

@@ -14,8 +14,7 @@ describe("Synths SDKs", function () {
   describe("Helper function tests", function () {
     it("getYamRewardsByPoolAddress - success", async function () {
       const rewards = await getYamRewardsByPoolAddress(
-        "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
-        defaultAssetsConfig
+        "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa"
       );
       expect(rewards).to.be.an("string");
     });
