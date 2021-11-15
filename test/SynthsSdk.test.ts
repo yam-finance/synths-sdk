@@ -102,7 +102,7 @@ describe("Synths SDKs", function () {
     describe("Interact with LSP asset", () => {
       it("getLSPPortfolio - Success", async function () {
         this.timeout(100000);
-        const portfolio = await synthsSDK.getLSPPortfolio();
+        // const portfolio = await synthsSDK.getLSPPortfolio();
         // expect(portfolio).to.be.an("object");
       });
       it("getLSPState - Success", async function () {
