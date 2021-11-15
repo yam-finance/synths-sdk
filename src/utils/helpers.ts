@@ -40,7 +40,7 @@ export async function getTokenDecimals(
     return decimals;
   } catch (e) {
     console.error("error", e);
-    return undefined;
+    return;
   }
 }
 
@@ -83,7 +83,7 @@ export async function getCurrentDexTokenPrice(
     }
   } catch (e) {
     console.error("error", e);
-    return undefined;
+    return;
   }
 }
 
@@ -147,7 +147,7 @@ export async function getSynthData(
     return synthData;
   } catch (e) {
     console.error("error", e);
-    return undefined;
+    return;
   }
 }
 
@@ -317,10 +317,10 @@ export function getInfoByIdentifier(synthId: string, network: number) {
       }
     }
 
-    return undefined;
+    return;
   } catch (e) {
     console.error("error", e);
-    return undefined;
+    return;
   }
 }
 
@@ -367,7 +367,7 @@ export async function getYamRewardsByPoolAddress(poolAddress: string) {
     return String(rewards);
   } catch (e) {
     console.error("error", e);
-    return undefined;
+    return;
   }
 }
 
