@@ -98,16 +98,18 @@ class Synths {
               ? true
               : false;
 
-            const [collateralSymbol, longBalance, shortBalance] =
+            const [collateralSymbol, longSymbol, shortSymbol, longBalance, shortBalance] =
               await Promise.all([
                 collateralContract.symbol(),
+                longTokenContract.symbol(),
+                shortTokenContract.symbol(),
                 longTokenContract.balanceOf(userAddress),
                 shortTokenContract.balanceOf(userAddress),
               ]);
 
             /// @todo Get lp amount of user
             /// @todo Get tokenPrice
-            portfolio[pairName + "long"] = {
+            portfolio[longSymbol] = {
               balance: longBalance,
               collateralSymbol: collateralSymbol,
               status: expired,
@@ -115,7 +117,7 @@ class Synths {
 
             // get lp amount of user
             // get tokenPrice
-            portfolio[pairName + "short"] = {
+            portfolio[shortSymbol] = {
               balance: shortBalance,
               collateralSymbol: collateralSymbol,
               status: expired,

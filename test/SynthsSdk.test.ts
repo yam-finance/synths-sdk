@@ -84,6 +84,7 @@ describe("Synths SDKs", function () {
   });
   describe("LSP Asset", () => {
     let lspAsset: Asset;
+    let synthsSDK: Synths;
 
     before(async function () {
       provider = ethers.provider;
@@ -99,6 +100,11 @@ describe("Synths SDKs", function () {
       lspAsset = synthsSDK.connectAsset("2xdpi-1021");
     });
     describe("Interact with LSP asset", () => {
+      it("getLSPPortfolio - Success", async function () {
+        this.timeout(100000);
+        const portfolio = await synthsSDK.getLSPPortfolio();
+        expect(portfolio).to.be.an("object");
+      });
       it("getLSPState - Success", async function () {
         const lspState = await lspAsset.getLSPState();
         expect(lspState).to.deep.include({
