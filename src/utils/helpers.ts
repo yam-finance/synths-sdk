@@ -287,13 +287,14 @@ export async function getTotalMarketData(networks: Array<number>) {
 
   let totalTVL;
 
-  axios.get<{ total: string }>(
-    `https://api.yam.finance/tvl/degenerative`
-  ).then((response) => {
-    totalTVL = response.data["total"];
-  }).catch((error) => {
-    console.log(error);
-  });
+  axios
+    .get<{ total: string }>(`https://api.yam.finance/tvl/degenerative`)
+    .then((response) => {
+      totalTVL = response.data["total"];
+    })
+    .catch((error) => {
+      console.log(error);
+    });
 
   return {
     totalLiquidity: totalLiquidity,
