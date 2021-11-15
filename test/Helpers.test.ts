@@ -1,5 +1,5 @@
 import { expect } from "chai";
-// import axios from "axios";
+import { defaultAssetsConfig } from "lib/config";
 import {
   getCurrentDexTokenPrice,
   getSynthData,
@@ -14,18 +14,22 @@ describe("Synths SDKs", function () {
   describe("Helper function tests", function () {
     it("getYamRewardsByPoolAddress - success", async function () {
       const rewards = await getYamRewardsByPoolAddress(
-        "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa"
+        "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
+        defaultAssetsConfig
       );
       expect(rewards).to.be.an("string");
     });
     it("getRecentSynthData - success", async function () {
       this.timeout(100000);
-      const recentSynthData = await getRecentSynthData(1);
+      const recentSynthData = await getRecentSynthData(1, defaultAssetsConfig);
       expect(recentSynthData).to.be.an("object");
     });
     it("getTotalMarketData - success", async function () {
       this.timeout(100000);
-      const totalMarketData = await getTotalMarketData([1]);
+      const totalMarketData = await getTotalMarketData(
+        [1],
+        defaultAssetsConfig
+      );
       expect(totalMarketData.totalLiquidity).to.be.greaterThan(0);
     });
     it("getCurrentDexTokenPrice - success", async function () {

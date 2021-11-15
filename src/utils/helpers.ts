@@ -2,7 +2,6 @@ import { ethers } from "ethers";
 import { request } from "graphql-request";
 import axios from "axios";
 import { ERC20Ethers__factory } from "@uma/contracts-node";
-import { defaultAssetsConfig, defaultTestAssetsConfig } from "../lib/config";
 import {
   UNISWAP_ENDPOINT,
   SUSHISWAP_ENDPOINT,
@@ -23,6 +22,7 @@ import {
   IPairData,
   assertAssetConfigEMP,
   assertAssetConfigLSP,
+  SynthsAssetsConfig,
 } from "types/assets.t";
 
 /**
@@ -92,16 +92,20 @@ export async function getCurrentDexTokenPrice(
  * @param synthId The synth identifier.
  * @param networkId The network / chain id of the synth deployment.
  * @param network? Chain id to decide which subgraph endpoint to use, defaults to mainnet.
+ * @param config? A user assets config.
  * @returns An object with the synth market data.
  */
 export async function getSynthData(
   poolLocation: string,
   poolAddress: string,
   collateralSymbol: string,
-  network?: string
+  network?: string,
+  config?: SynthsAssetsConfig
 ) {
   try {
-    const rewards = await getYamRewardsByPoolAddress(poolAddress);
+    const rewards = config
+      ? await getYamRewardsByPoolAddress(poolAddress, config)
+      : "0";
     const ts = Math.round(new Date().getTime() / 1000);
     const tsYesterday = ts - 24 * 3600;
     const blockNow = await timestampToBlock(ts);
@@ -205,13 +209,15 @@ function extractPoolData(
  * @dev Can be used on the front-end to display the most recent synths.
  * @param networkId The network / chain id of the synth deployment.
  * @returns The most recent synth market data.
- * @todo Pass asset config from user.
  */
-export async function getRecentSynthData(networkId: number) {
+export async function getRecentSynthData(
+  networkId: number,
+  config: SynthsAssetsConfig
+) {
   const recentSynthData: IResentSynthsData = {};
 
-  for (const synthClassName in defaultAssetsConfig[networkId]) {
-    const synthClass = defaultAssetsConfig[networkId][synthClassName];
+  for (const synthClassName in config[networkId]) {
+    const synthClass = config[networkId][synthClassName];
     const lastSynth = synthClass.slice(-1)[0];
 
     if (isAssetConfigEMP(lastSynth)) {
@@ -242,16 +248,19 @@ export async function getRecentSynthData(networkId: number) {
  * @notice Helper function to get the total liquidity and volume of all synths in the last 24h.
  * @param networks Array of networks that the user wants to query.
  * @returns The total synths market data.
- * @todo Pass asset config from user.
  */
-export async function getTotalMarketData(networks: Array<number>) {
+export async function getTotalMarketData(
+  networks: Array<number>,
+  config: SynthsAssetsConfig
+) {
   const totalSynthData: IResentSynthsData = {};
+  let totalTVL;
   let totalLiquidity = 0;
   let total24hVolume = 0;
 
   for (const networkId of networks) {
-    for (const synthClassName in defaultAssetsConfig[networkId]) {
-      const synthClass = defaultAssetsConfig[networkId][synthClassName];
+    for (const synthClassName in config[networkId]) {
+      const synthClass = config[networkId][synthClassName];
       for (let i = 0; i < synthClass.length; i++) {
         if (!synthClass[i].expired) {
           if (isAssetConfigEMP(synthClass[i])) {
@@ -285,8 +294,6 @@ export async function getTotalMarketData(networks: Array<number>) {
     total24hVolume += Number(totalSynthData[key]?.liquidity) || 0;
   }
 
-  let totalTVL;
-
   axios
     .get<{ total: string }>(`https://api.yam.finance/tvl/degenerative`)
     .then((response) => {
@@ -309,11 +316,15 @@ export async function getTotalMarketData(networks: Array<number>) {
  * @param networkId The network / chain id of the synth deployment.
  * @returns The synth info from the `assets.json`.
  */
-export function getInfoByIdentifier(synthId: string, network: number) {
+export function getInfoByIdentifier(
+  synthId: string,
+  network: number,
+  config: SynthsAssetsConfig
+) {
   try {
     const synthClassId = synthId.substr(0, synthId.indexOf("-"));
     const synthCycle = synthId.substr(synthId.indexOf("-") + 1);
-    const synthClass = defaultAssetsConfig[network][synthClassId];
+    const synthClass = config[network][synthClassId];
 
     for (let i = 0; i < synthClass.length; i++) {
       if (synthClass[i].cycle + synthClass[i].year == synthCycle) {
@@ -338,14 +349,17 @@ export function getInfoByIdentifier(synthId: string, network: number) {
  * @param poolAddress The DEX pool address.
  * @returns The rewards for the given pool.
  */
-export async function getYamRewardsByPoolAddress(poolAddress: string) {
+export async function getYamRewardsByPoolAddress(
+  poolAddress: string,
+  config: SynthsAssetsConfig
+) {
   try {
     let synthId = "";
     let poolCount = 0;
 
-    for (const networkId in defaultAssetsConfig) {
-      for (const synthClassName in defaultAssetsConfig[networkId]) {
-        const synthClass = defaultAssetsConfig[networkId][synthClassName];
+    for (const networkId in config) {
+      for (const synthClassName in config[networkId]) {
+        const synthClass = config[networkId][synthClassName];
         for (let i = 0; i < synthClass.length; i++) {
           if (isAssetConfigEMP(synthClass[i])) {
             const synth = assertAssetConfigEMP(synthClass[i]);
