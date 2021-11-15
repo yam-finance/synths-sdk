@@ -49,20 +49,27 @@ export async function getTokenDecimals(
  * @param poolLocation Location string of the DEX pool (e.g. "uni").
  * @param poolAddress Address of the DEX pool.
  * @param tokenAddress Address of the token.
+ * @param network? Chain id to decide which subgraph endpoint to use, defaults to mainnet.
  * @returns `undefined` or the DEX token price in WEI.
  * @todo Change returns statements.
  */
 export async function getCurrentDexTokenPrice(
   poolLocation: string,
   poolAddress: string,
-  tokenAddress: string
+  tokenAddress: string,
+  network?: string
 ) {
   try {
     const ts = Math.round(new Date().getTime() / 1000);
     const blockNow = await timestampToBlock(ts);
     /// @dev Get pool data from graph endpoints.
-    const endpoint =
+    let endpoint =
       poolLocation === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
+
+    if (network === "137") {
+      endpoint = MATIC_SUSHISWAP_ENDPOINT;
+    }
+
     const query = UNI_SUSHI_PAIR_DATA;
     const poolData: IPoolData = await request(endpoint, query, {
       pairAddress: poolAddress,
@@ -84,13 +91,15 @@ export async function getCurrentDexTokenPrice(
  * @notice Helper function to get relevant synth market data.
  * @param synthId The synth identifier.
  * @param networkId The network / chain id of the synth deployment.
+ * @param network? Chain id to decide which subgraph endpoint to use, defaults to mainnet.
  * @returns `undefined` or an object with the relevant data.
  * @TODO Update params to use addresses.
  */
 export async function getSynthData(
   poolLocation: string,
   poolAddress: string,
-  collateralSymbol: string
+  collateralSymbol: string,
+  network?: string
 ) {
   try {
     const rewards = await getYamRewardsByPoolAddress(poolAddress);
@@ -99,8 +108,13 @@ export async function getSynthData(
     const blockNow = await timestampToBlock(ts);
     const block24hAgo = await timestampToBlock(tsYesterday);
 
-    const endpoint =
+    let endpoint =
       poolLocation === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
+
+    if (network === "137") {
+      endpoint = MATIC_SUSHISWAP_ENDPOINT;
+    }
+
     const query = UNI_SUSHI_PAIR_DATA;
     const poolDataCurrently: IPoolData = await request(endpoint, query, {
       pairAddress: poolAddress,
@@ -382,12 +396,14 @@ export interface IDailyPoolData {
  * @param poolAddress The pool address you want to get the data from.
  * @param tokenAddress The token of which you want to get the price.
  * @param poolLocation The pool location to help choose the right subgraph endpoint.
+ * @param network? Chain id to decide which subgraph endpoint to use, defaults to mainnet.
  * @returns An array of token market data.
  */
 export async function getPoolChartData(
   poolLocation: string,
   poolAddress: string,
-  tokenAddress: string
+  tokenAddress: string,
+  network?: string
 ) {
   const TWENTY_FOUR_HOURS = 86400;
   const dayIndexSet = new Set();
@@ -395,8 +411,12 @@ export async function getPoolChartData(
   const tsEnd = Math.round(new Date().getTime() / 1000);
   const tsStart = tsEnd - 365 * 24 * 3600;
 
-  const endpoint =
-    poolLocation === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
+  let endpoint = poolLocation === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
+
+  if (network === "137") {
+    endpoint = MATIC_SUSHISWAP_ENDPOINT;
+  }
+
   const query = UNI_SUSHI_DAILY_PAIR_DATA;
   const pairData = await request<{ pairDayDatas: IDailyPoolData[] }>(
     endpoint,
