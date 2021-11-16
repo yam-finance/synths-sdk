@@ -93,7 +93,7 @@ describe("Synths SDKs", function () {
         this.skip();
       }
       const userAssetsConfig = testAssetConfig as SynthsAssetsConfig;
-      const synthsSDK = await Synths.create({
+      synthsSDK = await Synths.create({
         ethersProvider: provider,
         userAssetsConfig: userAssetsConfig,
       });
