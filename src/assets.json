@@ -94,7 +94,7 @@
           "address": "0x5ccd155ad26b74913ed6266a516a085a2343d426",
           "location": "sushiswap"
         },
-        "expired": false
+        "expired": true
       },
       {
         "name": "December",
@@ -172,7 +172,7 @@
           "address": "0xb9292b40cab08e5208b863ea9c4c4927a2308eee",
           "location": "sushiswap"
         },
-        "expired": false
+        "expired": true
       }
     ],
     "upunks": [
@@ -194,7 +194,7 @@
           "address": "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
           "location": "sushiswap"
         },
-        "expired": false
+        "expired": true
       },
       {
         "name": "December",

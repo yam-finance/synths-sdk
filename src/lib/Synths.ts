@@ -1,15 +1,29 @@
 import Asset from "./Asset";
+import { ethers } from "ethers";
+import { providers } from "@0xsequence/multicall";
+import {
+  ERC20Ethers__factory,
+  LongShortPairEthers__factory,
+} from "@uma/contracts-node";
 import { defaultAssetsConfig } from "./config";
+import { prepareLSPStateCall } from "../utils/helpers";
 import {
   SynthsAssetsConfig,
   AssetsConfig,
   InitOptions,
+  isAssetConfigLSP,
+  MulticallParameter,
 } from "../types/assets.t";
-import { ethers } from "ethers";
+
+const MulticallWrapper = providers.MulticallProvider as unknown as new (
+  provider: ethers.providers.BaseProvider,
+  multicall?: MulticallParameter
+) => ethers.providers.JsonRpcProvider;
 
 class Synths {
   assets!: AssetsConfig;
-  #ethersProvider!: ethers.providers.Web3Provider;
+  #multicallProvider!: ethers.providers.Provider;
+  #signer!: ethers.Signer;
 
   /**
    * @notice Creates an instance of the Synths SDK.
@@ -17,7 +31,6 @@ class Synths {
    * @returns The Synths SDK instance.
    * @throws "Synths not found in the current network".
    */
-  // @todo Add options type.
   static async create(options: InitOptions): Promise<Synths> {
     const synthsSdk = new Synths();
     await synthsSdk.init(options);
@@ -30,7 +43,8 @@ class Synths {
    */
   connectAsset(assetIdentifier: string): Asset {
     const asset = Asset.connect({
-      ethersProvider: this.#ethersProvider,
+      signer: this.#signer,
+      multicallProvider: this.#multicallProvider,
       assets: this.assets,
       assetIdentifier: assetIdentifier,
     });
@@ -38,24 +52,110 @@ class Synths {
     return asset;
   }
 
+  async getLSPPortfolio() {
+    try {
+      const portfolio: { [key: string]: Record<string, unknown> } = {};
+
+      for (const assetCycles in this.assets) {
+        for (const asset of this.assets[assetCycles]) {
+          if (isAssetConfigLSP(asset)) {
+            const userAddress = await this.#signer.getAddress();
+            const contract = LongShortPairEthers__factory.connect(
+              asset.lsp.address,
+              this.#multicallProvider
+            );
+            const call = prepareLSPStateCall(contract);
+            const [
+              expirationTimestamp,
+              collateralToken,
+              priceIdentifier,
+              pairName,
+              longToken,
+              shortToken,
+              collateralPerPair,
+              timerAddress,
+            ] = await call;
+
+            console.log(priceIdentifier, collateralPerPair, timerAddress);
+
+            const collateralContract = ERC20Ethers__factory.connect(
+              collateralToken,
+              this.#multicallProvider
+            );
+            const longTokenContract = ERC20Ethers__factory.connect(
+              longToken,
+              this.#multicallProvider
+            );
+            const shortTokenContract = ERC20Ethers__factory.connect(
+              shortToken,
+              this.#multicallProvider
+            );
+
+            const currentUnixTs = Math.floor(Date.now() / 1000);
+            const expired = expirationTimestamp.gte(
+              ethers.BigNumber.from(currentUnixTs)
+            )
+              ? true
+              : false;
+
+            const [
+              collateralSymbol,
+              longSymbol,
+              shortSymbol,
+              longBalance,
+              shortBalance,
+            ] = await Promise.all([
+              collateralContract.symbol(),
+              longTokenContract.symbol(),
+              shortTokenContract.symbol(),
+              longTokenContract.balanceOf(userAddress),
+              shortTokenContract.balanceOf(userAddress),
+            ]);
+
+            /// @todo Get lp amount of user
+            /// @todo Get tokenPrice
+            portfolio[longSymbol] = {
+              balance: longBalance,
+              collateralSymbol: collateralSymbol,
+              status: expired,
+            };
+
+            // get lp amount of user
+            // get tokenPrice
+            portfolio[shortSymbol] = {
+              balance: shortBalance,
+              collateralSymbol: collateralSymbol,
+              status: expired,
+            };
+          }
+        }
+      }
+
+      return portfolio;
+    } catch (e) {
+      console.error("error", e);
+      return;
+    }
+  }
+
   /**
    * Initializes the Synths SDK instance.
    * @param options - Ethers Synths configuration
    * @throws "Synths not found in the current network"
    */
-  // @todo Add options type.
   private async init(options: InitOptions): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    this.#ethersProvider =
-      options.ethersProvider as ethers.providers.Web3Provider;
+    this.#multicallProvider = new MulticallWrapper(options.ethersProvider);
 
-    const signer = this.#ethersProvider.getSigner();
+    this.#signer = options.ethersProvider.getSigner();
 
     const synthsAssetsConfig: SynthsAssetsConfig = {
       ...defaultAssetsConfig,
       ...options.userAssetsConfig,
     };
-    const chainId = await signer.getChainId();
+
+    const chainId = await this.#signer.getChainId();
+
     if (Object.keys(synthsAssetsConfig).includes(chainId.toString())) {
       this.assets = synthsAssetsConfig[chainId];
     } else {

@@ -1,8 +1,8 @@
 import { ethers } from "ethers";
 import { request } from "graphql-request";
 import axios from "axios";
-import { ERC20Ethers__factory } from "@uma/contracts-node";
-import { defaultAssetsConfig } from "lib/config";
+import { ERC20Ethers__factory, LongShortPairEthers } from "@uma/contracts-node";
+import { defaultAssetsConfig } from "../lib/config";
 import {
   UNISWAP_ENDPOINT,
   SUSHISWAP_ENDPOINT,
@@ -15,7 +15,6 @@ import {
 import {
   isAssetConfigEMP,
   isAssetConfigLSP,
-  IResentSynthsData,
   AssetConfigLSP,
   AssetConfigEMP,
   IPoolData,
@@ -24,7 +23,28 @@ import {
   assertAssetConfigEMP,
   assertAssetConfigLSP,
   SynthsAssetsConfig,
-} from "types/assets.t";
+  ISynthsData,
+} from "../types/assets.t";
+
+/**
+ * @notice Helper function to prepare the lsp state multicall.
+ * @param contract The lsp contract instance.
+ * @returns A promise with the lsp state.
+ */
+export async function prepareLSPStateCall(contract: LongShortPairEthers) {
+  const lspStatePromise = Promise.all([
+    contract.expirationTimestamp(),
+    contract.collateralToken(),
+    contract.priceIdentifier(),
+    contract.pairName(),
+    contract.longToken(),
+    contract.shortToken(),
+    contract.collateralPerPair(),
+    contract.timerAddress(),
+  ]);
+
+  return lspStatePromise;
+}
 
 /**
  * @notice Helper function to get the decimals of a erc20 token.
@@ -136,9 +156,10 @@ export async function getSynthData(
       collateralSymbol
     );
 
-    const synthData = {
+    const synthData: ISynthsData = {
       tokenId: poolData.tokenId,
       tokenSymbol: poolData.tokenSymbol,
+      collateralSymbol: poolData.collateralSymbol,
       apr: rewards,
       price: poolData.tokenPriceCurrently,
       priceChanged24h: getPercentageChange(
@@ -163,6 +184,7 @@ function extractPoolData(
 ) {
   let tokenId;
   let tokenSymbol;
+  let collateralSymbol;
   let tokenPriceCurrently;
   let tokenPriceYesterday;
   let volumeCurrently;
@@ -173,6 +195,7 @@ function extractPoolData(
   if (poolDataCurrently["pair"].token0.symbol === collateral) {
     tokenId = poolDataCurrently["pair"].token1.id;
     tokenSymbol = poolDataCurrently["pair"].token1.symbol;
+    collateralSymbol = poolDataCurrently["pair"].token0.symbol;
     tokenPriceCurrently =
       poolDataCurrently["pair"].reserve0 / poolDataCurrently["pair"].reserve1;
     tokenPriceYesterday =
@@ -184,6 +207,7 @@ function extractPoolData(
   } else {
     tokenId = poolDataCurrently["pair"].token0.id;
     tokenSymbol = poolDataCurrently["pair"].token0.symbol;
+    collateralSymbol = poolDataCurrently["pair"].token1.symbol;
     tokenPriceCurrently =
       poolDataCurrently["pair"].reserve1 / poolDataCurrently["pair"].reserve0;
     tokenPriceYesterday =
@@ -197,6 +221,7 @@ function extractPoolData(
   return {
     tokenId,
     tokenSymbol,
+    collateralSymbol,
     tokenPriceCurrently,
     tokenPriceYesterday,
     volumeCurrently,
@@ -218,29 +243,33 @@ export async function getRecentSynthData(
   userConfig?: SynthsAssetsConfig
 ) {
   const config = userConfig ?? defaultAssetsConfig;
-  const recentSynthData: IResentSynthsData = {};
+  const recentSynthData: ISynthsData[] = [];
 
   for (const synthClassName in config[networkId]) {
     const synthClass = config[networkId][synthClassName];
     const lastSynth = synthClass.slice(-1)[0];
 
+    if (lastSynth.expired) continue;
+
     if (isAssetConfigEMP(lastSynth)) {
+      const synth = assertAssetConfigEMP(lastSynth);
       const data = await getSynthData(
-        lastSynth.pool.location,
-        lastSynth.pool.address,
-        lastSynth.collateral
+        synth.pool.location,
+        synth.pool.address,
+        synth.collateral
       );
 
-      recentSynthData[lastSynth.pool.address] = data;
+      data && recentSynthData.push(data);
     } else if (isAssetConfigLSP(lastSynth)) {
-      for (const pool of lastSynth.pools) {
+      const synth = assertAssetConfigLSP(lastSynth);
+      for (const pool of synth.pools) {
         const data = await getSynthData(
           pool.location,
           pool.address,
           lastSynth.collateral
         );
 
-        recentSynthData[pool.address] = data;
+        data && recentSynthData.push(data);
       }
     }
   }
@@ -259,10 +288,11 @@ export async function getTotalMarketData(
   userConfig?: SynthsAssetsConfig
 ) {
   const config = userConfig ?? defaultAssetsConfig;
-  const totalSynthData: IResentSynthsData = {};
+  const totalSynthData: { [x: string]: ISynthsData | undefined } = {};
   let totalTVL;
   let totalLiquidity = 0;
   let total24hVolume = 0;
+  let synthCount = 0;
 
   for (const networkId of networks) {
     for (const synthClassName in config[networkId]) {
@@ -278,6 +308,7 @@ export async function getTotalMarketData(
             );
 
             totalSynthData[synth.pool.address] = synthData;
+            // synthCount += 1;
           } else if (isAssetConfigLSP(synthClass[i])) {
             const synth = assertAssetConfigLSP(synthClass[i]);
             for (const pool of synth.pools) {
@@ -288,6 +319,7 @@ export async function getTotalMarketData(
               );
 
               totalSynthData[pool.address] = synthData;
+              synthCount += 1;
             }
           }
         }
@@ -300,7 +332,7 @@ export async function getTotalMarketData(
     total24hVolume += Number(totalSynthData[key]?.liquidity) || 0;
   }
 
-  axios
+  await axios
     .get<{ total: string }>(`https://api.yam.finance/tvl/degenerative`)
     .then((response) => {
       totalTVL = response.data["total"];
@@ -313,6 +345,7 @@ export async function getTotalMarketData(
     totalLiquidity: totalLiquidity,
     total24hVolume: total24hVolume,
     totalTVL: totalTVL,
+    totalSynthCound: synthCount,
   };
 }
 

@@ -1,5 +1,4 @@
 import { BigNumber, ethers } from "ethers";
-import { providers } from "@0xsequence/multicall";
 import {
   ExpiringMultiPartyEthers,
   ExpiringMultiPartyEthers__factory,
@@ -16,22 +15,16 @@ import {
   isAssetConfigEMP,
   isAssetConfigLSP,
 } from "../types/assets.t";
-import { getTokenDecimals, getCurrentDexTokenPrice } from "../utils/helpers";
+import {
+  prepareLSPStateCall,
+  getTokenDecimals,
+  getCurrentDexTokenPrice,
+} from "../utils/helpers";
 import { USDC, WETH } from "./config/contracts";
 
-// typeof here is important, otherwise we get a TS error. The type of the value of providers.MulticallProvider is not a constructor.
-type MulticallParameter = ConstructorParameters<
-  typeof providers.MulticallProvider
->[1];
-
-const MulticallWrapper = providers.MulticallProvider as unknown as new (
-  provider: ethers.providers.BaseProvider,
-  multicall?: MulticallParameter
-) => ethers.providers.JsonRpcProvider;
-
 class Asset {
-  #ethersProvider!: ethers.providers.Provider;
   #signer!: ethers.Signer;
+  #multicallProvider!: ethers.providers.Provider;
   #assets!: AssetsConfig;
   #config!: AssetConfig;
   #contract!: ExpiringMultiPartyEthers | LongShortPairEthers;
@@ -42,15 +35,16 @@ class Asset {
    * @returns The Asset instance.
    */
   static connect({
-    ethersProvider,
+    signer,
+    multicallProvider,
     assets,
     assetIdentifier,
   }: AssetClassConfig): Asset {
     const asset = new Asset();
-    const provider = new MulticallWrapper(ethersProvider);
 
     asset.init({
-      ethersProvider: provider,
+      signer,
+      multicallProvider,
       assets,
       assetIdentifier,
     });
@@ -120,7 +114,7 @@ class Asset {
       return data;
     } catch (e) {
       console.error("error", e);
-      return undefined;
+      return;
     }
   }
 
@@ -132,35 +126,35 @@ class Asset {
     try {
       assertAssetConfigLSP(this.#config);
       if ("collateralToken" in this.#contract) {
-        const results = await Promise.all([
-          this.#contract.expirationTimestamp(),
-          this.#contract.collateralToken(),
-          this.#contract.priceIdentifier(),
-          this.#contract.pairName(),
-          this.#contract.longToken(),
-          this.#contract.shortToken(),
-          this.#contract.collateralPerPair(),
-          this.#contract.timerAddress(),
-        ]);
+        const call = prepareLSPStateCall(this.#contract);
 
-        const lspData = {
-          expirationTimestamp: results[0],
-          collateralToken: results[1],
-          priceIdentifier: results[2],
-          pairName: results[3],
-          longToken: results[4],
-          shortToken: results[5],
-          collateralPerPair: results[6],
-          timerAddress: results[7],
+        const [
+          expirationTimestamp,
+          collateralToken,
+          priceIdentifier,
+          pairName,
+          longToken,
+          shortToken,
+          collateralPerPair,
+          timerAddress,
+        ] = await call;
+
+        return {
+          expirationTimestamp,
+          collateralToken,
+          priceIdentifier,
+          pairName,
+          longToken,
+          shortToken,
+          collateralPerPair,
+          timerAddress,
         };
-
-        return lspData;
       } else {
-        return undefined;
+        return;
       }
     } catch (e) {
       console.error("error", e);
-      return undefined;
+      return;
     }
   }
 
@@ -176,7 +170,7 @@ class Asset {
       return this.#contract.positions(address);
     } catch (e) {
       console.error("error", e);
-      return undefined;
+      return;
     }
   }
 
@@ -191,7 +185,7 @@ class Asset {
       const collateralAddress = this.#config.collateral == "WETH" ? WETH : USDC;
       const collateralDecimals = BigNumber.from(10).pow(
         BigNumber.from(
-          await getTokenDecimals(collateralAddress, this.#ethersProvider)
+          await getTokenDecimals(collateralAddress, this.#multicallProvider)
         )
       );
       const collateralRatio = BigNumber.from(
@@ -203,7 +197,7 @@ class Asset {
       return collateralRatio;
     } catch (e) {
       console.error("error", e);
-      return undefined;
+      return;
     }
   }
 
@@ -243,7 +237,7 @@ class Asset {
       return positions;
     } catch (e) {
       console.error("error", e);
-      return undefined;
+      return;
     }
   }
 
@@ -259,7 +253,7 @@ class Asset {
       if (empState != undefined && isAssetConfigEMP(this.#config)) {
         const tokenDecimals = await getTokenDecimals(
           this.#config.token.address,
-          this.#ethersProvider
+          this.#multicallProvider
         );
         const totalTokens = empState["totalTokensOutstanding"]
           .div(BigNumber.from(10).pow(BigNumber.from(tokenDecimals)))
@@ -269,7 +263,7 @@ class Asset {
           this.#config.collateral == "WETH" ? WETH : USDC;
         const collateralDecimals = BigNumber.from(10).pow(
           BigNumber.from(
-            await getTokenDecimals(collateralAddress, this.#ethersProvider)
+            await getTokenDecimals(collateralAddress, this.#multicallProvider)
           )
         );
 
@@ -299,7 +293,7 @@ class Asset {
       return gcr;
     } catch (e) {
       console.error("error", e);
-      return undefined;
+      return;
     }
   }
 
@@ -308,33 +302,31 @@ class Asset {
    * @param config - Ethers Asset configuration.
    */
   private init({
-    ethersProvider,
+    signer,
+    multicallProvider,
     assets,
     assetIdentifier,
   }: AssetClassConfig): void {
-    this.#ethersProvider = ethersProvider;
+    this.#multicallProvider = multicallProvider;
     this.#assets = assets;
-
-    // @todo Check alternatives
-    this.#signer = ethers.Wallet.createRandom();
+    this.#signer = signer;
 
     const assetIdentifierSplit = assetIdentifier.split("-");
 
-    // @todo Check EmpAbi error
     for (const assetCycle of assets[assetIdentifierSplit[0]]) {
       if (assetCycle.cycle + assetCycle.year == assetIdentifierSplit[1]) {
         if (isAssetConfigEMP(assetCycle)) {
           this.#config = assetCycle;
           this.#contract = ExpiringMultiPartyEthers__factory.connect(
             this.#config.emp.address,
-            this.#ethersProvider
+            this.#multicallProvider
           );
           break;
         } else if (isAssetConfigLSP(assetCycle)) {
           this.#config = assetCycle;
           this.#contract = LongShortPairEthers__factory.connect(
             this.#config.lsp.address,
-            this.#ethersProvider
+            this.#multicallProvider
           );
           break;
         }

@@ -1,4 +1,10 @@
+import { providers } from "@0xsequence/multicall";
 import type { ethers } from "ethers";
+
+// typeof here is important, otherwise we get a TS error. The type of the value of providers.MulticallProvider is not a constructor.
+export type MulticallParameter = ConstructorParameters<
+  typeof providers.MulticallProvider
+>[1];
 
 export enum FinancialContractTemplates {
   EMP = "EMP",
@@ -24,25 +30,23 @@ export interface IDailyPoolData {
   price: number;
 }
 
-export interface IResentSynthsData {
-  [key: string]:
-    | {
-        tokenId: string;
-        tokenSymbol: string;
-        apr: string | undefined;
-        price: number;
-        priceChanged24h: number;
-        liquidity: number;
-        volume24h: number;
-      }
-    | undefined;
+export interface ISynthsData {
+  tokenId: string;
+  tokenSymbol: string;
+  collateralSymbol: string;
+  apr: string | undefined;
+  price: number;
+  priceChanged24h: number;
+  liquidity: number;
+  volume24h: number;
 }
 
 /// @notice Asset class interfaces
 
 export interface AssetClassConfig {
+  signer: ethers.Signer;
   /** ethersProvider - ethers.js provider */
-  ethersProvider: ethers.providers.JsonRpcProvider;
+  multicallProvider: ethers.providers.Provider;
   /** assets - Official contracts of the selected network */
   assets: AssetsConfig;
   /** assetIdentifier - The identifier of the asset contract to use */
