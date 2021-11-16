@@ -21,5 +21,5 @@ export {
   getRecentSynthData,
   getYamRewardsByPoolAddress,
   roundNumber,
-  SynthsAssetsConfig
+  SynthsAssetsConfig,
 };
