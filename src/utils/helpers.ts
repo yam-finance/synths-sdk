@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { request } from "graphql-request";
 import axios from "axios";
-import { ERC20Ethers__factory } from "@uma/contracts-node";
+import { ERC20Ethers__factory, LongShortPairEthers } from "@uma/contracts-node";
 import { defaultAssetsConfig } from "../lib/config";
 import {
   UNISWAP_ENDPOINT,
@@ -25,6 +25,26 @@ import {
   SynthsAssetsConfig,
   ISynthsData,
 } from "../types/assets.t";
+
+/**
+ * @notice Helper function to prepare the lsp state multicall.
+ * @param contract The lsp contract instance.
+ * @returns A promise with the lsp state.
+ */
+export async function prepareLSPStateCall(contract: LongShortPairEthers) {
+  const lspStatePromise = Promise.all([
+    contract.expirationTimestamp(),
+    contract.collateralToken(),
+    contract.priceIdentifier(),
+    contract.pairName(),
+    contract.longToken(),
+    contract.shortToken(),
+    contract.collateralPerPair(),
+    contract.timerAddress(),
+  ]);
+
+  return lspStatePromise;
+}
 
 /**
  * @notice Helper function to get the decimals of a erc20 token.
@@ -272,6 +292,7 @@ export async function getTotalMarketData(
   let totalTVL;
   let totalLiquidity = 0;
   let total24hVolume = 0;
+  let synthCount = 0;
 
   for (const networkId of networks) {
     for (const synthClassName in config[networkId]) {
@@ -287,6 +308,7 @@ export async function getTotalMarketData(
             );
 
             totalSynthData[synth.pool.address] = synthData;
+            // synthCount += 1;
           } else if (isAssetConfigLSP(synthClass[i])) {
             const synth = assertAssetConfigLSP(synthClass[i]);
             for (const pool of synth.pools) {
@@ -297,6 +319,7 @@ export async function getTotalMarketData(
               );
 
               totalSynthData[pool.address] = synthData;
+              synthCount += 1;
             }
           }
         }
@@ -322,6 +345,7 @@ export async function getTotalMarketData(
     totalLiquidity: totalLiquidity,
     total24hVolume: total24hVolume,
     totalTVL: totalTVL,
+    totalSynthCound: synthCount,
   };
 }
 

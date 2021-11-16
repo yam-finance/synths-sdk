@@ -1,7 +1,6 @@
 import { ethers, network } from "hardhat";
 import { BigNumber } from "ethers";
 import { expect } from "chai";
-// import axios from "axios";
 import Synths from "../src/index";
 import { SynthsAssetsConfig } from "../src/types/assets.t";
 import Asset from "../src/lib/Asset";
@@ -85,6 +84,7 @@ describe("Synths SDKs", function () {
   });
   describe("LSP Asset", () => {
     let lspAsset: Asset;
+    let synthsSDK: Synths;
 
     before(async function () {
       provider = ethers.provider;
