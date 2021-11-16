@@ -9,6 +9,7 @@ import {
   getYamRewardsByPoolAddress,
   roundNumber,
 } from "./utils/helpers";
+import { SynthsAssetsConfig } from "./types/assets.t";
 
 export default Synths;
 export {
@@ -20,4 +21,5 @@ export {
   getRecentSynthData,
   getYamRewardsByPoolAddress,
   roundNumber,
+  SynthsAssetsConfig,
 };

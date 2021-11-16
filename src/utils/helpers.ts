@@ -345,7 +345,7 @@ export async function getTotalMarketData(
     totalLiquidity: totalLiquidity,
     total24hVolume: total24hVolume,
     totalTVL: totalTVL,
-    totalSynthCound: synthCount,
+    totalSynthCount: synthCount,
   };
 }
 
