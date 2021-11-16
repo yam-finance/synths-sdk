@@ -177,7 +177,7 @@ export interface SynthsAssetsConfig {
 /// @todo Check ethersProvider type.
 export interface InitOptions {
   ethersProvider: ethers.providers.JsonRpcProvider;
-  userAssetsConfig: SynthsAssetsConfig;
+  userAssetsConfig?: SynthsAssetsConfig;
 }
 
 export const isAssetConfigEMP = (
