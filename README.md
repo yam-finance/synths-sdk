@@ -9,10 +9,7 @@
 
 # Using the Yam Uma Synths SDK
 
-### \*\*Official
-
-assets:\*\* [File](https://github.com/yam-finance/synths-sdk/blob/master/src/assets.json)
-and [Raw file](https://raw.githubusercontent.com/yam-finance/synths-sdk/master/src/assets.json)
+### **Official assets:** [File](https://github.com/yam-finance/synths-sdk/blob/master/src/assets.json) and [Raw file](https://raw.githubusercontent.com/yam-finance/synths-sdk/master/src/assets.json)
 
 ## Install
 
