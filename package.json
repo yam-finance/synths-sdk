@@ -15,7 +15,10 @@
     "dist/**/*"
   ],
   "scripts": {
-    "build": "hardhat compile --force && tsc",
+    "prepack": "yarn build && yarn docgen",
+    "postinstall": "yarn clean && yarn build",
+    "clean": "hardhat clean",
+    "build": "hardhat compile && tsc",
     "test": "hardhat test",
     "test:w": "hardhat watch test",
     "test:matic": "cross-env CHAINID=137 hardhat test test/SynthsSdk.test.ts",
