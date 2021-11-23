@@ -68,8 +68,8 @@ class Synths {
             const [
               expirationTimestamp,
               collateralToken,
-              priceIdentifier,
-              pairName,
+              priceIdentifier, // Following parameter "pairName" is ignored
+              ,
               longToken,
               shortToken,
               collateralPerPair,
