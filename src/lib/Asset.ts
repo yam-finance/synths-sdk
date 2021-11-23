@@ -298,6 +298,13 @@ class Asset {
   }
 
   /**
+   @notice Gets the contract
+   */
+  getContract() {
+    return this.#contract;
+  }
+
+  /**
    * @notice Initializes the Asset instance.
    * @param config - Ethers Asset configuration.
    */

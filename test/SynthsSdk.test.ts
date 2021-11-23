@@ -80,6 +80,11 @@ describe("Synths SDKs", function () {
       //   const gcr = await upunksAsset.getGCR();
       //  expect(parseFloat(gcr ?? "0")).to.be.equal(0);
       // });
+      it("getContract -success", function () {
+        const contract = upunksAsset.getContract();
+        const contractAddress = contract.address;
+        expect(ethers.utils.getAddress(contractAddress)).to.be.a("string");
+      });
     });
   });
   describe("LSP Asset", () => {
@@ -104,6 +109,11 @@ describe("Synths SDKs", function () {
         const lspState = await lspAsset.getLSPState();
         expect(lspState).to.deep.include({
           pairName: "2XDPI Oct26",
+        });
+        it("getContract -success", function () {
+          const contract = lspAsset.getContract();
+          const contractAddress = contract.address;
+          expect(ethers.utils.getAddress(contractAddress)).to.be.a("string");
         });
       });
     });
