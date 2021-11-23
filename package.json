@@ -17,8 +17,7 @@
   "scripts": {
     "prepack": "yarn build && yarn docgen",
     "postinstall": "yarn clean && yarn build",
-    "clean": "rm -rf dist && hardhat clean",
-    "clean:windows": "rd /Q /S dist && hardhat clean",
+    "clean": "hardhat clean",
     "build": "hardhat compile && tsc",
     "test": "hardhat test",
     "test:w": "hardhat watch test",
