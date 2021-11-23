@@ -21,6 +21,7 @@ const MulticallWrapper = providers.MulticallProvider as unknown as new (
 ) => ethers.providers.JsonRpcProvider;
 
 class Synths {
+  config!: SynthsAssetsConfig;
   assets!: AssetsConfig;
   #multicallProvider!: ethers.providers.Provider;
   #signer!: ethers.Signer;
@@ -76,7 +77,7 @@ class Synths {
               timerAddress,
             ] = await call;
 
-            console.log(priceIdentifier, collateralPerPair, timerAddress);
+            console.log(priceIdentifier, pairName, collateralPerPair, timerAddress);
 
             const collateralContract = ERC20Ethers__factory.connect(
               collateralToken,
@@ -155,6 +156,8 @@ class Synths {
     };
 
     const chainId = await this.#signer.getChainId();
+
+    this.config = synthsAssetsConfig;
 
     if (Object.keys(synthsAssetsConfig).includes(chainId.toString())) {
       this.assets = synthsAssetsConfig[chainId];
