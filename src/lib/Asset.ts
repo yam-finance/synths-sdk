@@ -299,6 +299,7 @@ class Asset {
 
   /**
    @notice Gets the contract
+   @returns Contract as an ExpiringMultiPartyEthers or LongShortPairEthers.
    */
   getContract() {
     return this.#contract;
