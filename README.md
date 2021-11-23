@@ -36,7 +36,9 @@ const upunksAsset = await synthsSDK.connectAsset("upunks-0921");
 
 // Example method calls
 const gcr: any = await upunksAsset.getGCR();
+```
 
+```ts
 // Alternatively you can pass your own synth object or modify the existing synths for a local test network deployment
 const chainId = 1;
 const userAssetsConfig: SynthsAssetsConfig = {
@@ -74,9 +76,10 @@ const synthsSDK = await Synths.create({
 
 # Development
 
-After cloning the synths repo
+After cloning the synths repo, copy over the .env.template file and fill in variables.
 
 ```sh
+# Copy over the .env.template file to .env and fill in variables.
 yarn install
 yarn test
 ```
