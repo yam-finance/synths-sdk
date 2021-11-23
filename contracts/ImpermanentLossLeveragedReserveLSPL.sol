@@ -12,10 +12,10 @@ import "prb-math/contracts/PRBMathSD59x18.sol";
 contract ImpermanentLossLeveragedReserveLSPL is LongShortPairFinancialProductLibrary, Lockable {
     using PRBMathSD59x18 for int256;
     struct ImpermanentLossLeveragedReserveParameters {
-        uint256 upperBound;
-        uint256 pctLongCap;
-        int256 initialPrice;
-        uint256 leverageFactor;
+        uint184 upperBound;
+        uint72 pctLongCap;
+        uint184 initialPrice;
+        uint72 leverageFactor;
     }
 
     mapping(address => ImpermanentLossLeveragedReserveParameters) public longShortPairParameters;
@@ -26,19 +26,19 @@ contract ImpermanentLossLeveragedReserveLSPL is LongShortPairFinancialProductLib
 
     /// `upperBound` has to be greater than zero.
     /// @param upperBound The upper price that the LSP will operate within.
-    error InvalidBound(uint256 upperBound);
+    error InvalidBound(uint184 upperBound);
 
     /// `pctLongCap` has to be less than 1 ether.
     /// @param pctLongCap The cap on the percentage that can be allocated to the long token - enforced for improving MM on v2 AMMs for both L&S tokens.
-    error InvalidCap(uint256 pctLongCap);
+    error InvalidCap(uint72 pctLongCap);
 
     /// `initialPrice` has to be greater than zero.
     /// @param initialPrice The price of the asset at LSP deployment, used to calculate returns.
-    error InvalidInitialPrice(int256 initialPrice);
+    error InvalidInitialPrice(uint184 initialPrice);
 
     /// `leverageFactor` has to be greater than 0.
     /// @param leverageFactor The amount of leverage you want to apply to the asset return.
-    error InvalidLeverage(uint256 leverageFactor);
+    error InvalidLeverage(uint72 leverageFactor);
 
     /// @notice Parameters already set for calling LSP.
     error ParametersSet();
@@ -63,17 +63,17 @@ contract ImpermanentLossLeveragedReserveLSPL is LongShortPairFinancialProductLib
      */
     function setLongShortPairParameters(
         address longShortPair,
-        uint256 upperBound,
-        uint256 pctLongCap,
-        int256 initialPrice,
-        uint256 leverageFactor
+        uint184 upperBound,
+        uint72 pctLongCap,
+        uint184 initialPrice,
+        uint72 leverageFactor
     ) public nonReentrant {
         if (ExpiringContractInterface(longShortPair).expirationTimestamp() == 0)
             revert InvalidLSPAddress(longShortPair);
-        if (upperBound <= 0) revert InvalidBound(upperBound);
+        if (upperBound == 0) revert InvalidBound(upperBound);
         if (pctLongCap >= 1 ether) revert InvalidCap(pctLongCap);
-        if (initialPrice <= 0) revert InvalidInitialPrice(initialPrice);
-        if (leverageFactor <= 0) revert InvalidLeverage(leverageFactor);
+        if (initialPrice == 0) revert InvalidInitialPrice(initialPrice);
+        if (leverageFactor == 0) revert InvalidLeverage(leverageFactor);
 
         ImpermanentLossLeveragedReserveParameters memory params = longShortPairParameters[longShortPair];
 
@@ -104,14 +104,16 @@ contract ImpermanentLossLeveragedReserveLSPL is LongShortPairFinancialProductLib
 
         if (params.upperBound == 0) revert ParametersNotSet();
         // Find price ratio -> denoted as 'p' in the IL approximation formula
-        int256 priceRatio = (params.initialPrice * 1 ether) / (expiryPrice <= 1 ? int256(1) : expiryPrice);
+        int256 priceRatio = int256(
+            (uint256(params.initialPrice) * 1 ether) / (expiryPrice <= 1 ? uint256(1) : uint256(expiryPrice))
+        );
         // Perform IL calculation
         int256 numerator = 2 ether * PRBMathSD59x18.sqrt(priceRatio);
         int256 denominator = priceRatio + 1 ether;
         int256 impLoss = (numerator / denominator) - 1 ether;
 
         // Take absolute value of IL, multiply by leverage, and add 1 to make positive synth payout
-        uint256 impLossTransformed = uint256(PRBMathSD59x18.abs(impLoss).mul(int256(params.leverageFactor)) + 1 ether);
+        uint256 impLossTransformed = uint256(PRBMathSD59x18.abs(impLoss).mul(int256(uint256(params.leverageFactor))) + 1 ether);
         uint256 effectiveUpperBound = (params.upperBound * params.pctLongCap) / 1 ether;
         uint256 effectiveLowerBound = (params.upperBound * (1 ether - params.pctLongCap)) / 1 ether;
 
