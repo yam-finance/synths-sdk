@@ -93,14 +93,13 @@ contract MerkleDistributor is Ownable {
         bytes32[] calldata proof
     ) external notFrozen {
         require(_verify(_leaf(account, weight), period_, proof), "MerkleDistributor: invalid merkle proof");
-        PRBMath.UD60x18 memory denominator = PRBMath.UD60x18({value: 100});
-        PRBMath.UD60x18 memory treasuryWeight = PRBMath.UD60x18({value: 1e16 * 30}); // 30% of total period rewards.
-        PRBMath.UD60x18 memory userWeight = PRBMath.UD60x18({value: 1e16 * 50}); // 50% of remainding rewards.
-        PRBMath.UD60x18 memory totalRewards = PRBMath.UD60x18({value: 150}); // total rewards in current period.
-        PRBMath.UD60x18 memory remaindingRewards = PRBMath.UD60x18({
-            value: totalRewards.value - (totalRewards.mul(treasuryWeight).div(denominator).value)
-        }); // remainding rewards for users.
-        uint256 amount = remaindingRewards.mul(userWeight).div(denominator).value;
+
+        uint256 treasuryWeight = 1e16 * 30;
+        uint256 totalRewards = token.balanceOf(address(this));
+
+        uint256 remaindingRewards = totalRewards - ((totalRewards * treasuryWeight) / 1e18);
+        uint256 amount = (remaindingRewards * weight) / 1e18;
+
         token.transferFrom(address(this), account, amount);
     }
 
