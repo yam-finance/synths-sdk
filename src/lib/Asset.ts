@@ -278,8 +278,10 @@ class Asset {
         const feeMultiplier = Number(
           ethers.utils.formatEther(empState["cumulativeFeeMultiplier"])
         );
-        
-        const totalCollateral = (feeMultiplier * empState["rawTotalPositionCollateral"].toNumber()) / collateralDecimals.toNumber()
+
+        const totalCollateral =
+          (feeMultiplier * empState["rawTotalPositionCollateral"].toNumber()) /
+          collateralDecimals.toNumber();
 
         gcr =
           totalTokens > 0
