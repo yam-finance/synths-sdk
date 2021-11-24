@@ -6,11 +6,14 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 // Libraries
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+import "prb-math/contracts/PRBMathUD60x18Typed.sol";
 
 // Contracts
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract MerkleDistributor is Ownable {
+    using PRBMathUD60x18Typed for PRBMath.UD60x18;
+
     /// @dev The erc20 token used for the rewards.
     ERC20 public immutable token;
     /// @dev Tracks the reward period.
@@ -72,28 +75,37 @@ contract MerkleDistributor is Ownable {
         emit ContractUnfrozen();
     }
 
-    // TODO Calculate treasury weight.
     function redeemTreasuryRewards() public notFrozen {}
 
+    function depositRewards() public notFrozen {}
+
     /**
-     * @notice Assumes that the amount of rewards is calculated off-chain.
+     * @dev Assumes that 1e18 = 100% and 1e16 = 1%.
      * @param account Address to which the rewards will be send.
-     * @param amount Number of rewards that will be send to `account`.
+     * @param weight Rewards weight assigned to the user in the given period.
      * @param period_ Number of the rewards period.
      * @param proof Merkletree proof.
      */
     function redeem(
         address account,
-        uint256 amount,
+        uint256 weight,
         uint32 period_,
         bytes32[] calldata proof
     ) external notFrozen {
-        require(_verify(_leaf(account, amount), period_, proof), "MerkleDistributor: invalid merkle proof");
+        require(_verify(_leaf(account, weight), period_, proof), "MerkleDistributor: invalid merkle proof");
+        PRBMath.UD60x18 memory denominator = PRBMath.UD60x18({value: 100});
+        PRBMath.UD60x18 memory treasuryWeight = PRBMath.UD60x18({value: 1e16 * 30}); // 30% of total period rewards.
+        PRBMath.UD60x18 memory userWeight = PRBMath.UD60x18({value: 1e16 * 50}); // 50% of remainding rewards.
+        PRBMath.UD60x18 memory totalRewards = PRBMath.UD60x18({value: 150}); // total rewards in current period.
+        PRBMath.UD60x18 memory remaindingRewards = PRBMath.UD60x18({
+            value: totalRewards.value - (totalRewards.mul(treasuryWeight).div(denominator).value)
+        }); // remainding rewards for users.
+        uint256 amount = remaindingRewards.mul(userWeight).div(denominator).value;
         token.transferFrom(address(this), account, amount);
     }
 
-    function _leaf(address account, uint256 amount) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked(amount, account));
+    function _leaf(address account, uint256 weight) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(weight, account));
     }
 
     function _verify(
