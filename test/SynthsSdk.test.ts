@@ -77,9 +77,20 @@ describe("Synths SDKs", function () {
           "0x86140A763077155964754968B6F6e243fE809cBe": BigNumber.from(0),
         });
       });
+<<<<<<< HEAD
       it("getGCR - success", async function () {
         const gcr = await upunksAsset.getGCR();
         expect(gcr).to.be.lt(0);
+=======
+      // it("getGCR - success", async function () {
+      //   const gcr = await upunksAsset.getGCR();
+      //  expect(parseFloat(gcr ?? "0")).to.be.equal(0);
+      // });
+      it("getContract -success", function () {
+        const contract = upunksAsset.getContract();
+        const contractAddress = contract.address;
+        expect(ethers.utils.getAddress(contractAddress)).to.be.a("string");
+>>>>>>> 6e22c10b40c61fcf0471a771f0b1d0a9f312cd5e
       });
     });
   });
@@ -111,6 +122,11 @@ describe("Synths SDKs", function () {
         const lspState = await lspAsset.getLSPState();
         expect(lspState).to.deep.include({
           pairName: "2XDPI Oct26",
+        });
+        it("getContract -success", function () {
+          const contract = lspAsset.getContract();
+          const contractAddress = contract.address;
+          expect(ethers.utils.getAddress(contractAddress)).to.be.a("string");
         });
       });
     });

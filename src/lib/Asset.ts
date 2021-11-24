@@ -297,6 +297,14 @@ class Asset {
   }
 
   /**
+   * @notice Gets the contract
+   * @returns Contract of type ExpiringMultiPartyEthers or LongShortPairEthers.
+   */
+  getContract() {
+    return this.#contract;
+  }
+
+  /**
    * @notice Initializes the Asset instance.
    * @param config - Ethers Asset configuration.
    */
