@@ -40,3 +40,7 @@ coverage.json
 
 # Vim
 *.swp
+
+# Forge
+out/
+cache/

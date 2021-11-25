@@ -90,3 +90,22 @@ yarn test
 yarn hardhat node
 yarn hardhat deploy --network localhost
 ```
+
+## Merkle Distributor
+
+For the development of our `merkle-distributor` we use the [foundry](https://github.com/gakonst/foundry) toolkit. In order to run the test you need to install the Rust package manager cargo.
+
+```sh
+# Install rustup.
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+```sh
+# Install the foundry binary.
+cargo install --git https://github.com/gakonst/foundry --bin forge
+```
+
+```sh
+# cd into `/contracts/merkle-distributor`.
+forge forge test
+```
