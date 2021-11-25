@@ -4,3 +4,6 @@
 [submodule "contracts/merkle-distributor/lib/prb-math"]
 	path = contracts/merkle-distributor/lib/prb-math
 	url = https://github.com/hifi-finance/prb-math
+[submodule "contracts/merkle-distributor/lib/solmate"]
+	path = contracts/merkle-distributor/lib/solmate
+	url = https://github.com/Rari-Capital/solmate
