@@ -19,6 +19,26 @@
         "expired": true,
         "type": "LSP"
       }
+    ],
+    "rXDPI": [
+      {
+        "name": "November26",
+        "cycle": "11",
+        "year": "21",
+        "collateral": "WETH",
+        "lsp": {
+          "address": "0x9d54905BD652aCE565F948370649482cCA885169",
+          "library": "0x000000004113f60d8e84bb41c5f5a2ec825ced1b"
+        },
+        "pools": [
+          {
+            "address": "0x15ab243be0fc14b2b09988dd91f1cbebb0498922",
+            "location": "sushiswap"
+          }
+        ],
+        "expired": false,
+        "type": "LSP"
+      }
     ]
   }
 }

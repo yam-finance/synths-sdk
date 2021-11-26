@@ -77,7 +77,12 @@ class Synths {
               timerAddress,
             ] = await call;
 
-            console.log(priceIdentifier, pairName, collateralPerPair, timerAddress);
+            console.log(
+              priceIdentifier,
+              pairName,
+              collateralPerPair,
+              timerAddress
+            );
 
             const collateralContract = ERC20Ethers__factory.connect(
               collateralToken,
