@@ -67,9 +67,7 @@
           "devdoc",
           "userdoc"
         ],
-        "": [
-          "ast"
-        ]
+        "": ["ast"]
       }
     },
     "metadata": {

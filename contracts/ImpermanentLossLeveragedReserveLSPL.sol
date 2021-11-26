@@ -113,7 +113,9 @@ contract ImpermanentLossLeveragedReserveLSPL is LongShortPairFinancialProductLib
         int256 impLoss = (numerator / denominator) - 1 ether;
 
         // Take absolute value of IL, multiply by leverage, and add 1 to make positive synth payout
-        uint256 impLossTransformed = uint256(PRBMathSD59x18.abs(impLoss).mul(int256(uint256(params.leverageFactor))) + 1 ether);
+        uint256 impLossTransformed = uint256(
+            PRBMathSD59x18.abs(impLoss).mul(int256(uint256(params.leverageFactor))) + 1 ether
+        );
         uint256 effectiveUpperBound = (params.upperBound * params.pctLongCap) / 1 ether;
         uint256 effectiveLowerBound = (params.upperBound * (1 ether - params.pctLongCap)) / 1 ether;
 
