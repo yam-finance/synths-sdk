@@ -37,6 +37,9 @@
     "assets",
     "protocol"
   ],
+  "engines": {
+    "node": "16.13.0"
+  },
   "dependencies": {
     "@0xsequence/multicall": "^0.29.6",
     "@openzeppelin/contracts": "^4.2.0",
