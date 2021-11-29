@@ -119,15 +119,13 @@ class Synths {
             ]);
 
             /// @todo Get lp amount of user
-            /// @todo Get tokenPrice
             portfolio[longSymbol] = {
               balance: longBalance,
               collateralSymbol: collateralSymbol,
               status: expired,
             };
 
-            // get lp amount of user
-            // get tokenPrice
+            /// @todo Get lp amount of user
             portfolio[shortSymbol] = {
               balance: shortBalance,
               collateralSymbol: collateralSymbol,

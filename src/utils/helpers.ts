@@ -83,7 +83,7 @@ export async function getCurrentDexTokenPrice(
 ) {
   try {
     const ts = Math.round(new Date().getTime() / 1000);
-    const blockNow = await timestampToBlock(ts);
+    const blockNow = await timestampToBlock(ts, network);
     let endpoint =
       poolLocation === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
 
@@ -96,6 +96,7 @@ export async function getCurrentDexTokenPrice(
       pairAddress: poolAddress,
       blockNumber: blockNow - 5,
     });
+
 
     if (poolData["pair"].token0.id === tokenAddress) {
       return poolData["pair"].reserve0 / poolData["pair"].reserve1;
@@ -125,13 +126,18 @@ export async function getSynthData(
 ) {
   try {
     const config = userConfig ?? defaultAssetsConfig;
-    const rewards = config
+    let rewards;
+    if (network != "137") {
+    rewards = config
       ? await getYamRewardsByPoolAddress(poolAddress, config)
       : "0";
+    } else {
+    rewards = "0";
+    }
     const ts = Math.round(new Date().getTime() / 1000);
     const tsYesterday = ts - 24 * 3600;
-    const blockNow = await timestampToBlock(ts);
-    const block24hAgo = await timestampToBlock(tsYesterday);
+    const blockNow = await timestampToBlock(ts, network);
+    const block24hAgo = await timestampToBlock(tsYesterday, network);
 
     let endpoint =
       poolLocation === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
@@ -149,6 +155,7 @@ export async function getSynthData(
       pairAddress: poolAddress,
       blockNumber: block24hAgo,
     });
+
 
     const poolData = extractPoolData(
       poolDataCurrently,
@@ -256,7 +263,8 @@ export async function getRecentSynthData(
       const data = await getSynthData(
         synth.pool.location,
         synth.pool.address,
-        synth.collateral
+        synth.collateral,
+        String(networkId)
       );
 
       data && recentSynthData.push(data);
@@ -266,7 +274,8 @@ export async function getRecentSynthData(
         const data = await getSynthData(
           pool.location,
           pool.address,
-          lastSynth.collateral
+          lastSynth.collateral,
+          String(networkId)
         );
 
         data && recentSynthData.push(data);
@@ -304,7 +313,8 @@ export async function getTotalMarketData(
             const synthData = await getSynthData(
               synth.pool.location,
               synth.pool.address,
-              synth.collateral
+              synth.collateral,
+              String(networkId)
             );
 
             totalSynthData[synth.pool.address] = synthData;
@@ -315,7 +325,8 @@ export async function getTotalMarketData(
               const synthData = await getSynthData(
                 pool.location,
                 pool.address,
-                synthClass[i].collateral
+                synthClass[i].collateral,
+                String(networkId)
               );
 
               totalSynthData[pool.address] = synthData;
@@ -474,6 +485,7 @@ export async function getPoolChartData(
     }
   );
 
+
   let data = [];
   const graphData: IDailyPoolData[] = pairData.pairDayDatas;
 
@@ -568,10 +580,23 @@ export function getPercentageChange(oldNumber: number, newNumber: number) {
  * @param timestamp The timestamp that should be converted.
  * @returns A block number.
  */
-export async function timestampToBlock(timestamp: number) {
+export async function timestampToBlock(timestamp: number, network?: string) {
   timestamp =
     String(timestamp).length > 10 ? Math.floor(timestamp / 1000) : timestamp;
+  const apikey = "SSMPT5YB4HKG5NM8Y7SP7Q433GIV94H96U";
+  
+  let block = 0;
 
+  if (network == "137") {
+  await axios
+    .get<{ result: string }>(`https://api.polygonscan.com/api?module=block&action=getblocknobytime&timestamp=${timestamp}&closest=before&apikey=${apikey}`)
+    .then((response) => {
+      block = Number(response.data["result"]);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+ } else {
   const endpoint = BLOCKLYTICS_ENDPOINT;
   const query = TIMESTAMP_TO_BLOCK;
   const result = await request<{ blocks: [{ number: string }] }>(
@@ -581,6 +606,8 @@ export async function timestampToBlock(timestamp: number) {
       timestamp: timestamp,
     }
   );
+  block =  Number(result.blocks[0].number);
+ }
 
-  return Number(result.blocks[0].number);
+    return block;
 }

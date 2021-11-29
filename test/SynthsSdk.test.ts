@@ -107,9 +107,11 @@ describe("Synths SDKs", function () {
       });
       lspAsset = synthsSDK.connectAsset("2xdpi-1021");
     });
+
+        this.timeout(100000000);
     describe("Interact with LSP asset", () => {
       it("getLSPPortfolio - success", async function () {
-        this.timeout(100000);
+        this.timeout(100000000);
         const lspPortfolio = await synthsSDK.getLSPPortfolio();
         console.log(lspPortfolio);
       });
@@ -120,6 +122,7 @@ describe("Synths SDKs", function () {
           pairName: "2XDPI Oct26",
         });
         it("getContract -success", function () {
+          this.timeout(100000000);
           const contract = lspAsset.getContract();
           const contractAddress = contract.address;
           expect(ethers.utils.getAddress(contractAddress)).to.be.a("string");
