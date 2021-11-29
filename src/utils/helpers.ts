@@ -97,7 +97,6 @@ export async function getCurrentDexTokenPrice(
       blockNumber: blockNow - 5,
     });
 
-
     if (poolData["pair"].token0.id === tokenAddress) {
       return poolData["pair"].reserve0 / poolData["pair"].reserve1;
     } else {
@@ -128,11 +127,11 @@ export async function getSynthData(
     const config = userConfig ?? defaultAssetsConfig;
     let rewards;
     if (network != "137") {
-    rewards = config
-      ? await getYamRewardsByPoolAddress(poolAddress, config)
-      : "0";
+      rewards = config
+        ? await getYamRewardsByPoolAddress(poolAddress, config)
+        : "0";
     } else {
-    rewards = "0";
+      rewards = "0";
     }
     const ts = Math.round(new Date().getTime() / 1000);
     const tsYesterday = ts - 24 * 3600;
@@ -155,7 +154,6 @@ export async function getSynthData(
       pairAddress: poolAddress,
       blockNumber: block24hAgo,
     });
-
 
     const poolData = extractPoolData(
       poolDataCurrently,
@@ -485,7 +483,6 @@ export async function getPoolChartData(
     }
   );
 
-
   let data = [];
   const graphData: IDailyPoolData[] = pairData.pairDayDatas;
 
@@ -584,30 +581,32 @@ export async function timestampToBlock(timestamp: number, network?: string) {
   timestamp =
     String(timestamp).length > 10 ? Math.floor(timestamp / 1000) : timestamp;
   const apikey = "SSMPT5YB4HKG5NM8Y7SP7Q433GIV94H96U";
-  
+
   let block = 0;
 
   if (network == "137") {
-  await axios
-    .get<{ result: string }>(`https://api.polygonscan.com/api?module=block&action=getblocknobytime&timestamp=${timestamp}&closest=before&apikey=${apikey}`)
-    .then((response) => {
-      block = Number(response.data["result"]);
-    })
-    .catch((error) => {
-      console.log(error);
-    });
- } else {
-  const endpoint = BLOCKLYTICS_ENDPOINT;
-  const query = TIMESTAMP_TO_BLOCK;
-  const result = await request<{ blocks: [{ number: string }] }>(
-    endpoint,
-    query,
-    {
-      timestamp: timestamp,
-    }
-  );
-  block =  Number(result.blocks[0].number);
- }
+    await axios
+      .get<{ result: string }>(
+        `https://api.polygonscan.com/api?module=block&action=getblocknobytime&timestamp=${timestamp}&closest=before&apikey=${apikey}`
+      )
+      .then((response) => {
+        block = Number(response.data["result"]);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  } else {
+    const endpoint = BLOCKLYTICS_ENDPOINT;
+    const query = TIMESTAMP_TO_BLOCK;
+    const result = await request<{ blocks: [{ number: string }] }>(
+      endpoint,
+      query,
+      {
+        timestamp: timestamp,
+      }
+    );
+    block = Number(result.blocks[0].number);
+  }
 
-    return block;
+  return block;
 }

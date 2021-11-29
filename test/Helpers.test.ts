@@ -64,14 +64,17 @@ describe("Synths SDK", function () {
   describe("Helper running against polygon", function () {
     it("getRecentSynthData - success", async function () {
       this.timeout(100000);
-      const recentSynthData = await getRecentSynthData(137, defaultTestAssetsConfig);
+      const recentSynthData = await getRecentSynthData(
+        137,
+        defaultTestAssetsConfig
+      );
       expect(recentSynthData).to.be.an("array");
     });
     it("getTotalMarketData - success", async function () {
       this.timeout(100000);
       const totalMarketData = await getTotalMarketData(
         [137],
-        defaultTestAssetsConfig,
+        defaultTestAssetsConfig
       );
       expect(totalMarketData.totalLiquidity).to.be.greaterThan(0);
     });

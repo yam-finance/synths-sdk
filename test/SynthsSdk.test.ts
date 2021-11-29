@@ -108,7 +108,7 @@ describe("Synths SDKs", function () {
       lspAsset = synthsSDK.connectAsset("2xdpi-1021");
     });
 
-        this.timeout(100000000);
+    this.timeout(100000000);
     describe("Interact with LSP asset", () => {
       it("getLSPPortfolio - success", async function () {
         this.timeout(100000000);
