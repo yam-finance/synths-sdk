@@ -117,7 +117,7 @@ class Synths {
             shortTokenContract.balanceOf(userAddress),
           ]);
 
-          const dexData: { [key: string]: Record<string, unknown> } = {};
+          const dexData: { [key: string]: Record<string, number> } = {};
 
           // @todo Think about calculating this on the front-end in the future.
           for (const pool of asset.pools) {
