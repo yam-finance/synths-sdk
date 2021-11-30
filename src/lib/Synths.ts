@@ -119,18 +119,22 @@ class Synths {
             ]);
 
             /// @todo Get lp amount of user
-            portfolio.push({[longSymbol] : {
-              balance: longBalance,
-              collateralSymbol: collateralSymbol,
-              expired: expired,
-            }});
+            portfolio.push({
+              [longSymbol]: {
+                balance: longBalance,
+                collateralSymbol: collateralSymbol,
+                expired: expired,
+              },
+            });
 
             /// @todo Get lp amount of user
-            portfolio.push({[shortSymbol] : {
-              balance: shortBalance,
-              collateralSymbol: collateralSymbol,
-              expired: expired,
-            }});
+            portfolio.push({
+              [shortSymbol]: {
+                balance: shortBalance,
+                collateralSymbol: collateralSymbol,
+                expired: expired,
+              },
+            });
           }
         }
       }

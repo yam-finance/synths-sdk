@@ -321,7 +321,6 @@ class Asset {
     this.#signer = signer;
 
     const assetIdentifierSplit = assetIdentifier.split("-");
-    console.log(assetIdentifierSplit);
 
     for (const assetCycle of assets[assetIdentifierSplit[0]]) {
       if (assetCycle.cycle + assetCycle.year == assetIdentifierSplit[1]) {
