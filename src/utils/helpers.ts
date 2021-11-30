@@ -347,7 +347,7 @@ export async function getTotalMarketData(
       totalTVL = response.data["total"];
     })
     .catch((error) => {
-      console.log(error);
+      console.error(error);
     });
 
   return {
@@ -593,7 +593,7 @@ export async function timestampToBlock(timestamp: number, network?: string) {
         block = Number(response.data["result"]);
       })
       .catch((error) => {
-        console.log(error);
+        console.error(error);
       });
   } else {
     const endpoint = BLOCKLYTICS_ENDPOINT;
