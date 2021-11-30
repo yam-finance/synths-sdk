@@ -43,6 +43,7 @@ export async function prepareLSPStateCall(contract: LongShortPairEthers) {
     contract.timerAddress(),
   ]);
 
+  console.log("lspStatePromise helper", lspStatePromise);
   return lspStatePromise;
 }
 
