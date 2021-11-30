@@ -69,16 +69,12 @@ class Synths {
           const [
             expirationTimestamp,
             collateralToken,
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            priceIdentifier,
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            pairName,
+            ,
+            ,
             longToken,
             shortToken,
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            collateralPerPair,
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            timerAddress,
+            ,
+            ,
           ] = await call;
 
           // console.log(priceIdentifier, pairName, collateralPerPair, timerAddress)
