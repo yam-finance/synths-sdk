@@ -94,7 +94,7 @@ export async function getCurrentDexTokenPrice(
     const query = UNI_SUSHI_PAIR_DATA;
     const poolData: IPoolData = await request(endpoint, query, {
       pairAddress: poolAddress,
-      blockNumber: blockNow - 5,
+      blockNumber: blockNow - 10,
     });
 
     if (poolData["pair"].token0.id === tokenAddress) {
@@ -148,7 +148,7 @@ export async function getSynthData(
     const query = UNI_SUSHI_PAIR_DATA;
     const poolDataCurrently: IPoolData = await request(endpoint, query, {
       pairAddress: poolAddress,
-      blockNumber: blockNow - 5,
+      blockNumber: blockNow - 10,
     });
     const poolDataYesterday: IPoolData = await request(endpoint, query, {
       pairAddress: poolAddress,

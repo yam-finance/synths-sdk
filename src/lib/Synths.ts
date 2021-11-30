@@ -55,104 +55,102 @@ class Synths {
   }
 
   async getLSPPortfolio() {
-    try {
-      const portfolio = [];
+    const portfolio = [];
 
-      for (const assetCycles in this.assets) {
-        for (const asset of this.assets[assetCycles]) {
-          if (isAssetConfigLSP(asset)) {
-            const userAddress = await this.#signer.getAddress();
-            const contract = LongShortPairEthers__factory.connect(
-              asset.lsp.address,
-              this.#multicallProvider
-            );
-            const call = prepareLSPStateCall(contract);
-            const [
-              expirationTimestamp,
-              collateralToken,
-              // priceIdentifier,
-              // pairName,
-              longToken,
-              shortToken,
-              // collateralPerPair,
-              // timerAddress,
-            ] = await call;
+    for (const assetCycles in this.assets) {
+      for (const asset of this.assets[assetCycles]) {
+        if (isAssetConfigLSP(asset)) {
+          const userAddress = await this.#signer.getAddress();
+          const contract = LongShortPairEthers__factory.connect(
+            asset.lsp.address,
+            this.#multicallProvider
+          );
+          const call = prepareLSPStateCall(contract);
+          const [
+            expirationTimestamp,
+            collateralToken,
+            priceIdentifier,
+            pairName,
+            longToken,
+            shortToken,
+            collateralPerPair,
+            timerAddress,
+          ] = await call;
 
-            const collateralContract = ERC20Ethers__factory.connect(
-              collateralToken,
-              this.#multicallProvider
-            );
-            const longTokenContract = ERC20Ethers__factory.connect(
-              longToken,
-              this.#multicallProvider
-            );
-            const shortTokenContract = ERC20Ethers__factory.connect(
-              shortToken,
-              this.#multicallProvider
-            );
+          // console.log(priceIdentifier, pairName, collateralPerPair, timerAddress)
 
-            const currentUnixTs = Math.floor(Date.now() / 1000);
-            const expired = expirationTimestamp.gte(
-              ethers.BigNumber.from(currentUnixTs)
-            )
-              ? true
-              : false;
+          const collateralContract = ERC20Ethers__factory.connect(
+            collateralToken,
+            this.#multicallProvider
+          );
+          const longTokenContract = ERC20Ethers__factory.connect(
+            longToken,
+            this.#multicallProvider
+          );
+          const shortTokenContract = ERC20Ethers__factory.connect(
+            shortToken,
+            this.#multicallProvider
+          );
 
-            const [
+          const currentUnixTs = Math.floor(Date.now() / 1000);
+          const expired = expirationTimestamp.gte(
+            ethers.BigNumber.from(currentUnixTs)
+          )
+            ? true
+            : false;
+
+          const [
+            collateralSymbol,
+            longSymbol,
+            shortSymbol,
+            longBalance,
+            shortBalance,
+          ] = await Promise.all([
+            collateralContract.symbol(),
+            longTokenContract.symbol(),
+            shortTokenContract.symbol(),
+            longTokenContract.balanceOf(userAddress),
+            shortTokenContract.balanceOf(userAddress),
+          ]);
+
+          const dexData: { [key: string]: Object } = {};
+
+          // @todo Think about calculating this on the front-end in the future.
+          for (const pool of asset.pools) {
+            const data = await getSynthData(
+              pool.location,
+              pool.address,
               collateralSymbol,
-              longSymbol,
-              shortSymbol,
-              longBalance,
-              shortBalance,
-            ] = await Promise.all([
-              collateralContract.symbol(),
-              longTokenContract.symbol(),
-              shortTokenContract.symbol(),
-              longTokenContract.balanceOf(userAddress),
-              shortTokenContract.balanceOf(userAddress),
-            ]);
+              String(this.chainId)
+            );
 
-            const dexData: { [key: string]: Object } = {};
+            if (!data) continue;
 
-            // @todo Think about calculating this on the front-end in the future.
-            for (const pool of asset.pools) {
-              const data = await getSynthData(
-                pool.location,
-                pool.address,
-                collateralSymbol,
-                String(this.chainId)
-              );
-              if (!data) continue;
-
-              dexData[ethers.utils.getAddress(data.tokenId)] = data.price;
-            }
-
-            /// @todo Get lp amount of user
-            portfolio.push({
-              symbol: longSymbol,
-              balance: longBalance,
-              price: dexData[longToken],
-              collateralSymbol: collateralSymbol,
-              status: expired,
-            });
-
-            /// @todo Get lp amount of user
-            portfolio.push({
-              symbol: shortSymbol,
-              balance: shortBalance,
-              price: dexData[shortToken],
-              collateralSymbol: collateralSymbol,
-              status: expired,
-            });
+            dexData[ethers.utils.getAddress(data.tokenId)] = Number(data.price);
           }
+
+          /// @todo Get lp amount of user
+          portfolio.push({
+            symbol: longSymbol,
+            balance: longBalance,
+            price: dexData[longToken] || 0,
+            collateralSymbol: collateralSymbol,
+            status: expired,
+          });
+
+          /// @todo Get lp amount of user
+          portfolio.push({
+            symbol: shortSymbol,
+            balance: shortBalance,
+            price: dexData[shortToken] || 0,
+            collateralSymbol: collateralSymbol,
+            status: expired,
+          });
         }
       }
-
-      return portfolio;
-    } catch (e) {
-      console.error("error", e);
-      return;
     }
+
+    return portfolio;
   }
 
   /**
