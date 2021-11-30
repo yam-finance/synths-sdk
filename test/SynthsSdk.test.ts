@@ -108,7 +108,7 @@ describe("Synths SDKs", function () {
         userAssetsConfig: defaultTestAssetsConfig,
       });
 
-      lspAsset = synthsSDK.connectAsset("2xdpi-1021");
+      lspAsset = synthsSDK.connectAsset("rxdpi-1121");
     });
 
     this.timeout(100000000);
@@ -122,7 +122,7 @@ describe("Synths SDKs", function () {
         this.timeout(100000);
         const lspState = await lspAsset.getLSPState();
         expect(lspState).to.deep.include({
-          pairName: "2XDPI Oct26",
+          pairName: "rXDPI November26",
         });
         it("getContract -success", function () {
           this.timeout(100000000);
