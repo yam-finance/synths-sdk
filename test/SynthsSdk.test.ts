@@ -121,8 +121,9 @@ describe("Synths SDKs", function () {
       it("getLSPState -success", async function () {
         this.timeout(100000);
         const lspState = await lspAsset.getLSPState();
+        console.log(lspState);
         expect(lspState).to.deep.include({
-          pairName: "rXDPI November26",
+          pairName: "2XDPI Nov26",
         });
         it("getContract -success", function () {
           this.timeout(100000000);
