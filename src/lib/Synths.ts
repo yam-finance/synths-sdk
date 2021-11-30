@@ -6,7 +6,7 @@ import {
   LongShortPairEthers__factory,
 } from "@uma/contracts-node";
 import { defaultAssetsConfig } from "./config";
-import { prepareLSPStateCall } from "../utils/helpers";
+import { prepareLSPStateCall, getSynthData } from "../utils/helpers";
 import {
   SynthsAssetsConfig,
   AssetsConfig,
@@ -23,6 +23,7 @@ const MulticallWrapper = providers.MulticallProvider as unknown as new (
 class Synths {
   config!: SynthsAssetsConfig;
   assets!: AssetsConfig;
+  chainId!: number;
   #multicallProvider!: ethers.providers.Provider;
   #signer!: ethers.Signer;
 
@@ -118,22 +119,37 @@ class Synths {
               shortTokenContract.balanceOf(userAddress),
             ]);
 
+            const dexData: { [key: string]: Object } = {};
+
+            // @todo Think about calculating this on the front-end in the future.
+            for (const pool of asset.pools) {
+              const data = await getSynthData(
+                pool.location,
+                pool.address,
+                collateralSymbol,
+                String(this.chainId)
+              );
+              if (!data) continue;
+
+              dexData[ethers.utils.getAddress(data.tokenId)] = data.price;
+            }
+
             /// @todo Get lp amount of user
             portfolio.push({
-              [longSymbol]: {
-                balance: longBalance,
-                collateralSymbol: collateralSymbol,
-                expired: expired,
-              },
+              symbol: longSymbol,
+              balance: longBalance,
+              price: dexData[longToken],
+              collateralSymbol: collateralSymbol,
+              status: expired,
             });
 
             /// @todo Get lp amount of user
             portfolio.push({
-              [shortSymbol]: {
-                balance: shortBalance,
-                collateralSymbol: collateralSymbol,
-                expired: expired,
-              },
+              symbol: shortSymbol,
+              balance: shortBalance,
+              price: dexData[shortToken],
+              collateralSymbol: collateralSymbol,
+              status: expired,
             });
           }
         }
@@ -152,7 +168,6 @@ class Synths {
    * @throws "Synths not found in the current network"
    */
   async init(options: InitOptions): Promise<void> {
-    const chainId = (await options.ethersProvider.getNetwork()).chainId;
     // const chainId = await this.#signer.getChainId();
     const synthsAssetsConfig: SynthsAssetsConfig = {
       ...defaultAssetsConfig,
@@ -162,13 +177,14 @@ class Synths {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     this.#multicallProvider = new MulticallWrapper(options.ethersProvider);
     this.#signer = options.ethersProvider.getSigner();
+    this.chainId = (await options.ethersProvider.getNetwork()).chainId;
     this.config = synthsAssetsConfig;
 
-    if (Object.keys(synthsAssetsConfig).includes(chainId.toString())) {
-      this.assets = synthsAssetsConfig[chainId];
+    if (Object.keys(synthsAssetsConfig).includes(this.chainId.toString())) {
+      this.assets = synthsAssetsConfig[this.chainId];
     } else {
       throw new Error(
-        `Synths not found in the current network ${chainId}. Please check your configuration.`
+        `Synths not found in the current network ${this.chainId}. Please check your configuration.`
       );
     }
 
