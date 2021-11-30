@@ -5,6 +5,7 @@ import Synths from "../src/index";
 import { SynthsAssetsConfig } from "../src/types/assets.t";
 import Asset from "../src/lib/Asset";
 import testAssetConfig from "../src/assetstest.json";
+import {defaultTestAssetsConfig} from "lib/config";
 
 describe("Synths SDKs", function () {
   let provider: typeof ethers.provider;
@@ -97,14 +98,16 @@ describe("Synths SDKs", function () {
     before(async function () {
       provider = ethers.provider;
       const chainId = (await provider.getNetwork()).chainId;
+
       if (network.name !== "hardhat" || chainId != 137) {
         this.skip();
       }
-      const userAssetsConfig = testAssetConfig as SynthsAssetsConfig;
+
       synthsSDK = await Synths.create({
         ethersProvider: provider,
-        userAssetsConfig: userAssetsConfig,
+        userAssetsConfig: defaultTestAssetsConfig,
       });
+
       lspAsset = synthsSDK.connectAsset("2xdpi-1021");
     });
 
