@@ -5,7 +5,7 @@ import Synths from "../src/index";
 import { SynthsAssetsConfig } from "../src/types/assets.t";
 import Asset from "../src/lib/Asset";
 import testAssetConfig from "../src/assetstest.json";
-import {defaultTestAssetsConfig} from "lib/config";
+import { defaultTestAssetsConfig } from "lib/config";
 
 describe("Synths SDKs", function () {
   let provider: typeof ethers.provider;
@@ -116,12 +116,10 @@ describe("Synths SDKs", function () {
       it("getLSPPortfolio - success", async function () {
         this.timeout(100000000);
         const lspPortfolio = await synthsSDK.getLSPPortfolio();
-        console.log(lspPortfolio);
       });
       it("getLSPState -success", async function () {
         this.timeout(100000);
         const lspState = await lspAsset.getLSPState();
-        console.log(lspState);
         expect(lspState).to.deep.include({
           pairName: "2XDPI Nov26",
         });
