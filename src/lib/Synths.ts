@@ -55,7 +55,7 @@ class Synths {
 
   async getLSPPortfolio() {
     try {
-      const portfolio: { [key: string]: Record<string, unknown> } = {};
+      const portfolio = [];
 
       for (const assetCycles in this.assets) {
         for (const asset of this.assets[assetCycles]) {
@@ -119,18 +119,18 @@ class Synths {
             ]);
 
             /// @todo Get lp amount of user
-            portfolio[longSymbol] = {
+            portfolio.push({[longSymbol] : {
               balance: longBalance,
               collateralSymbol: collateralSymbol,
-              status: expired,
-            };
+              expired: expired,
+            }});
 
             /// @todo Get lp amount of user
-            portfolio[shortSymbol] = {
+            portfolio.push({[shortSymbol] : {
               balance: shortBalance,
               collateralSymbol: collateralSymbol,
-              status: expired,
-            };
+              expired: expired,
+            }});
           }
         }
       }

@@ -116,6 +116,8 @@ describe("Synths SDKs", function () {
       it("getLSPPortfolio - success", async function () {
         this.timeout(100000000);
         const lspPortfolio = await synthsSDK.getLSPPortfolio();
+        console.log(lspPortfolio);
+        expect(lspPortfolio).to.be.an("array");
       });
       it("getLSPState -success", async function () {
         this.timeout(100000);
