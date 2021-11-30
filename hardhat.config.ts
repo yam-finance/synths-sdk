@@ -22,22 +22,29 @@ enum PROVIDER {
 }
 
 // const WALLET_PRIVATE_KEY = process.env["WALLET_PRIVATE_KEY"] ?? undefined;
-const INFURA_API_KEY = process.env["INFURA_API_KEY"] ?? "";
-const ALCHEMY_API_KEY = process.env["ALCHEMY_API_KEY"] ?? "";
-const ALCHEMY_API_KEY_MAINNET = process.env["ALCHEMY_API_KEY_MAINNET"] ?? "";
-const ALCHEMY_API_KEY_MATIC = process.env["ALCHEMY_API_KEY_MATIC"] ?? "";
+const INFURA_API_KEY = process.env["INFURA_API_KEY"] || "";
+const ALCHEMY_API_KEY_MAINNET = process.env["ALCHEMY_API_KEY_MAINNET"] || "";
+const ALCHEMY_API_KEY_MATIC = process.env["ALCHEMY_API_KEY_MATIC"] || "";
+const ETHERSCAN_API_KEY = process.env["ETHERSCAN_API_KEY"] || "";
+const COINMARKETCAP_PUBLIC_KEY = process.env["COINMARKETCAP_PUBLIC_KEY"] || "";
+const CHAINID = parseInt(process.env["CHAINID"] || "1");
 const PREFERRED_PROVIDER =
-  process.env["INFURA_API_KEY"]?.toLowerCase() === PROVIDER.INFURA
-    ? PROVIDER.INFURA
-    : PROVIDER.ALCHEMY;
-const API_KEY =
-  PREFERRED_PROVIDER === PROVIDER.INFURA ? INFURA_API_KEY : ALCHEMY_API_KEY;
-const ETHERSCAN_API_KEY = process.env["ETHERSCAN_API_KEY"];
-const COINMARKETCAP_PUBLIC_KEY = process.env["COINMARKETCAP_PUBLIC_KEY"];
-const CHAINID = parseInt(process.env["CHAINID"] ?? "1");
+  CHAINID === 1 && INFURA_API_KEY ? PROVIDER.INFURA : PROVIDER.ALCHEMY;
 
-if (!API_KEY) {
-  throw new Error("Please set the API key for the preferred provider");
+if (
+  (CHAINID === 1 && !INFURA_API_KEY && !ALCHEMY_API_KEY_MAINNET) ||
+  (CHAINID === 137 && !INFURA_API_KEY && !ALCHEMY_API_KEY_MATIC)
+) {
+  console.error(
+    `CHAINID=${CHAINID}\n` +
+      `PROVIDER=${PREFERRED_PROVIDER}\n` +
+      `INFURA_API_KEY=${INFURA_API_KEY}\n` +
+      `ALCHEMY_API_KEY_MAINNET=${ALCHEMY_API_KEY_MAINNET}\n` +
+      `ALCHEMY_API_KEY_MATIC=${ALCHEMY_API_KEY_MATIC}\n` +
+      "Please set your Infura or Alchemy API key in the .env file.\n" +
+      "You can find your project key in the Infura or Alchemy dashboard.\n\n"
+  );
+  process.exit(1);
 }
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -93,7 +100,7 @@ const config: HardhatUserConfig = {
     deployer: 0,
   },
   solidity: {
-    compilers: [{ version: "0.8.4", settings }],
+    compilers: [{ version: "0.8.9", settings }],
   },
   typechain: {
     outDir: "./src/types/contracts",

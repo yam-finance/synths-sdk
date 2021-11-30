@@ -278,9 +278,10 @@ class Asset {
         const feeMultiplier = Number(
           ethers.utils.formatEther(empState["cumulativeFeeMultiplier"])
         );
-        const totalCollateral = BigNumber.from(feeMultiplier)
-          .mul(empState["rawTotalPositionCollateral"].div(collateralDecimals))
-          .toNumber();
+
+        const totalCollateral =
+          (feeMultiplier * empState["rawTotalPositionCollateral"].toNumber()) /
+          collateralDecimals.toNumber();
 
         gcr =
           totalTokens > 0
@@ -295,6 +296,14 @@ class Asset {
       console.error("error", e);
       return;
     }
+  }
+
+  /**
+   * @notice Gets the contract
+   * @returns Contract of type ExpiringMultiPartyEthers or LongShortPairEthers.
+   */
+  getContract() {
+    return this.#contract;
   }
 
   /**

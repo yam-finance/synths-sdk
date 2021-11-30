@@ -71,15 +71,23 @@ describe("Synths SDKs", function () {
       });
       //@todo find a valid position to test.
       it.skip("getPositions - success", async function () {
+        this.timeout(100000);
         const positions = await upunksAsset.getPositions();
         expect(positions).to.deep.include({
           "0x86140A763077155964754968B6F6e243fE809cBe": BigNumber.from(0),
         });
       });
-      // it("getGCR - success", async function () {
-      //   const gcr = await upunksAsset.getGCR();
-      //  expect(parseFloat(gcr ?? "0")).to.be.equal(0);
-      // });
+      /*
+      it("getGCR - success", async function () {
+        const gcr = await upunksAsset.getGCR();
+        expect(gcr).to.be.lt(0);
+      });
+      */
+      it("getContract -success", function () {
+        const contract = upunksAsset.getContract();
+        const contractAddress = contract.address;
+        expect(ethers.utils.getAddress(contractAddress)).to.be.a("string");
+      });
     });
   });
   describe("LSP Asset", () => {
@@ -100,10 +108,21 @@ describe("Synths SDKs", function () {
       lspAsset = synthsSDK.connectAsset("2xdpi-1021");
     });
     describe("Interact with LSP asset", () => {
-      it("getLSPState - Success", async function () {
+      it("getLSPPortfolio - success", async function () {
+        this.timeout(100000);
+        const lspPortfolio = await synthsSDK.getLSPPortfolio();
+        console.log(lspPortfolio);
+      });
+      it("getLSPState -success", async function () {
+        this.timeout(100000);
         const lspState = await lspAsset.getLSPState();
         expect(lspState).to.deep.include({
           pairName: "2XDPI Oct26",
+        });
+        it("getContract -success", function () {
+          const contract = lspAsset.getContract();
+          const contractAddress = contract.address;
+          expect(ethers.utils.getAddress(contractAddress)).to.be.a("string");
         });
       });
     });
