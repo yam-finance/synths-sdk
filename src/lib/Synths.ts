@@ -76,6 +76,9 @@ class Synths {
             ,
             ,
           ] = await call;
+          
+          console.log("call", call);
+          console.log("expirationTimestamp", expirationTimestamp);
 
           // console.log(priceIdentifier, pairName, collateralPerPair, timerAddress)
 
