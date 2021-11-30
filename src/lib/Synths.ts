@@ -69,11 +69,15 @@ class Synths {
           const [
             expirationTimestamp,
             collateralToken,
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             priceIdentifier,
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             pairName,
             longToken,
             shortToken,
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             collateralPerPair,
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             timerAddress,
           ] = await call;
 
@@ -113,7 +117,7 @@ class Synths {
             shortTokenContract.balanceOf(userAddress),
           ]);
 
-          const dexData: { [key: string]: Object } = {};
+          const dexData: { [key: string]: Record<string, unknown> } = {};
 
           // @todo Think about calculating this on the front-end in the future.
           for (const pool of asset.pools) {

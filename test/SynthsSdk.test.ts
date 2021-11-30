@@ -4,7 +4,6 @@ import { expect } from "chai";
 import Synths from "../src/index";
 import { SynthsAssetsConfig } from "../src/types/assets.t";
 import Asset from "../src/lib/Asset";
-import testAssetConfig from "../src/assetstest.json";
 import { defaultTestAssetsConfig } from "lib/config";
 
 describe("Synths SDKs", function () {
