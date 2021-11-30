@@ -147,19 +147,17 @@ class Synths {
    * @param options - Ethers Synths configuration
    * @throws "Synths not found in the current network"
    */
-  private async init(options: InitOptions): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    this.#multicallProvider = new MulticallWrapper(options.ethersProvider);
-
-    this.#signer = options.ethersProvider.getSigner();
-
+   async init(options: InitOptions): Promise<void> {
+    const chainId = (await options.ethersProvider.getNetwork()).chainId
+    // const chainId = await this.#signer.getChainId();
     const synthsAssetsConfig: SynthsAssetsConfig = {
       ...defaultAssetsConfig,
       ...options.userAssetsConfig,
-    };
+    };    
 
-    const chainId = await this.#signer.getChainId();
-
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    this.#multicallProvider = new MulticallWrapper(options.ethersProvider);
+    this.#signer = options.ethersProvider.getSigner();
     this.config = synthsAssetsConfig;
 
     if (Object.keys(synthsAssetsConfig).includes(chainId.toString())) {
