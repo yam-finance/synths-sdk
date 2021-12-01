@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import { request } from "graphql-request";
 import axios from "axios";
 import { ERC20Ethers__factory, LongShortPairEthers } from "@uma/contracts-node";
-import { defaultAssetsConfig } from "../lib/config";
+import { defaultAssetsConfig, POLYSCAN_API_KEY } from "../lib/config";
 import {
   UNISWAP_ENDPOINT,
   SUSHISWAP_ENDPOINT,
@@ -580,14 +580,13 @@ export function getPercentageChange(oldNumber: number, newNumber: number) {
 export async function timestampToBlock(timestamp: number, network?: string) {
   timestamp =
     String(timestamp).length > 10 ? Math.floor(timestamp / 1000) : timestamp;
-  const apikey = "SSMPT5YB4HKG5NM8Y7SP7Q433GIV94H96U";
 
   let block = 0;
 
   if (network == "137") {
     await axios
       .get<{ result: string }>(
-        `https://api.polygonscan.com/api?module=block&action=getblocknobytime&timestamp=${timestamp}&closest=before&apikey=${apikey}`
+        `https://api.polygonscan.com/api?module=block&action=getblocknobytime&timestamp=${timestamp}&closest=before&apikey=${POLYSCAN_API_KEY}`
       )
       .then((response) => {
         block = Number(response.data["result"]);
