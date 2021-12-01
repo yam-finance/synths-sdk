@@ -11,6 +11,7 @@ jobs:
     env:
       ALCHEMY_API_KEY_MAINNET: ${{ secrets.ALCHEMY_API_KEY_MAINNET }}
       ALCHEMY_API_KEY_MATIC: ${{ secrets.ALCHEMY_API_KEY_MATIC }}
+      POLYSCAN_API_KEY: ${{ secrets.POLYSCAN_API_KEY }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
