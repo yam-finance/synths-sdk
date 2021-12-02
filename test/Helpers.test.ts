@@ -1,7 +1,8 @@
+import { ethers } from "hardhat";
 import { expect } from "chai";
 import { defaultAssetsConfig, defaultTestAssetsConfig } from "lib/config";
 import {
-  getCurrentDexTokenPrice,
+  getDexTokenPriceAtBlock,
   getSynthData,
   getPoolChartData,
   getTotalMarketData,
@@ -9,6 +10,12 @@ import {
   getYamRewardsByPoolAddress,
   roundNumber,
 } from "../src/index";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const POLYSCAN_API_KEY = process.env["POLYSCAN_API_KEY"] || "";
+const provider = ethers.provider;
 
 describe("Synths SDK", function () {
   describe("Helper running against mainnet", function () {
@@ -31,11 +38,12 @@ describe("Synths SDK", function () {
       );
       expect(totalMarketData.totalLiquidity).to.be.greaterThan(0);
     });
-    it("getCurrentDexTokenPrice - success", async function () {
-      const synthPrice = await getCurrentDexTokenPrice(
+    it("getDexTokenPriceAtBlock - success", async function () {
+      const synthPrice = await getDexTokenPriceAtBlock(
         "sushiswap",
         "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
-        "0x86140A763077155964754968B6F6e243fE809cBe"
+        "0x86140A763077155964754968B6F6e243fE809cBe",
+        await provider.getBlockNumber() - 10
       );
       expect(synthPrice).to.not.equal(0);
     });
@@ -66,7 +74,8 @@ describe("Synths SDK", function () {
       this.timeout(100000);
       const recentSynthData = await getRecentSynthData(
         137,
-        defaultTestAssetsConfig
+        defaultTestAssetsConfig,
+        POLYSCAN_API_KEY
       );
       expect(recentSynthData).to.be.an("array");
     });
@@ -74,25 +83,18 @@ describe("Synths SDK", function () {
       this.timeout(100000);
       const totalMarketData = await getTotalMarketData(
         [137],
-        defaultTestAssetsConfig
+        defaultTestAssetsConfig,
+        POLYSCAN_API_KEY
       );
       expect(totalMarketData.totalLiquidity).to.be.greaterThan(0);
-    });
-    it("getCurrentDexTokenPrice - success", async function () {
-      const synthPrice = await getCurrentDexTokenPrice(
-        "sushiswap",
-        "0x15ab243be0fc14b2b09988dd91f1cbebb0498922",
-        "0x9d54905BD652aCE565F948370649482cCA885169",
-        "137"
-      );
-      expect(synthPrice).to.not.equal(0);
     });
     it("getSynthData - success", async function () {
       const synthData = await getSynthData(
         "sushiswap",
         "0x15ab243be0fc14b2b09988dd91f1cbebb0498922",
         "WETH",
-        "137"
+        "137",
+        POLYSCAN_API_KEY
       );
       expect(synthData).to.be.an("object");
     });

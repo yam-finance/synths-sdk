@@ -6,7 +6,7 @@ import {
   LongShortPairEthers__factory,
 } from "@uma/contracts-node";
 import { defaultAssetsConfig } from "./config";
-import { prepareLSPStateCall, getSynthData } from "../utils/helpers";
+import { prepareLSPStateCall, getDexTokenPriceAtBlock } from "../utils/helpers";
 import {
   SynthsAssetsConfig,
   AssetsConfig,
@@ -117,16 +117,19 @@ class Synths {
 
           // @todo Think about calculating this on the front-end in the future.
           for (const pool of asset.pools) {
-            const data = await getSynthData(
+            const blockNumber = await this.#multicallProvider.getBlockNumber();
+
+            const tokenPrice = await getDexTokenPriceAtBlock(
               pool.location,
               pool.address,
               collateralSymbol,
+              blockNumber - 10,
               String(this.chainId)
             );
 
-            if (!data) continue;
+            if (!tokenPrice.tokenId || !tokenPrice.value) continue;
 
-            dexData[ethers.utils.getAddress(data.tokenId)] = Number(data.price);
+            dexData[ethers.utils.getAddress(tokenPrice.tokenId)] = Number(tokenPrice.value);
           }
 
           /// @todo Get lp amount of user

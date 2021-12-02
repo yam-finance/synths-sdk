@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import { request } from "graphql-request";
 import axios from "axios";
 import { ERC20Ethers__factory, LongShortPairEthers } from "@uma/contracts-node";
-import { defaultAssetsConfig, POLYSCAN_API_KEY } from "../lib/config";
+import { defaultAssetsConfig } from "../lib/config";
 import {
   UNISWAP_ENDPOINT,
   SUSHISWAP_ENDPOINT,
@@ -72,18 +72,17 @@ export async function getTokenDecimals(
  * @param poolLocation Location string of the DEX pool (e.g. "uni").
  * @param poolAddress Address of the DEX pool.
  * @param tokenAddress Address of the token.
+ * @param blockNumber Blocn number at which you want to get the price.
  * @param network? Chain id to decide which subgraph endpoint to use, defaults to mainnet.
  * @returns The DEX token price in WEI.
  */
-export async function getCurrentDexTokenPrice(
+export async function getDexTokenPriceAtBlock(
   poolLocation: string,
   poolAddress: string,
-  tokenAddress: string,
+  collateralSymbol: string,
+  blockNumber: number,
   network?: string
 ) {
-  try {
-    const ts = Math.round(new Date().getTime() / 1000);
-    const blockNow = await timestampToBlock(ts, network);
     let endpoint =
       poolLocation === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
 
@@ -94,18 +93,20 @@ export async function getCurrentDexTokenPrice(
     const query = UNI_SUSHI_PAIR_DATA;
     const poolData: IPoolData = await request(endpoint, query, {
       pairAddress: poolAddress,
-      blockNumber: blockNow - 10,
+      blockNumber: blockNumber,
     });
 
-    if (poolData["pair"].token0.id === tokenAddress) {
-      return poolData["pair"].reserve0 / poolData["pair"].reserve1;
+    if (poolData["pair"].token0.symbol !== collateralSymbol) {
+      return {
+        value: poolData["pair"].reserve0 / poolData["pair"].reserve1,
+        tokenid: poolData["pair"].token0.symbol
+      }
     } else {
-      return poolData["pair"].reserve1 / poolData["pair"].reserve0;
+      return { 
+        value: poolData["pair"].reserve1 / poolData["pair"].reserve0,
+        tokenId: poolData["pair"].token1.symbol
+      }
     }
-  } catch (e) {
-    console.error("error", e);
-    return;
-  }
 }
 
 /**
@@ -113,6 +114,7 @@ export async function getCurrentDexTokenPrice(
  * @param synthId The synth identifier.
  * @param networkId The network / chain id of the synth deployment.
  * @param network? Chain id to decide which subgraph endpoint to use, defaults to mainnet.
+ * @param polyscanApiKey? Api key for polyscan.
  * @param userConfig? A user assets userConfig.
  * @returns An object with the synth market data.
  */
@@ -121,7 +123,8 @@ export async function getSynthData(
   poolAddress: string,
   collateralSymbol: string,
   network?: string,
-  userConfig?: SynthsAssetsConfig
+  polyscanApiKey?: string,
+  userConfig?: SynthsAssetsConfig,
 ) {
   try {
     const config = userConfig ?? defaultAssetsConfig;
@@ -135,8 +138,8 @@ export async function getSynthData(
     }
     const ts = Math.round(new Date().getTime() / 1000);
     const tsYesterday = ts - 24 * 3600;
-    const blockNow = await timestampToBlock(ts, network);
-    const block24hAgo = await timestampToBlock(tsYesterday, network);
+    const blockNow = await timestampToBlock(ts, network, polyscanApiKey);
+    const block24hAgo = await timestampToBlock(tsYesterday, network, polyscanApiKey);
 
     let endpoint =
       poolLocation === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
@@ -241,11 +244,13 @@ function extractPoolData(
  * @dev Can be used on the front-end to display the most recent synths.
  * @param networkId The network / chain id of the synth deployment.
  * @param userConfig? A user assets userConfig.
+ * @param polyscanApiKey? Api key for polyscan.
  * @returns The most recent synth market data.
  */
 export async function getRecentSynthData(
   networkId: number,
-  userConfig?: SynthsAssetsConfig
+  userConfig?: SynthsAssetsConfig,
+  polyscanApiKey?: string,
 ) {
   const config = userConfig ?? defaultAssetsConfig;
   const recentSynthData: ISynthsData[] = [];
@@ -262,7 +267,8 @@ export async function getRecentSynthData(
         synth.pool.location,
         synth.pool.address,
         synth.collateral,
-        String(networkId)
+        String(networkId),
+        polyscanApiKey,
       );
 
       data && recentSynthData.push(data);
@@ -273,7 +279,8 @@ export async function getRecentSynthData(
           pool.location,
           pool.address,
           lastSynth.collateral,
-          String(networkId)
+          String(networkId),
+          polyscanApiKey,
         );
 
         data && recentSynthData.push(data);
@@ -288,11 +295,13 @@ export async function getRecentSynthData(
  * @notice Helper function to get the total liquidity and volume of all synths in the last 24h.
  * @param networks Array of networks that the user wants to query.
  * @param userConfig? A user assets userConfig.
+ * @param polyscanApiKey? Api key for polyscan.
  * @returns The total synths market data.
  */
 export async function getTotalMarketData(
   networks: Array<number>,
-  userConfig?: SynthsAssetsConfig
+  userConfig?: SynthsAssetsConfig,
+  polyscanApiKey?: string,
 ) {
   const config = userConfig ?? defaultAssetsConfig;
   const totalSynthData: { [x: string]: ISynthsData | undefined } = {};
@@ -312,7 +321,8 @@ export async function getTotalMarketData(
               synth.pool.location,
               synth.pool.address,
               synth.collateral,
-              String(networkId)
+              String(networkId),
+              polyscanApiKey
             );
 
             totalSynthData[synth.pool.address] = synthData;
@@ -324,7 +334,8 @@ export async function getTotalMarketData(
                 pool.location,
                 pool.address,
                 synthClass[i].collateral,
-                String(networkId)
+                String(networkId),
+                polyscanApiKey
               );
 
               totalSynthData[pool.address] = synthData;
@@ -575,9 +586,10 @@ export function getPercentageChange(oldNumber: number, newNumber: number) {
 /**
  * @notice Converts a given timestamp into a block number.
  * @param timestamp The timestamp that should be converted.
+ * @param polyscanApiKey? Api key for polyscan.
  * @returns A block number.
  */
-export async function timestampToBlock(timestamp: number, network?: string) {
+export async function timestampToBlock(timestamp: number, network?: string, polyscanApiKey?: string) {
   timestamp =
     String(timestamp).length > 10 ? Math.floor(timestamp / 1000) : timestamp;
 
@@ -586,7 +598,7 @@ export async function timestampToBlock(timestamp: number, network?: string) {
   if (network == "137") {
     await axios
       .get<{ result: string }>(
-        `https://api.polygonscan.com/api?module=block&action=getblocknobytime&timestamp=${timestamp}&closest=before&apikey=${POLYSCAN_API_KEY}`
+        `https://api.polygonscan.com/api?module=block&action=getblocknobytime&timestamp=${timestamp}&closest=before&apikey=${polyscanApiKey}`
       )
       .then((response) => {
         block = Number(response.data["result"]);
