@@ -16,7 +16,6 @@
   ],
   "scripts": {
     "prepack": "yarn build && yarn docgen",
-    "postinstall": "yarn clean && yarn build",
     "clean": "hardhat clean",
     "build": "hardhat compile && tsc",
     "test": "hardhat test",
