@@ -72,39 +72,39 @@ export async function getTokenDecimals(
  * @param poolLocation Location string of the DEX pool (e.g. "uni").
  * @param poolAddress Address of the DEX pool.
  * @param tokenAddress Address of the token.
+ * @param blockNumber Blocn number at which you want to get the price.
  * @param network? Chain id to decide which subgraph endpoint to use, defaults to mainnet.
  * @returns The DEX token price in WEI.
  */
-export async function getCurrentDexTokenPrice(
+export async function getDexTokenPriceAtBlock(
   poolLocation: string,
   poolAddress: string,
-  tokenAddress: string,
+  collateralSymbol: string,
+  blockNumber: number,
   network?: string
 ) {
-  try {
-    const ts = Math.round(new Date().getTime() / 1000);
-    const blockNow = await timestampToBlock(ts);
-    let endpoint =
-      poolLocation === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
+  let endpoint = poolLocation === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
 
-    if (network === "137") {
-      endpoint = MATIC_SUSHISWAP_ENDPOINT;
-    }
+  if (network === "137") {
+    endpoint = MATIC_SUSHISWAP_ENDPOINT;
+  }
 
-    const query = UNI_SUSHI_PAIR_DATA;
-    const poolData: IPoolData = await request(endpoint, query, {
-      pairAddress: poolAddress,
-      blockNumber: blockNow - 5,
-    });
+  const query = UNI_SUSHI_PAIR_DATA;
+  const poolData: IPoolData = await request(endpoint, query, {
+    pairAddress: poolAddress,
+    blockNumber: blockNumber,
+  });
 
-    if (poolData["pair"].token0.id === tokenAddress) {
-      return poolData["pair"].reserve0 / poolData["pair"].reserve1;
-    } else {
-      return poolData["pair"].reserve1 / poolData["pair"].reserve0;
-    }
-  } catch (e) {
-    console.error("error", e);
-    return;
+  if (poolData["pair"].token0.symbol !== collateralSymbol) {
+    return {
+      value: poolData["pair"].reserve0 / poolData["pair"].reserve1,
+      tokenid: poolData["pair"].token0.symbol,
+    };
+  } else {
+    return {
+      value: poolData["pair"].reserve1 / poolData["pair"].reserve0,
+      tokenId: poolData["pair"].token1.symbol,
+    };
   }
 }
 
@@ -113,6 +113,7 @@ export async function getCurrentDexTokenPrice(
  * @param synthId The synth identifier.
  * @param networkId The network / chain id of the synth deployment.
  * @param network? Chain id to decide which subgraph endpoint to use, defaults to mainnet.
+ * @param polyscanApiKey? Api key for polyscan.
  * @param userConfig? A user assets userConfig.
  * @returns An object with the synth market data.
  */
@@ -121,17 +122,27 @@ export async function getSynthData(
   poolAddress: string,
   collateralSymbol: string,
   network?: string,
+  polyscanApiKey?: string,
   userConfig?: SynthsAssetsConfig
 ) {
   try {
     const config = userConfig ?? defaultAssetsConfig;
-    const rewards = config
-      ? await getYamRewardsByPoolAddress(poolAddress, config)
-      : "0";
+    let rewards;
+    if (network != "137") {
+      rewards = config
+        ? await getYamRewardsByPoolAddress(poolAddress, config)
+        : "0";
+    } else {
+      rewards = "0";
+    }
     const ts = Math.round(new Date().getTime() / 1000);
     const tsYesterday = ts - 24 * 3600;
-    const blockNow = await timestampToBlock(ts);
-    const block24hAgo = await timestampToBlock(tsYesterday);
+    const blockNow = await timestampToBlock(ts, network, polyscanApiKey);
+    const block24hAgo = await timestampToBlock(
+      tsYesterday,
+      network,
+      polyscanApiKey
+    );
 
     let endpoint =
       poolLocation === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
@@ -143,7 +154,7 @@ export async function getSynthData(
     const query = UNI_SUSHI_PAIR_DATA;
     const poolDataCurrently: IPoolData = await request(endpoint, query, {
       pairAddress: poolAddress,
-      blockNumber: blockNow - 5,
+      blockNumber: blockNow - 10,
     });
     const poolDataYesterday: IPoolData = await request(endpoint, query, {
       pairAddress: poolAddress,
@@ -236,11 +247,13 @@ function extractPoolData(
  * @dev Can be used on the front-end to display the most recent synths.
  * @param networkId The network / chain id of the synth deployment.
  * @param userConfig? A user assets userConfig.
+ * @param polyscanApiKey? Api key for polyscan.
  * @returns The most recent synth market data.
  */
 export async function getRecentSynthData(
   networkId: number,
-  userConfig?: SynthsAssetsConfig
+  userConfig?: SynthsAssetsConfig,
+  polyscanApiKey?: string
 ) {
   const config = userConfig ?? defaultAssetsConfig;
   const recentSynthData: ISynthsData[] = [];
@@ -256,7 +269,9 @@ export async function getRecentSynthData(
       const data = await getSynthData(
         synth.pool.location,
         synth.pool.address,
-        synth.collateral
+        synth.collateral,
+        String(networkId),
+        polyscanApiKey
       );
 
       data && recentSynthData.push(data);
@@ -266,7 +281,9 @@ export async function getRecentSynthData(
         const data = await getSynthData(
           pool.location,
           pool.address,
-          lastSynth.collateral
+          lastSynth.collateral,
+          String(networkId),
+          polyscanApiKey
         );
 
         data && recentSynthData.push(data);
@@ -281,11 +298,13 @@ export async function getRecentSynthData(
  * @notice Helper function to get the total liquidity and volume of all synths in the last 24h.
  * @param networks Array of networks that the user wants to query.
  * @param userConfig? A user assets userConfig.
+ * @param polyscanApiKey? Api key for polyscan.
  * @returns The total synths market data.
  */
 export async function getTotalMarketData(
   networks: Array<number>,
-  userConfig?: SynthsAssetsConfig
+  userConfig?: SynthsAssetsConfig,
+  polyscanApiKey?: string
 ) {
   const config = userConfig ?? defaultAssetsConfig;
   const totalSynthData: { [x: string]: ISynthsData | undefined } = {};
@@ -304,7 +323,9 @@ export async function getTotalMarketData(
             const synthData = await getSynthData(
               synth.pool.location,
               synth.pool.address,
-              synth.collateral
+              synth.collateral,
+              String(networkId),
+              polyscanApiKey
             );
 
             totalSynthData[synth.pool.address] = synthData;
@@ -315,7 +336,9 @@ export async function getTotalMarketData(
               const synthData = await getSynthData(
                 pool.location,
                 pool.address,
-                synthClass[i].collateral
+                synthClass[i].collateral,
+                String(networkId),
+                polyscanApiKey
               );
 
               totalSynthData[pool.address] = synthData;
@@ -338,7 +361,7 @@ export async function getTotalMarketData(
       totalTVL = response.data["total"];
     })
     .catch((error) => {
-      console.log(error);
+      console.error(error);
     });
 
   return {
@@ -566,21 +589,42 @@ export function getPercentageChange(oldNumber: number, newNumber: number) {
 /**
  * @notice Converts a given timestamp into a block number.
  * @param timestamp The timestamp that should be converted.
+ * @param polyscanApiKey? Api key for polyscan.
  * @returns A block number.
  */
-export async function timestampToBlock(timestamp: number) {
+export async function timestampToBlock(
+  timestamp: number,
+  network?: string,
+  polyscanApiKey?: string
+) {
   timestamp =
     String(timestamp).length > 10 ? Math.floor(timestamp / 1000) : timestamp;
 
-  const endpoint = BLOCKLYTICS_ENDPOINT;
-  const query = TIMESTAMP_TO_BLOCK;
-  const result = await request<{ blocks: [{ number: string }] }>(
-    endpoint,
-    query,
-    {
-      timestamp: timestamp,
-    }
-  );
+  let block = 0;
 
-  return Number(result.blocks[0].number);
+  if (network == "137" && polyscanApiKey) {
+    await axios
+      .get<{ result: string }>(
+        `https://api.polygonscan.com/api?module=block&action=getblocknobytime&timestamp=${timestamp}&closest=before&apikey=${polyscanApiKey}`
+      )
+      .then((response) => {
+        block = Number(response.data["result"]);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  } else {
+    const endpoint = BLOCKLYTICS_ENDPOINT;
+    const query = TIMESTAMP_TO_BLOCK;
+    const result = await request<{ blocks: [{ number: string }] }>(
+      endpoint,
+      query,
+      {
+        timestamp: timestamp,
+      }
+    );
+    block = Number(result.blocks[0].number);
+  }
+
+  return block;
 }

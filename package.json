@@ -1,6 +1,6 @@
 {
   "name": "synths-sdk",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Yam Uma Synths SDK",
   "author": "yam",
   "contributors": [
@@ -16,7 +16,6 @@
   ],
   "scripts": {
     "prepack": "yarn build && yarn docgen",
-    "postinstall": "yarn clean && yarn build",
     "clean": "hardhat clean",
     "build": "hardhat compile && tsc",
     "test": "hardhat test",

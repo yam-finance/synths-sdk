@@ -4,7 +4,7 @@ import { expect } from "chai";
 import Synths from "../src/index";
 import { SynthsAssetsConfig } from "../src/types/assets.t";
 import Asset from "../src/lib/Asset";
-import testAssetConfig from "../src/assetstest.json";
+import { defaultTestAssetsConfig } from "lib/config";
 
 describe("Synths SDKs", function () {
   let provider: typeof ethers.provider;
@@ -97,29 +97,35 @@ describe("Synths SDKs", function () {
     before(async function () {
       provider = ethers.provider;
       const chainId = (await provider.getNetwork()).chainId;
+
       if (network.name !== "hardhat" || chainId != 137) {
         this.skip();
       }
-      const userAssetsConfig = testAssetConfig as SynthsAssetsConfig;
+
       synthsSDK = await Synths.create({
         ethersProvider: provider,
-        userAssetsConfig: userAssetsConfig,
+        userAssetsConfig: defaultTestAssetsConfig,
       });
-      lspAsset = synthsSDK.connectAsset("2xdpi-1021");
+
+      lspAsset = synthsSDK.connectAsset("rxdpi-1121");
     });
+
+    this.timeout(100000000);
     describe("Interact with LSP asset", () => {
       it("getLSPPortfolio - success", async function () {
-        this.timeout(100000);
+        this.timeout(100000000);
         const lspPortfolio = await synthsSDK.getLSPPortfolio();
         console.log(lspPortfolio);
+        expect(lspPortfolio).to.be.an("array");
       });
       it("getLSPState -success", async function () {
         this.timeout(100000);
         const lspState = await lspAsset.getLSPState();
         expect(lspState).to.deep.include({
-          pairName: "2XDPI Oct26",
+          pairName: "2XDPI Nov26",
         });
         it("getContract -success", function () {
+          this.timeout(100000000);
           const contract = lspAsset.getContract();
           const contractAddress = contract.address;
           expect(ethers.utils.getAddress(contractAddress)).to.be.a("string");

@@ -18,7 +18,7 @@ import {
 import {
   prepareLSPStateCall,
   getTokenDecimals,
-  getCurrentDexTokenPrice,
+  getDexTokenPriceAtBlock,
 } from "../utils/helpers";
 import { USDC, WETH } from "./config/contracts";
 
@@ -267,13 +267,16 @@ class Asset {
           )
         );
 
-        const tokenPrice = await getCurrentDexTokenPrice(
+        const blockNumber = await this.#multicallProvider.getBlockNumber();
+
+        const tokenPrice = await getDexTokenPriceAtBlock(
           this.#config.pool.location,
           this.#config.pool.address,
-          this.#config.token.address
+          this.#config.collateral,
+          blockNumber - 10
         );
 
-        if (tokenPrice == undefined) return;
+        if (!tokenPrice.value) return;
 
         const feeMultiplier = Number(
           ethers.utils.formatEther(empState["cumulativeFeeMultiplier"])
@@ -285,7 +288,7 @@ class Asset {
 
         gcr =
           totalTokens > 0
-            ? (totalCollateral / totalTokens / tokenPrice).toFixed(4)
+            ? (totalCollateral / totalTokens / tokenPrice.value).toFixed(4)
             : "0";
       } else {
         throw new Error("Collateral not found");
