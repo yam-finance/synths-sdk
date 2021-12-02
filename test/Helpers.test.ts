@@ -43,7 +43,7 @@ describe("Synths SDK", function () {
         "sushiswap",
         "0x6e01db46b183593374a49c0025e42c4bb7ee3ffa",
         "0x86140A763077155964754968B6F6e243fE809cBe",
-        await provider.getBlockNumber() - 10
+        (await provider.getBlockNumber()) - 10
       );
       expect(synthPrice).to.not.equal(0);
     });

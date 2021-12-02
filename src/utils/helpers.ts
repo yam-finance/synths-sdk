@@ -83,30 +83,29 @@ export async function getDexTokenPriceAtBlock(
   blockNumber: number,
   network?: string
 ) {
-    let endpoint =
-      poolLocation === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
+  let endpoint = poolLocation === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
 
-    if (network === "137") {
-      endpoint = MATIC_SUSHISWAP_ENDPOINT;
-    }
+  if (network === "137") {
+    endpoint = MATIC_SUSHISWAP_ENDPOINT;
+  }
 
-    const query = UNI_SUSHI_PAIR_DATA;
-    const poolData: IPoolData = await request(endpoint, query, {
-      pairAddress: poolAddress,
-      blockNumber: blockNumber,
-    });
+  const query = UNI_SUSHI_PAIR_DATA;
+  const poolData: IPoolData = await request(endpoint, query, {
+    pairAddress: poolAddress,
+    blockNumber: blockNumber,
+  });
 
-    if (poolData["pair"].token0.symbol !== collateralSymbol) {
-      return {
-        value: poolData["pair"].reserve0 / poolData["pair"].reserve1,
-        tokenid: poolData["pair"].token0.symbol
-      }
-    } else {
-      return { 
-        value: poolData["pair"].reserve1 / poolData["pair"].reserve0,
-        tokenId: poolData["pair"].token1.symbol
-      }
-    }
+  if (poolData["pair"].token0.symbol !== collateralSymbol) {
+    return {
+      value: poolData["pair"].reserve0 / poolData["pair"].reserve1,
+      tokenid: poolData["pair"].token0.symbol,
+    };
+  } else {
+    return {
+      value: poolData["pair"].reserve1 / poolData["pair"].reserve0,
+      tokenId: poolData["pair"].token1.symbol,
+    };
+  }
 }
 
 /**
@@ -124,7 +123,7 @@ export async function getSynthData(
   collateralSymbol: string,
   network?: string,
   polyscanApiKey?: string,
-  userConfig?: SynthsAssetsConfig,
+  userConfig?: SynthsAssetsConfig
 ) {
   try {
     const config = userConfig ?? defaultAssetsConfig;
@@ -139,7 +138,11 @@ export async function getSynthData(
     const ts = Math.round(new Date().getTime() / 1000);
     const tsYesterday = ts - 24 * 3600;
     const blockNow = await timestampToBlock(ts, network, polyscanApiKey);
-    const block24hAgo = await timestampToBlock(tsYesterday, network, polyscanApiKey);
+    const block24hAgo = await timestampToBlock(
+      tsYesterday,
+      network,
+      polyscanApiKey
+    );
 
     let endpoint =
       poolLocation === "uni" ? UNISWAP_ENDPOINT : SUSHISWAP_ENDPOINT;
@@ -250,7 +253,7 @@ function extractPoolData(
 export async function getRecentSynthData(
   networkId: number,
   userConfig?: SynthsAssetsConfig,
-  polyscanApiKey?: string,
+  polyscanApiKey?: string
 ) {
   const config = userConfig ?? defaultAssetsConfig;
   const recentSynthData: ISynthsData[] = [];
@@ -268,7 +271,7 @@ export async function getRecentSynthData(
         synth.pool.address,
         synth.collateral,
         String(networkId),
-        polyscanApiKey,
+        polyscanApiKey
       );
 
       data && recentSynthData.push(data);
@@ -280,7 +283,7 @@ export async function getRecentSynthData(
           pool.address,
           lastSynth.collateral,
           String(networkId),
-          polyscanApiKey,
+          polyscanApiKey
         );
 
         data && recentSynthData.push(data);
@@ -301,7 +304,7 @@ export async function getRecentSynthData(
 export async function getTotalMarketData(
   networks: Array<number>,
   userConfig?: SynthsAssetsConfig,
-  polyscanApiKey?: string,
+  polyscanApiKey?: string
 ) {
   const config = userConfig ?? defaultAssetsConfig;
   const totalSynthData: { [x: string]: ISynthsData | undefined } = {};
@@ -589,13 +592,17 @@ export function getPercentageChange(oldNumber: number, newNumber: number) {
  * @param polyscanApiKey? Api key for polyscan.
  * @returns A block number.
  */
-export async function timestampToBlock(timestamp: number, network?: string, polyscanApiKey?: string) {
+export async function timestampToBlock(
+  timestamp: number,
+  network?: string,
+  polyscanApiKey?: string
+) {
   timestamp =
     String(timestamp).length > 10 ? Math.floor(timestamp / 1000) : timestamp;
 
   let block = 0;
 
-  if (network == "137") {
+  if (network == "137" && polyscanApiKey) {
     await axios
       .get<{ result: string }>(
         `https://api.polygonscan.com/api?module=block&action=getblocknobytime&timestamp=${timestamp}&closest=before&apikey=${polyscanApiKey}`

@@ -129,7 +129,9 @@ class Synths {
 
             if (!tokenPrice.tokenId || !tokenPrice.value) continue;
 
-            dexData[ethers.utils.getAddress(tokenPrice.tokenId)] = Number(tokenPrice.value);
+            dexData[ethers.utils.getAddress(tokenPrice.tokenId)] = Number(
+              tokenPrice.value
+            );
           }
 
           /// @todo Get lp amount of user
