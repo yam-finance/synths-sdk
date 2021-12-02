@@ -1,6 +1,6 @@
 import Synths from "./lib/Synths";
 import {
-  getCurrentDexTokenPrice,
+  getDexTokenPriceAtBlock,
   getTotalMarketData,
   getSynthData,
   getPoolChartData,
@@ -13,7 +13,7 @@ import { SynthsAssetsConfig } from "./types/assets.t";
 
 export default Synths;
 export {
-  getCurrentDexTokenPrice,
+  getDexTokenPriceAtBlock,
   getTotalMarketData,
   getSynthData,
   getPoolChartData,

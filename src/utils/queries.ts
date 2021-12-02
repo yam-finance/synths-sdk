@@ -5,7 +5,7 @@ export const UNISWAP_ENDPOINT =
 export const SUSHISWAP_ENDPOINT =
   "https://api.thegraph.com/subgraphs/name/sushiswap/exchange";
 export const MATIC_SUSHISWAP_ENDPOINT =
-  "https://thegraph.com/explorer/subgraph/sushiswap/matic-exchange";
+  "https://api.thegraph.com/subgraphs/name/sushiswap/matic-exchange";
 export const BLOCKLYTICS_ENDPOINT =
   "https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks";
 
